@@ -10,7 +10,9 @@ scalaVersion       := crossScalaVersions.value.head
 
 resolvers += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-pr-validation-snapshots/"
 
-crossScalaVersions := Seq("2.13.0-SNAPSHOT")
+// this is the SHA of https://github.com/scala/scala/pull/5603 as of 16 Dec 2016
+// (that's the PR that removes the parallel collections)
+crossScalaVersions := Seq("2.13.0-6aa1987-SNAPSHOT")
 
 scalacOptions      ++= Seq("-deprecation", "-feature")
 
