@@ -1,0 +1,26 @@
+#
+# Are you tempted to edit this file?
+#
+# First consider if the changes make sense for all,
+# or if they are specific to your workflow/system.
+# If it is the latter, you can augment this list with
+# entries in .git/info/excludes
+#
+
+*.jar
+*~
+
+# eclipse, intellij
+/.classpath
+/.project
+/.cache
+/.idea
+/.settings
+
+# bak files produced by ./cleanup-commit
+*.bak
+
+# Mac specific, but that is common enough a dev platform to warrant inclusion.
+.DS_Store
+
+target/

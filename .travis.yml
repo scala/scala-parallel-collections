@@ -1,0 +1,9 @@
+language: scala
+
+env:
+  global:
+    - PUBLISH_JDK=oraclejdk8
+
+script: admin/build.sh
+
+jdk: oraclejdk8
