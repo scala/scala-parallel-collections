@@ -1,5 +1,7 @@
 language: scala
 
+sudo: required
+
 env:
   global:
     - PUBLISH_JDK=oraclejdk8

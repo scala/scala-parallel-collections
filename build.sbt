@@ -1,32 +1,37 @@
 import com.typesafe.tools.mima.plugin.{MimaPlugin, MimaKeys}
 
-scalaModuleSettings
+resolvers in ThisBuild += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-pr-validation-snapshots/"
 
-name               := "scala-parallel-collections"
-
-version            := "1.0.0-SNAPSHOT"
-
-scalaVersion       := crossScalaVersions.value.head
-
-resolvers += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-pr-validation-snapshots/"
-
-// this is the SHA of https://github.com/scala/scala/pull/5603 as of 16 Dec 2016
+// this is the SHA of https://github.com/scala/scala/pull/5603 as of 2017-01-12
 // (that's the PR that removes the parallel collections)
-crossScalaVersions := Seq("2.13.0-6aa1987-SNAPSHOT")
+crossScalaVersions in ThisBuild := Seq("2.13.0-eb9fdcd-SNAPSHOT")
 
-scalacOptions      ++= Seq("-deprecation", "-feature")
+scalaVersion in ThisBuild       := crossScalaVersions.value.head
 
-// important!! must come here (why?)
-scalaModuleOsgiSettings
+version in ThisBuild            := "1.0.0-SNAPSHOT"
 
-OsgiKeys.exportPackage := Seq(s"scala.collection.parallel.*;version=${version.value}")
+scalacOptions in ThisBuild      ++= Seq("-deprecation", "-feature")
 
-mimaPreviousVersion := None
+cancelable in Global := true
 
-lazy val root = project.in( file(".") )
+lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(scalaModuleOsgiSettings).settings(
+  name := "scala-parallel-collections",
+  OsgiKeys.exportPackage := Seq(s"scala.collection.parallel.*;version=${version.value}"),
+  mimaPreviousVersion := None
+)
 
-fork in Test := true
+lazy val junit = project.in(file("junit")).settings(
+  libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
+  testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v"),
+  fork in Test := true
+).dependsOn(testmacros, core)
 
-libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+lazy val scalacheck = project.in(file("scalacheck")).settings(
+  libraryDependencies += "org.scalacheck" % "scalacheck_2.12" % "1.13.4",
+  fork in Test := true,
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5")
+).dependsOn(core)
 
-testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
+lazy val testmacros = project.in(file("testmacros")).settings(
+  libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
+)
