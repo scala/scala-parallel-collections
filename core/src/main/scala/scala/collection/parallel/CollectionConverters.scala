@@ -7,34 +7,7 @@ import scala.collection.{mutable => scm, immutable => sci, concurrent => scc, ge
 import scala.collection._
 
 /** Extension methods for `.par` on sequential collections. */
-object CollectionConverters {
-
-  // Generic
-
-  implicit def genTraversableLikeIsParallelizable[A, Repr](coll: sc.GenTraversableLike[A, Repr]): Parallelizable[A, ParIterable[A]] = coll match {
-    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[A, ParIterable[A]]].par
-    case coll: sc.Traversable[_] => new TraversableIsParallelizable(coll.asInstanceOf[sc.Traversable[A]])
-    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenTraversableLike must be Parallelizable or a scala.collection.Traversable")
-  }
-
-  implicit def genSeqLikeIsParallelizable[A, Repr](coll: sc.GenSeqLike[A, Repr]): Parallelizable[A, ParSeq[A]] = coll match {
-    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[A, ParSeq[A]]].par
-    case it: scm.Seq[_] => new MutableSeqIsParallelizable(it.asInstanceOf[scm.Seq[A]])
-    case it: sci.Seq[_] => new ImmutableSeqIsParallelizable(it.asInstanceOf[sci.Seq[A]])
-    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenSeqLike must be Parallelizable or a scala.collection.mutable.Seq or scala.collection.immutable.Seq")
-  }
-
-  implicit def genSetLikeIsParallelizable[A, Repr](coll: sc.GenSetLike[A, Repr]): Parallelizable[A, ParSet[A]] = coll match {
-    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[A, ParSet[A]]].par
-    case it: sc.Set[_] => new SetIsParallelizable(it.asInstanceOf[sc.Set[A]])
-    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenSetLike must be Parallelizable or a scala.collection.Set")
-  }
-
-  implicit def genMapLikeIsParallelizable[K, V, Repr](coll: sc.GenMapLike[K, V, Repr]): Parallelizable[(K, V), ParMap[K, V]] = coll match {
-    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[(K, V), ParMap[K, V]]].par
-    case it: sc.Map[_, _] => new MapIsParallelizable(it.asInstanceOf[sc.Map[K, V]])
-    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenMapLike must be Parallelizable or a scala.collection.Map")
-  }
+object CollectionConverters extends CollectionConvertersLowPriority {
 
   // Traversable & Iterable
 
@@ -213,5 +186,35 @@ object CollectionConverters {
   implicit class ArrayIsParallelizable[T](private val a: Array[T]) extends AnyVal with CustomParallelizable[T, mutable.ParArray[T]] {
     def seq = a // via ArrayOps
     override def par = mutable.ParArray.handoff(a)
+  }
+}
+
+trait CollectionConvertersLowPriority { self: CollectionConverters.type =>
+
+  // Generic
+
+  implicit def genTraversableLikeIsParallelizable[A, Repr](coll: sc.GenTraversableLike[A, Repr]): Parallelizable[A, ParIterable[A]] = coll match {
+    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[A, ParIterable[A]]].par
+    case coll: sc.Traversable[_] => new TraversableIsParallelizable(coll.asInstanceOf[sc.Traversable[A]])
+    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenTraversableLike must be Parallelizable or a scala.collection.Traversable")
+  }
+
+  implicit def genSeqLikeIsParallelizable[A, Repr](coll: sc.GenSeqLike[A, Repr]): Parallelizable[A, ParSeq[A]] = coll match {
+    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[A, ParSeq[A]]].par
+    case it: scm.Seq[_] => new MutableSeqIsParallelizable(it.asInstanceOf[scm.Seq[A]])
+    case it: sci.Seq[_] => new ImmutableSeqIsParallelizable(it.asInstanceOf[sci.Seq[A]])
+    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenSeqLike must be Parallelizable or a scala.collection.mutable.Seq or scala.collection.immutable.Seq")
+  }
+
+  implicit def genSetLikeIsParallelizable[A, Repr](coll: sc.GenSetLike[A, Repr]): Parallelizable[A, ParSet[A]] = coll match {
+    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[A, ParSet[A]]].par
+    case it: sc.Set[_] => new SetIsParallelizable(it.asInstanceOf[sc.Set[A]])
+    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenSetLike must be Parallelizable or a scala.collection.Set")
+  }
+
+  implicit def genMapLikeIsParallelizable[K, V, Repr](coll: sc.GenMapLike[K, V, Repr]): Parallelizable[(K, V), ParMap[K, V]] = coll match {
+    case coll: Parallelizable[_, _] => coll.asInstanceOf[Parallelizable[(K, V), ParMap[K, V]]].par
+    case it: sc.Map[_, _] => new MapIsParallelizable(it.asInstanceOf[sc.Map[K, V]])
+    case coll => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.GenMapLike must be Parallelizable or a scala.collection.Map")
   }
 }

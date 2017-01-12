@@ -11,6 +11,7 @@ import scala.reflect.ClassTag
 import org.junit.Assert._
 
 /* Tests various maps by making sure they all agree on the same answers. */
+@deprecated("Suppress warnings", since="2.11")
 @RunWith(classOf[JUnit4])
 class NewBuilderTest {
 
