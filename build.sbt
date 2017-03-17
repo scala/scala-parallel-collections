@@ -1,10 +1,8 @@
 import com.typesafe.tools.mima.plugin.{MimaPlugin, MimaKeys}
 
-resolvers in ThisBuild += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-pr-validation-snapshots/"
+resolvers in ThisBuild += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
 
-// this is the SHA of https://github.com/scala/scala/pull/5603 as of 2017-01-12
-// (that's the PR that removes the parallel collections)
-crossScalaVersions in ThisBuild := Seq("2.13.0-eb9fdcd-SNAPSHOT")
+crossScalaVersions in ThisBuild := Seq("2.13.0-pre-e2a2cba")  // March 16, 2017
 
 scalaVersion in ThisBuild       := crossScalaVersions.value.head
 
