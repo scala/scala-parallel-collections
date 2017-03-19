@@ -21,15 +21,18 @@ lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(
 lazy val junit = project.in(file("junit")).settings(
   libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
   testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v"),
-  fork in Test := true
+  fork in Test := true,
+  publishArtifact := false
 ).dependsOn(testmacros, core)
 
 lazy val scalacheck = project.in(file("scalacheck")).settings(
   libraryDependencies += "org.scalacheck" % "scalacheck_2.12" % "1.13.4",
   fork in Test := true,
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5")
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5"),
+  publishArtifact := false
 ).dependsOn(core)
 
 lazy val testmacros = project.in(file("testmacros")).settings(
-  libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
+  libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+  publishArtifact := false
 )
