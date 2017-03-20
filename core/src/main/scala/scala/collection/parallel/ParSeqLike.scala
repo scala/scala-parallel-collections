@@ -323,9 +323,6 @@ self =>
 
   override def toSeq = this.asInstanceOf[ParSeq[T]]
 
-  @deprecated("use .seq.view", "2.11.0")
-  override def view = seq.view
-
   /* tasks */
 
   protected[this] def down(p: IterableSplitter[_]) = p.asInstanceOf[SeqSplitter[T]]

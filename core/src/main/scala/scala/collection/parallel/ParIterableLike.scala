@@ -521,7 +521,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @param p       a predicate used to test elements
    *  @return        true if `p` holds for all elements, false otherwise
    */
-  def forall(@deprecatedName('pred) p: T => Boolean): Boolean = {
+  def forall(p: T => Boolean): Boolean = {
     tasksupport.executeAndWaitResult(new Forall(p, splitter assign new DefaultSignalling with VolatileAbort))
   }
 
@@ -532,7 +532,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @param p       a predicate used to test elements
    *  @return        true if `p` holds for some element, false otherwise
    */
-  def exists(@deprecatedName('pred) p: T => Boolean): Boolean = {
+  def exists(p: T => Boolean): Boolean = {
     tasksupport.executeAndWaitResult(new Exists(p, splitter assign new DefaultSignalling with VolatileAbort))
   }
 
@@ -547,7 +547,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @param p        predicate used to test the elements
    *  @return         an option value with the element if such an element exists, or `None` otherwise
    */
-  def find(@deprecatedName('pred) p: T => Boolean): Option[T] = {
+  def find(p: T => Boolean): Option[T] = {
     tasksupport.executeAndWaitResult(new Find(p, splitter assign new DefaultSignalling with VolatileAbort))
   }
 
@@ -841,9 +841,6 @@ self: ParIterableLike[T, Repr, Sequential] =>
   protected def toParMap[K, V, That](cbf: () => Combiner[(K, V), That])(implicit ev: T <:< (K, V)): That = {
     tasksupport.executeAndWaitResult(new ToParMap(combinerFactory(cbf), splitter)(ev) mapResult { _.resultWithTaskSupport })
   }
-
-  @deprecated("use .seq.view instead", "2.11.0")
-  def view = seq.view
 
   override def toArray[U >: T: ClassTag]: Array[U] = {
     val arr = new Array[U](size)

@@ -11,7 +11,6 @@ import scala.reflect.ClassTag
 import org.junit.Assert._
 
 /* Tests various maps by making sure they all agree on the same answers. */
-@deprecated("Suppress warnings", since="2.11")
 @RunWith(classOf[JUnit4])
 class NewBuilderTest {
 
@@ -46,14 +45,8 @@ class NewBuilderTest {
     test[scm.MutableList[_]     ]((scm.MutableList(1):      sc.Seq[Int]           ).map(x => x))
     test[scm.Queue[_]           ]((scm.Queue(1):            sc.GenTraversable[Int]).map(x => x))
     test[scm.Queue[_]           ]((scm.Queue(1):            sc.Seq[Int]           ).map(x => x))
-    test[scm.DoubleLinkedList[_]]((scm.DoubleLinkedList(1): sc.GenTraversable[Int]).map(x => x))
-    test[scm.DoubleLinkedList[_]]((scm.DoubleLinkedList(1): sc.Seq[Int]           ).map(x => x))
-    test[scm.LinkedList[_]      ]((scm.LinkedList(1):       sc.GenTraversable[Int]).map(x => x))
-    test[scm.LinkedList[_]      ]((scm.LinkedList(1):       sc.Seq[Int]           ).map(x => x))
     test[scm.ArrayStack[_]      ]((scm.ArrayStack(1):       sc.GenTraversable[Int]).map(x => x))
     test[scm.ArrayStack[_]      ]((scm.ArrayStack(1):       sc.Seq[Int]           ).map(x => x))
-    test[scm.Stack[_]           ]((scm.Stack(1):            sc.GenTraversable[Int]).map(x => x))
-    test[scm.Stack[_]           ]((scm.Stack(1):            sc.Seq[Int]           ).map(x => x))
     test[scm.ArraySeq[_]        ]((scm.ArraySeq(1):         sc.GenTraversable[Int]).map(x => x))
     test[scm.ArraySeq[_]        ]((scm.ArraySeq(1):         sc.Seq[Int]           ).map(x => x))
 
@@ -84,8 +77,6 @@ class NewBuilderTest {
     test[sci.List[_]            ]((sci.List(1):             sc.Seq[Int]           ).map(x => x))
     test[sci.Stream[_]          ]((sci.Stream(1):           sc.GenTraversable[Int]).map(x => x))
     test[sci.Stream[_]          ]((sci.Stream(1):           sc.Seq[Int]           ).map(x => x))
-    test[sci.Stack[_]           ]((sci.Stack(1):            sc.GenTraversable[Int]).map(x => x))
-    test[sci.Stack[_]           ]((sci.Stack(1):            sc.Seq[Int]           ).map(x => x))
     test[sci.Queue[_]           ]((sci.Queue(1):            sc.GenTraversable[Int]).map(x => x))
     test[sci.Queue[_]           ]((sci.Queue(1):            sc.Seq[Int]           ).map(x => x))
     test[sci.IndexedSeq[_]      ]((sci.IndexedSeq(1):       sc.GenTraversable[Int]).map(x => x))

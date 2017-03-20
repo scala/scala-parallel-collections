@@ -1,12 +1,12 @@
 resolvers in ThisBuild += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
 
-crossScalaVersions in ThisBuild := Seq("2.13.0-pre-e2a2cba")  // March 16, 2017
+crossScalaVersions in ThisBuild := Seq("2.13.0-pre-f9a019c")  // April 2, 2017
 
 scalaVersion in ThisBuild       := crossScalaVersions.value.head
 
-version in ThisBuild            := "0.1.1-SNAPSHOT"
+version in ThisBuild            := "0.1.2-SNAPSHOT"
 
-scalacOptions in ThisBuild      ++= Seq("-deprecation", "-feature")
+scalacOptions in ThisBuild      ++= Seq("-deprecation", "-feature", "-Xfatal-warnings")
 
 cancelable in Global := true
 
