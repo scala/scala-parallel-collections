@@ -22,4 +22,4 @@ if [ "$TRAVIS_JDK_VERSION" == "$PUBLISH_JDK" ] && [[ "$TRAVIS_TAG" =~ ^v[0-9]+\.
   openssl aes-256-cbc -K $K -iv $IV -in admin/secring.asc.enc -out admin/secring.asc -d
 fi
 
-sbt "$publishVersion" clean update +test +publishLocal $extraTarget
+sbt "$publishVersion" clean update +test +checkHeaders +publishLocal $extraTarget

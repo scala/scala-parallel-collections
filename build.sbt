@@ -1,5 +1,3 @@
-import com.typesafe.tools.mima.plugin.{MimaPlugin, MimaKeys}
-
 resolvers in ThisBuild += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
 
 crossScalaVersions in ThisBuild := Seq("2.13.0-pre-e2a2cba")  // March 16, 2017
@@ -15,7 +13,20 @@ cancelable in Global := true
 lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(scalaModuleOsgiSettings).settings(
   name := "scala-parallel-collections",
   OsgiKeys.exportPackage := Seq(s"scala.collection.parallel.*;version=${version.value}"),
-  mimaPreviousVersion := None
+  mimaPreviousVersion := None,
+  headers := Map(
+    "scala" ->
+      (de.heikoseeberger.sbtheader.HeaderPattern.cStyleBlockComment,
+      """|/*                     __                                               *\
+         |**     ________ ___   / /  ___     Scala API                            **
+         |**    / __/ __// _ | / /  / _ |    (c) 2003-2017, LAMP/EPFL             **
+         |**  __\ \/ /__/ __ |/ /__/ __ |    http://scala-lang.org/               **
+         |** /____/\___/_/ |_/____/_/ | |                                         **
+         |**                          |/                                          **
+         |\*                                                                      */
+         |
+         |""".stripMargin)
+  )
 )
 
 lazy val junit = project.in(file("junit")).settings(
