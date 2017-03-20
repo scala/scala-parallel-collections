@@ -16,8 +16,8 @@ if [ "$TRAVIS_JDK_VERSION" == "$PUBLISH_JDK" ] && [[ "$TRAVIS_TAG" =~ ^v[0-9]+\.
   cp admin/publish-settings.sbt .
 
   # Copied from the output of genKeyPair.sh
-  K=$encrypted_e923b9d88d53_key
-  IV=$encrypted_e923b9d88d53_iv
+  K=$encrypted_80ab220b6d33_key
+  IV=$encrypted_80ab220b6d33_iv
 
   openssl aes-256-cbc -K $K -iv $IV -in admin/secring.asc.enc -out admin/secring.asc -d
 fi
