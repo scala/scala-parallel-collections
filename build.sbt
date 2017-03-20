@@ -4,7 +4,7 @@ crossScalaVersions in ThisBuild := Seq("2.13.0-pre-e2a2cba")  // March 16, 2017
 
 scalaVersion in ThisBuild       := crossScalaVersions.value.head
 
-version in ThisBuild            := "1.0.0-SNAPSHOT"
+version in ThisBuild            := "0.1.1-SNAPSHOT"
 
 scalacOptions in ThisBuild      ++= Seq("-deprecation", "-feature")
 
@@ -44,6 +44,6 @@ lazy val scalacheck = project.in(file("scalacheck")).settings(
 ).dependsOn(core)
 
 lazy val testmacros = project.in(file("testmacros")).settings(
-  libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+  libraryDependencies += scalaOrganization.value % "scala-compiler" % scalaVersion.value,
   publishArtifact := false
 )
