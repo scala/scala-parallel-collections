@@ -16,6 +16,8 @@ import scala.collection.parallel.ParSetLike
 import scala.language.higherKinds
 
 /**
+ *  @define factoryInfo
+ *    This object provides a set of operations needed to create `$Coll` values.
  *  @author Aleksandar Prokopec
  *  @since 2.8
  */

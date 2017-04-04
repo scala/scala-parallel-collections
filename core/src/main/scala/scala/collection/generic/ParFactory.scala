@@ -17,6 +17,8 @@ import scala.language.higherKinds
  *  thereof. This class extends `TraversableFactory` and provides a set of
  *  operations to create `$Coll` objects.
  *
+ *  @define factoryInfo
+ *    This object provides a set of operations needed to create `$Coll` values.
  *  @define coll parallel collection
  *  @define Coll `ParIterable`
  *  @since 2.8

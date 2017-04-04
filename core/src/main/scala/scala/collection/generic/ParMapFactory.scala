@@ -22,6 +22,8 @@ import scala.language.higherKinds
  *
  *  @define coll parallel map
  *  @define Coll `ParMap`
+ *  @define factoryInfo
+ *    This object provides a set of operations needed to create `$Coll` values.
  *  @author Aleksandar Prokopec
  *  @since 2.8
  */

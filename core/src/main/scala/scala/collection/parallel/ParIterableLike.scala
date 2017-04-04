@@ -39,6 +39,10 @@ import scala.collection.parallel.ParallelCollectionImplicits._
  *  @tparam T    the element type of the collection
  *  @tparam Repr the type of the actual collection containing the elements
  *
+ *  @define undefinedorder
+ *    The order in which operations are performed on elements is unspecified
+ *    and may be nondeterministic.
+ *
  *  @define paralleliterableinfo
  *  This is a base trait for Scala parallel collections. It defines behaviour
  *  common to all parallel collections. Concrete parallel collections should
@@ -714,7 +718,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @tparam That      type of the resulting collection
    *  @param z          neutral element for the operator `op`
    *  @param op         the associative operator for the scan
-   *  @param bf         $bfinfo
+   *  @param bf         $pbfinfo
    *  @return           a collection containing the prefix scan of the elements in the original collection
    *
    *  @usecase def scan(z: T)(op: (T, T) => T): $Coll[T]

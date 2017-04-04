@@ -35,6 +35,11 @@ import scala.collection.parallel.ParallelCollectionImplicits._
  *  nondeterministic. If the higher-order functions given to them produce no sideeffects,
  *  then this won't be noticeable.
  *
+ *  @define mayNotTerminateInf
+ *    Note: may not terminate for infinite-sized collections.
+ *  @define willNotTerminateInf
+ *    Note: will not terminate for infinite-sized collections.
+ *
  *  This trait defines a new, more general `split` operation and reimplements the `split`
  *  operation of `ParallelIterable` trait using the new `split` operation.
  *
