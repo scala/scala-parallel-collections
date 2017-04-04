@@ -39,6 +39,10 @@ import scala.collection.parallel.ParallelCollectionImplicits._
  *  @tparam T    the element type of the collection
  *  @tparam Repr the type of the actual collection containing the elements
  *
+ *  @define undefinedorder
+ *    The order in which operations are performed on elements is unspecified
+ *    and may be nondeterministic.
+ *
  *  @define paralleliterableinfo
  *  This is a base trait for Scala parallel collections. It defines behaviour
  *  common to all parallel collections. Concrete parallel collections should
@@ -521,7 +525,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @param p       a predicate used to test elements
    *  @return        true if `p` holds for all elements, false otherwise
    */
-  def forall(@deprecatedName('pred) p: T => Boolean): Boolean = {
+  def forall(p: T => Boolean): Boolean = {
     tasksupport.executeAndWaitResult(new Forall(p, splitter assign new DefaultSignalling with VolatileAbort))
   }
 
@@ -532,7 +536,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @param p       a predicate used to test elements
    *  @return        true if `p` holds for some element, false otherwise
    */
-  def exists(@deprecatedName('pred) p: T => Boolean): Boolean = {
+  def exists(p: T => Boolean): Boolean = {
     tasksupport.executeAndWaitResult(new Exists(p, splitter assign new DefaultSignalling with VolatileAbort))
   }
 
@@ -547,7 +551,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @param p        predicate used to test the elements
    *  @return         an option value with the element if such an element exists, or `None` otherwise
    */
-  def find(@deprecatedName('pred) p: T => Boolean): Option[T] = {
+  def find(p: T => Boolean): Option[T] = {
     tasksupport.executeAndWaitResult(new Find(p, splitter assign new DefaultSignalling with VolatileAbort))
   }
 
@@ -714,7 +718,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  @tparam That      type of the resulting collection
    *  @param z          neutral element for the operator `op`
    *  @param op         the associative operator for the scan
-   *  @param bf         $bfinfo
+   *  @param bf         $pbfinfo
    *  @return           a collection containing the prefix scan of the elements in the original collection
    *
    *  @usecase def scan(z: T)(op: (T, T) => T): $Coll[T]
@@ -841,9 +845,6 @@ self: ParIterableLike[T, Repr, Sequential] =>
   protected def toParMap[K, V, That](cbf: () => Combiner[(K, V), That])(implicit ev: T <:< (K, V)): That = {
     tasksupport.executeAndWaitResult(new ToParMap(combinerFactory(cbf), splitter)(ev) mapResult { _.resultWithTaskSupport })
   }
-
-  @deprecated("use .seq.view instead", "2.11.0")
-  def view = seq.view
 
   override def toArray[U >: T: ClassTag]: Array[U] = {
     val arr = new Array[U](size)
