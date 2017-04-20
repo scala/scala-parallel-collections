@@ -1,22 +1,17 @@
-resolvers in ThisBuild += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
+import ScalaModulePlugin._
 
-crossScalaVersions in ThisBuild := Seq("2.13.0-M1")
+version in ThisBuild := "0.1.2-SNAPSHOT"
 
-scalaVersion in ThisBuild       := crossScalaVersions.value.head
+scalaVersionsByJvm in ThisBuild := {
+  val v213 = "2.13.0-M1"
+  Map(
+    8 -> List(v213 -> true),
+    9 -> List(v213 -> false))
+}
 
-version in ThisBuild            := "0.1.2-SNAPSHOT"
-
-scalacOptions in ThisBuild      ++= Seq("-deprecation", "-feature", "-Xfatal-warnings")
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xfatal-warnings")
 
 cancelable in Global := true
-
-val disablePublishing = Seq[Setting[_]](
-  publishArtifact := false,
-  // The above is enough for Maven repos but it doesn't prevent publishing of ivy.xml files
-  publish := {},
-  publishLocal := {},
-  publishTo := Some(Resolver.file("devnull", file("/dev/null")))
-)
 
 disablePublishing  // in root
 
@@ -30,7 +25,7 @@ def osgiVersionRange(version: String): String =
 def osgiImport(pattern: String, version: String): String =
   pattern + ";version=\"" + osgiVersionRange(version) + "\""
 
-lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(scalaModuleOsgiSettings).settings(
+lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(
   name := "scala-parallel-collections",
   OsgiKeys.exportPackage := Seq(
     s"scala.collection.parallel.*;version=${version.value}",
