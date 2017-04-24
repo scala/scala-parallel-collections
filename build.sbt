@@ -1,6 +1,6 @@
 resolvers in ThisBuild += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
 
-crossScalaVersions in ThisBuild := Seq("2.13.0-pre-f9a019c")  // April 2, 2017
+crossScalaVersions in ThisBuild := Seq("2.13.0-M1")
 
 scalaVersion in ThisBuild       := crossScalaVersions.value.head
 
