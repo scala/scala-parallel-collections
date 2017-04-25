@@ -1,6 +1,6 @@
 import ScalaModulePlugin._
 
-version in ThisBuild := "0.1.2-SNAPSHOT"
+version in ThisBuild := "0.1.3-SNAPSHOT"
 
 scalaVersionsByJvm in ThisBuild := {
   val v213 = "2.13.0-M1"
