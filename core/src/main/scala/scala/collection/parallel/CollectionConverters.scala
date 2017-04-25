@@ -10,7 +10,7 @@ package scala.collection.parallel
 
 import scala.language.implicitConversions
 import scala.{collection => sc}
-import scala.collection.{mutable => scm, immutable => sci, concurrent => scc, generic => scg}
+import scala.collection.{mutable => scm, immutable => sci, concurrent => scc}
 
 import scala.collection._
 

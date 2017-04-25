@@ -15,7 +15,6 @@ import scala.collection.mutable.Builder
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.IterableLike
 import scala.collection.Parallel
-import scala.collection.Parallelizable
 import scala.collection.CustomParallelizable
 import scala.collection.generic._
 import scala.collection.GenIterableLike
