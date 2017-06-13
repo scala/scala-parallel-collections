@@ -21,11 +21,11 @@ is closer to final form.
 
 ## Usage
 
-To depend on scala-parser-combinators in sbt, add this to your `build.sbt`:
+To depend on scala-parallel-collections in sbt, add this to your `build.sbt`:
 
 ```
 libraryDependencies +=
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "0.1.2"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2"
 ```
 
 In your code, adding this import:
@@ -45,7 +45,7 @@ cross-built project, the dependency should take this form:
 libraryDependencies ++=
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, minor)) if minor >= 13 =>
-      Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "0.1.2")
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
     case _ =>
       Seq()
   }
