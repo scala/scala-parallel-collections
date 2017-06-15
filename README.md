@@ -42,13 +42,14 @@ This module is published only for the Scala 2.13.x series, so in a
 cross-built project, the dependency should take this form:
 
 ```scala
-libraryDependencies ++=
+libraryDependencies ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, minor)) if minor >= 13 =>
       Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
     case _ =>
       Seq()
   }
+}
 ```
 
 This way of testing `scalaVersion` is robust across varying Scala
