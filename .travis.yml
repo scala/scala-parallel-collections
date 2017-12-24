@@ -13,4 +13,6 @@ env:
 
 script: admin/build.sh
 
-jdk: oraclejdk8
+jdk:
+- oraclejdk8
+- oraclejdk9
