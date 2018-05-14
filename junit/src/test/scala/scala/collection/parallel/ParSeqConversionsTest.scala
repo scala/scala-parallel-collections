@@ -10,7 +10,7 @@ import org.junit.Assert._
 class ParSeqConversionsTest {
 
   @Test
-  def testConversions {
+  def testConversions: Unit = {
     // seq conversions
     assertSeq(scala.collection.parallel.mutable.ParArray(1, 2, 3))
     assertSeq(scala.collection.parallel.mutable.ParHashMap(1 -> 2, 2 -> 3))
@@ -60,7 +60,7 @@ class ParSeqConversionsTest {
 
   def assertPar[T, P](xs: scala.collection.GenIterable[T]) = assertTrue(xs == xs.par)
 
-  def assertToPar[K, V](xs: scala.collection.GenTraversable[(K, V)]) {
+  def assertToPar[K, V](xs: scala.collection.GenTraversable[(K, V)]): Unit = {
     xs match {
       case _: Seq[_] =>
         assertTrue(xs.toIterable.par == xs)
@@ -78,7 +78,7 @@ class ParSeqConversionsTest {
     assertTrue(xs.par.toMap == xs.toMap)
   }
 
-  def assertToParWoMap[T](xs: scala.collection.GenSeq[T]) {
+  def assertToParWoMap[T](xs: scala.collection.GenSeq[T]): Unit = {
     assertTrue(xs.toIterable.par == xs.toIterable)
     assertTrue(xs.par.toIterable == xs.toIterable)
 

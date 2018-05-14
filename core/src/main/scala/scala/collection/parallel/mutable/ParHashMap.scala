@@ -103,14 +103,14 @@ self =>
     new Entry(key, value.asInstanceOf[V])
   }
 
-  private def writeObject(out: java.io.ObjectOutputStream) {
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     serializeTo(out, { entry =>
       out.writeObject(entry.key)
       out.writeObject(entry.value)
     })
   }
 
-  private def readObject(in: java.io.ObjectInputStream) {
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
     init(in, createNewEntry(in.readObject().asInstanceOf[K], in.readObject()))
   }
 
@@ -190,7 +190,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], Defau
     // TODO parallelize by keeping separate sizemaps and merging them
     object table extends HashTable[K, DefaultEntry[K, V]] {
       type Entry = DefaultEntry[K, V]
-      def insertEntry(e: Entry) { super.findOrAddEntry(e.key, e) }
+      def insertEntry(e: Entry): Unit = { super.findOrAddEntry(e.key, e) }
       def createNewEntry[E](key: K, entry: E): Entry = entry.asInstanceOf[Entry]
       sizeMapInit(table.length)
     }
@@ -285,7 +285,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], Defau
       val fp = howmany / 2
       List(new FillBlocks(buckets, table, offset, fp), new FillBlocks(buckets, table, offset + fp, howmany - fp))
     }
-    override def merge(that: FillBlocks) {
+    override def merge(that: FillBlocks): Unit = {
       this.result += that.result
     }
     def shouldSplitFurther = howmany > scala.collection.parallel.thresholdFromSize(ParHashMapCombiner.numblocks, combinerTaskSupport.parallelismLevel)

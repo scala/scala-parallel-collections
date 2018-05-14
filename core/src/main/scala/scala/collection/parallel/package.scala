@@ -193,9 +193,9 @@ package parallel {
       sz = 0
     }
 
-    def beforeCombine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]) {}
+    def beforeCombine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]): Unit = {}
 
-    def afterCombine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]) {}
+    def afterCombine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]): Unit = {}
 
     def combine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]): Combiner[N, NewTo] = {
       if (this eq other) this

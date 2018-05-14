@@ -8,7 +8,7 @@ trait Spec {
   implicit def reflectively  = scala.language.reflectiveCalls
 
   implicit def str2ops(s: String) = new {
-    def in[U](body: =>U) {
+    def in[U](body: =>U): Unit = {
       // just execute body
       body
     }

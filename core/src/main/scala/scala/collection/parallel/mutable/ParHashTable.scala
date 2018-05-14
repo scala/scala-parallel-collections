@@ -45,7 +45,7 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]] extends scala.collec
       entry2item(res)
     }
 
-    def scan() {
+    def scan(): Unit = {
       while (es == null && idx < until) {
         es = itertable(idx).asInstanceOf[Entry]
         idx = idx + 1

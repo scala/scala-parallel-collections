@@ -54,7 +54,7 @@ class MiscTest {
 
   @Test
   def si4895: Unit = {
-    def checkPar(sz: Int) {
+    def checkPar(sz: Int): Unit = {
       import collection._
       val hs = mutable.HashSet[Int]() ++ (1 to sz)
       assertEquals((2 to (sz + 1)), hs.par.map(_ + 1).seq.toSeq.sorted)
@@ -89,7 +89,7 @@ class MiscTest {
     def seqarr(i: Int) = Array[Int]() ++ (0 until i)
     def pararr(i: Int) = seqarr(i).par
 
-    def check[T](i: Int, f: Int => T) {
+    def check[T](i: Int, f: Int => T): Unit = {
       val gseq = seqarr(i).toSeq.groupBy(f)
       val gpar = pararr(i).groupBy(f)
       assertEquals(gseq, gpar)

@@ -21,7 +21,7 @@ class SerializationTest {
       new java.io.ObjectInputStream(new java.io.ByteArrayInputStream(buffer))
     in.readObject().asInstanceOf[A]
   }
-  def check[A, B](x: A, y: B) {
+  def check[A, B](x: A, y: B): Unit = {
     assertEquals(x, y)
     assertEquals(y, x)
   }

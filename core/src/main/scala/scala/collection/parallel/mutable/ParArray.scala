@@ -302,7 +302,7 @@ self =>
       this
     }
 
-    override def copyToArray[U >: T](array: Array[U], from: Int, len: Int) {
+    override def copyToArray[U >: T](array: Array[U], from: Int, len: Int): Unit = {
       val totallen = (self.length - i) min len min (array.length - from)
       Array.copy(arr, i, array, from, totallen)
       i += totallen
@@ -384,7 +384,7 @@ self =>
       cb
     }
 
-    private def map2combiner_quick[S, That](f: T => S, a: Array[Any], cb: Builder[S, That], ntil: Int, from: Int) {
+    private def map2combiner_quick[S, That](f: T => S, a: Array[Any], cb: Builder[S, That], ntil: Int, from: Int): Unit = {
       var j = from
       while (j < ntil) {
         cb += f(a(j).asInstanceOf[T])
@@ -399,7 +399,7 @@ self =>
       cb
     }
 
-    private def collect2combiner_quick[S, That](pf: PartialFunction[T, S], a: Array[Any], cb: Builder[S, That], ntil: Int, from: Int) {
+    private def collect2combiner_quick[S, That](pf: PartialFunction[T, S], a: Array[Any], cb: Builder[S, That], ntil: Int, from: Int): Unit = {
       var j = from
       val runWith = pf.runWith(b => cb += b)
       while (j < ntil) {
@@ -426,7 +426,7 @@ self =>
       cb
     }
 
-    private def filter2combiner_quick[U >: T, This](pred: T => Boolean, cb: Builder[U, This], a: Array[Any], ntil: Int, from: Int) {
+    private def filter2combiner_quick[U >: T, This](pred: T => Boolean, cb: Builder[U, This], a: Array[Any], ntil: Int, from: Int): Unit = {
       var j = i
       while(j < ntil) {
         val curr = a(j).asInstanceOf[T]
@@ -441,7 +441,7 @@ self =>
       cb
     }
 
-    private def filterNot2combiner_quick[U >: T, This](pred: T => Boolean, cb: Builder[U, This], a: Array[Any], ntil: Int, from: Int) {
+    private def filterNot2combiner_quick[U >: T, This](pred: T => Boolean, cb: Builder[U, This], a: Array[Any], ntil: Int, from: Int): Unit = {
       var j = i
       while(j < ntil) {
         val curr = a(j).asInstanceOf[T]
@@ -474,7 +474,7 @@ self =>
       cb
     }
 
-    private def copy2builder_quick[U >: T, Coll](b: Builder[U, Coll], a: Array[Any], ntil: Int, from: Int) {
+    private def copy2builder_quick[U >: T, Coll](b: Builder[U, Coll], a: Array[Any], ntil: Int, from: Int): Unit = {
       var j = from
       while (j < ntil) {
         b += a(j).asInstanceOf[T]
@@ -488,7 +488,7 @@ self =>
       (btrue, bfalse)
     }
 
-    private def partition2combiners_quick[U >: T, This](p: T => Boolean, btrue: Builder[U, This], bfalse: Builder[U, This], a: Array[Any], ntil: Int, from: Int) {
+    private def partition2combiners_quick[U >: T, This](p: T => Boolean, btrue: Builder[U, This], bfalse: Builder[U, This], a: Array[Any], ntil: Int, from: Int): Unit = {
       var j = from
       while (j < ntil) {
         val curr = a(j).asInstanceOf[T]
@@ -542,7 +542,7 @@ self =>
       cb
     }
 
-    private def reverse2combiner_quick(targ: Array[Any], a: Array[Any], targfrom: Int, srcfrom: Int, srcuntil: Int) {
+    private def reverse2combiner_quick(targ: Array[Any], a: Array[Any], targfrom: Int, srcfrom: Int, srcuntil: Int): Unit = {
       var j = srcfrom
       var k = targfrom + srcuntil - srcfrom - 1
       while (j < srcuntil) {
@@ -552,12 +552,12 @@ self =>
       }
     }
 
-    override def scanToArray[U >: T, A >: U](z: U, op: (U, U) => U, destarr: Array[A], from: Int) {
+    override def scanToArray[U >: T, A >: U](z: U, op: (U, U) => U, destarr: Array[A], from: Int): Unit = {
       scanToArray_quick[U](array, destarr.asInstanceOf[Array[Any]], op, z, i, until, from)
       i = until
     }
 
-    protected def scanToArray_quick[U](srcarr: Array[Any], destarr: Array[Any], op: (U, U) => U, z: U, srcfrom: Int, srcntil: Int, destfrom: Int) {
+    protected def scanToArray_quick[U](srcarr: Array[Any], destarr: Array[Any], op: (U, U) => U, z: U, srcfrom: Int, srcntil: Int, destfrom: Int): Unit = {
       var last = z
       var j = srcfrom
       var k = destfrom
@@ -619,7 +619,7 @@ self =>
       case ScanLeaf(_, _, from, len, None, _) =>
         scanLeaf(array, targetarr, from, len, z)
     }
-    private def scanLeaf(srcarr: Array[Any], targetarr: Array[Any], from: Int, len: Int, startval: U) {
+    private def scanLeaf(srcarr: Array[Any], targetarr: Array[Any], from: Int, len: Int, startval: U): Unit = {
       var i = from
       val until = from + len
       var curr = startval
@@ -665,11 +665,11 @@ self =>
 
   /* serialization */
 
-  private def writeObject(out: java.io.ObjectOutputStream) {
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     out.defaultWriteObject
   }
 
-  private def readObject(in: java.io.ObjectInputStream) {
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
     in.defaultReadObject
 
     // get raw array from arrayseq

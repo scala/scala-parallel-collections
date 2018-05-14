@@ -85,7 +85,7 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
     r
   }
 
-  override def copyToArray[U >: T](array: Array[U], from: Int, len: Int) {
+  override def copyToArray[U >: T](array: Array[U], from: Int, len: Int): Unit = {
     var i = from
     val until = from + len
     while (i < until && hasNext) {
@@ -229,7 +229,7 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
     (before, after)
   }
 
-  def scanToArray[U >: T, A >: U](z: U, op: (U, U) => U, array: Array[A], from: Int) {
+  def scanToArray[U >: T, A >: U](z: U, op: (U, U) => U, array: Array[A], from: Int): Unit = {
     var last = z
     var i = from
     while (hasNext) {

@@ -35,7 +35,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     true
   }
 
-  def printDataStructureDebugInfo(cf: AnyRef) {
+  def printDataStructureDebugInfo(cf: AnyRef): Unit = {
     // can be overridden in subclasses
   }
 
@@ -77,14 +77,14 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     case _ => t1 == t2 && t2 == t1
   }
 
-  def printDebugInfo(coll: ParIterableLike[_, _, _]) {
+  def printDebugInfo(coll: ParIterableLike[_, _, _]): Unit = {
     println("Collection debug info: ")
     coll.printDebugBuffer
     println("Task debug info: ")
     println(coll.tasksupport.debugMessages.mkString("\n"))
   }
 
-  def printComparison(t: Traversable[_], coll: ParIterable[_], tf: Traversable[_], cf: ParIterable[_], ind: Int) {
+  def printComparison(t: Traversable[_], coll: ParIterable[_], tf: Traversable[_], cf: ParIterable[_], ind: Int): Unit = {
     printDebugInfo(coll)
     println("Operator: " + ind)
     println("sz: " + t.size)

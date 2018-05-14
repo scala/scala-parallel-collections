@@ -12,7 +12,7 @@ package scala {
   abstract class ParCollProperties extends Properties("Parallel collections") {
 
     // Included tests have to be abstract classes, otherwise sbt tries to instantiate them on its own and fails
-    def includeAllTestsWith(support: TaskSupport) {
+    def includeAllTestsWith(support: TaskSupport): Unit = {
       // parallel arrays with default task support
       include(new mutable.IntParallelArrayCheck(support) {})
     

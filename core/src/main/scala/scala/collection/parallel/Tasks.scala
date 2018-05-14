@@ -35,14 +35,14 @@ trait Task[R, +Tp] {
   private[parallel] def split: Seq[Task[R, Tp]]
 
   /** Read of results of `that` task and merge them into results of this one. */
-  private[parallel] def merge(that: Tp @uncheckedVariance) {}
+  private[parallel] def merge(that: Tp @uncheckedVariance): Unit = {}
 
   // exception handling mechanism
   @volatile var throwable: Throwable = null
   def forwardThrowable() = if (throwable != null) throw throwable
 
   // tries to do the leaf computation, storing the possible exception
-  private[parallel] def tryLeaf(lastres: Option[R]) {
+  private[parallel] def tryLeaf(lastres: Option[R]): Unit = {
     try {
       tryBreakable {
         leaf(lastres)
@@ -58,13 +58,13 @@ trait Task[R, +Tp] {
     }
   }
 
-  private[parallel] def tryMerge(t: Tp @uncheckedVariance) {
+  private[parallel] def tryMerge(t: Tp @uncheckedVariance): Unit = {
     val that = t.asInstanceOf[Task[R, Tp]]
     if (this.throwable == null && that.throwable == null) merge(t)
     mergeThrowables(that)
   }
 
-  private[parallel] def mergeThrowables(that: Task[_, _]) {
+  private[parallel] def mergeThrowables(that: Task[_, _]): Unit = {
      if (this.throwable != null && that.throwable != null)
        this.throwable.addSuppressed(that.throwable)
      else if (this.throwable == null && that.throwable != null)
@@ -72,7 +72,7 @@ trait Task[R, +Tp] {
   }
 
   // override in concrete task implementations to signal abort to other tasks
-  private[parallel] def signalAbort() {}
+  private[parallel] def signalAbort(): Unit = {}
 }
 
 
@@ -109,7 +109,7 @@ trait Tasks {
      *
      *  This method may be overridden.
      */
-    def release() {}
+    def release(): Unit = {}
   }
 
   /* task control */
