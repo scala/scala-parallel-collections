@@ -81,11 +81,11 @@ extends ParSet[T]
     def newIterator(start: Int, until: Int, total: Int) = new ParHashSetIterator(start, until, total)
   }
 
-  private def writeObject(s: java.io.ObjectOutputStream) {
+  private def writeObject(s: java.io.ObjectOutputStream): Unit = {
     serializeTo(s)
   }
 
-  private def readObject(in: java.io.ObjectInputStream) {
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
     init(in, x => ())
   }
 
@@ -238,7 +238,7 @@ with scala.collection.mutable.FlatHashTable.HashUtils[T] {
   extends Task[(Int, UnrolledBuffer[AnyRef]), FillBlocks] {
     var result = (Int.MinValue, new UnrolledBuffer[AnyRef])
 
-    def leaf(prev: Option[(Int, UnrolledBuffer[AnyRef])]) {
+    def leaf(prev: Option[(Int, UnrolledBuffer[AnyRef])]): Unit = {
       var i = offset
       var totalinserts = 0
       var leftover = new UnrolledBuffer[AnyRef]()
@@ -301,7 +301,7 @@ with scala.collection.mutable.FlatHashTable.HashUtils[T] {
       val fp = howmany / 2
       List(new FillBlocks(buckets, table, offset, fp), new FillBlocks(buckets, table, offset + fp, howmany - fp))
     }
-    override def merge(that: FillBlocks) {
+    override def merge(that: FillBlocks): Unit = {
       // take the leftovers from the left task, store them into the block of the right task
       val atPos = blockStart(that.offset)
       val beforePos = blockStart(that.offset + that.howmany)

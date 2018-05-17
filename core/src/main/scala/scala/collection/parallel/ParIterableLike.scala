@@ -166,7 +166,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
   @volatile
   private var _tasksupport = defaultTaskSupport
 
-  protected def initTaskSupport() {
+  protected def initTaskSupport(): Unit = {
     _tasksupport = defaultTaskSupport
   }
 
@@ -331,7 +331,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
 
   protected implicit def builder2ops[Elem, To](cb: Builder[Elem, To]) = new BuilderOps[Elem, To] {
     def ifIs[Cmb](isbody: Cmb => Unit) = new Otherwise[Cmb] {
-      def otherwise(notbody: => Unit)(implicit t: ClassTag[Cmb]) {
+      def otherwise(notbody: => Unit)(implicit t: ClassTag[Cmb]): Unit = {
         if (cb.getClass == t.runtimeClass) isbody(cb.asInstanceOf[Cmb]) else notbody
       }
     }
@@ -914,11 +914,11 @@ self: ParIterableLike[T, Repr, Sequential] =>
   extends NonDivisibleTask[R, Composite[FR, SR, R, First, Second]] {
     def combineResults(fr: FR, sr: SR): R
     @volatile var result: R = null.asInstanceOf[R]
-    private[parallel] override def signalAbort() {
+    private[parallel] override def signalAbort(): Unit = {
       ft.signalAbort()
       st.signalAbort()
     }
-    protected def mergeSubtasks() {
+    protected def mergeSubtasks(): Unit = {
       ft mergeThrowables st
       if (throwable eq null) result = combineResults(ft.result, st.result)
     }
@@ -956,7 +956,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
       val initialResult = tasksupport.executeAndWaitResult(inner)
       result = map(initialResult)
     }
-    private[parallel] override def signalAbort() {
+    private[parallel] override def signalAbort(): Unit = {
       inner.signalAbort()
     }
     override def requiresStrictSplitters = inner.requiresStrictSplitters
@@ -1334,7 +1334,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
   protected[this] class ToParCollection[U >: T, That](cbf: CombinerFactory[U, That], protected[this] val pit: IterableSplitter[T])
   extends Transformer[Combiner[U, That], ToParCollection[U, That]] {
     @volatile var result: Result = null
-    def leaf(prev: Option[Combiner[U, That]]) {
+    def leaf(prev: Option[Combiner[U, That]]): Unit = {
       result = cbf()
       while (pit.hasNext) result += pit.next
     }
@@ -1345,7 +1345,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
   protected[this] class ToParMap[K, V, That](cbf: CombinerFactory[(K, V), That], protected[this] val pit: IterableSplitter[T])(implicit ev: T <:< (K, V))
   extends Transformer[Combiner[(K, V), That], ToParMap[K, V, That]] {
     @volatile var result: Result = null
-    def leaf(prev: Option[Combiner[(K, V), That]]) {
+    def leaf(prev: Option[Combiner[(K, V), That]]): Unit = {
       result = cbf()
       while (pit.hasNext) result += pit.next
     }
@@ -1394,7 +1394,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
   (tree: ScanTree[U], z: U, op: (U, U) => U, cbf: CombinerFactory[U, That])
   extends StrictSplitterCheckTask[Combiner[U, That], FromScanTree[U, That]] {
     @volatile var result: Combiner[U, That] = null
-    def leaf(prev: Option[Combiner[U, That]]) {
+    def leaf(prev: Option[Combiner[U, That]]): Unit = {
       val cb = reuse(prev, cbf())
       iterate(tree, cb)
       result = cb
@@ -1443,11 +1443,11 @@ self: ParIterableLike[T, Repr, Sequential] =>
     val rightmost = right.rightmost
 
     def beginsAt = left.beginsAt
-    def pushdown(v: U) {
+    def pushdown(v: U): Unit = {
       left.pushdown(v)
       right.pushdown(v)
     }
-    def print(depth: Int) {
+    def print(depth: Int): Unit = {
       println((" " * depth) + "ScanNode, begins at " + beginsAt)
       left.print(depth + 1)
       right.print(depth + 1)

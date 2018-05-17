@@ -58,7 +58,7 @@ trait ResizableParArrayCombiner[T] extends LazyCombiner[T, ParArray[T], ExposedA
         ind = 0
       }
     }
-    private def copyChunk(buffarr: Array[AnyRef], buffStart: Int, ra: Array[Any], arrayStart: Int, until: Int) {
+    private def copyChunk(buffarr: Array[AnyRef], buffStart: Int, ra: Array[Any], arrayStart: Int, until: Int): Unit = {
       Array.copy(buffarr, buffStart, ra, arrayStart, until - buffStart)
     }
     private def findStart(pos: Int) = {

@@ -118,7 +118,7 @@ self =>
 
   /* debug */
 
-  private[parallel] def printDebugInfo() {
+  private[parallel] def printDebugInfo(): Unit = {
     println("Parallel hash trie")
     println("Top level inner trie type: " + trie.getClass)
     trie match {

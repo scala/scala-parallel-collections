@@ -33,7 +33,7 @@ trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
 
     if (hasNext) scan()
 
-    private[this] def scan() {
+    private[this] def scan(): Unit = {
       while (itertable(idx) eq null) {
         idx += 1
       }

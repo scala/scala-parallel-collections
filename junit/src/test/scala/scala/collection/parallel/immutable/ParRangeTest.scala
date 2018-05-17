@@ -8,7 +8,7 @@ import org.junit.Test
 class ParRangeTest {
 
   @Test
-  def buildParRangeString {
+  def buildParRangeString: Unit = {
     assert(ParRange(1, 5, 1, true).toString == "ParRange 1 to 5")
   }
 

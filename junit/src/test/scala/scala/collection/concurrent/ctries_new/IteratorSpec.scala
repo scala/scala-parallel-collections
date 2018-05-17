@@ -7,7 +7,7 @@ import org.junit.Test
 class IteratorSpec extends Spec {
 
   @Test
-  def test() {
+  def test(): Unit = {
     "work for an empty trie" in {
       val ct = new TrieMap
       val it = ct.iterator
@@ -16,7 +16,7 @@ class IteratorSpec extends Spec {
       evaluating { it.next() }.shouldProduce [NoSuchElementException]
     }
 
-    def nonEmptyIteratorCheck(sz: Int) {
+    def nonEmptyIteratorCheck(sz: Int): Unit = {
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct.put(new Wrap(i), i)
 
@@ -81,7 +81,7 @@ class IteratorSpec extends Spec {
       nonEmptyIteratorCheck(500000)
     }
 
-    def nonEmptyCollideCheck(sz: Int) {
+    def nonEmptyCollideCheck(sz: Int): Unit = {
       val ct = new TrieMap[DumbHash, Int]
       for (i <- 0 until sz) ct.put(new DumbHash(i), i)
 
@@ -126,7 +126,7 @@ class IteratorSpec extends Spec {
       nonEmptyCollideCheck(5000)
     }
 
-    def assertEqual(a: Map[Wrap, Int], b: Map[Wrap, Int]) {
+    def assertEqual(a: Map[Wrap, Int], b: Map[Wrap, Int]): Unit = {
       if (a != b) {
         println(a.size + " vs " + b.size)
       }
@@ -142,7 +142,7 @@ class IteratorSpec extends Spec {
       for (i <- 0 until sz) ct.put(new Wrap(i), i)
 
       class Modifier extends Thread {
-        override def run() {
+        override def run(): Unit = {
           for (i <- 0 until sz) ct.putIfAbsent(new Wrap(i), i) match {
             case Some(_) => ct.remove(new Wrap(i))
             case None =>
@@ -150,9 +150,9 @@ class IteratorSpec extends Spec {
         }
       }
 
-      def consistentIteration(ct: TrieMap[Wrap, Int], checks: Int) {
+      def consistentIteration(ct: TrieMap[Wrap, Int], checks: Int): Unit = {
         class Iter extends Thread {
-          override def run() {
+          override def run(): Unit = {
             val snap = ct.readOnlySnapshot()
             val initial = mutable.Map[Wrap, Int]()
             for (kv <- snap) initial += kv
@@ -183,7 +183,7 @@ class IteratorSpec extends Spec {
       for (i <- 0 until sz) ct.put(new Wrap(i), i)
 
       class Remover extends Thread {
-        override def run() {
+        override def run(): Unit = {
           for (i <- 0 until sz) {
             assert(ct.remove(new Wrap(i)) == Some(i))
             for (i <- 0 until removerslowdown) ct.get(new Wrap(i)) // slow down, mate
@@ -193,7 +193,7 @@ class IteratorSpec extends Spec {
 
       def consistentIteration(it: Iterator[(Wrap, Int)]) = {
         class Iter extends Thread {
-          override def run() {
+          override def run(): Unit = {
             val elems = it.toBuffer
             if (elems.nonEmpty) {
               val minelem = elems.minBy((x: (Wrap, Int)) => x._1.i)._1.i
@@ -222,7 +222,7 @@ class IteratorSpec extends Spec {
       val ct = new TrieMap[Wrap, Int]
 
       class Inserter extends Thread {
-        override def run() {
+        override def run(): Unit = {
           for (i <- 0 until sz) {
             assert(ct.put(new Wrap(i), i) == None)
             for (i <- 0 until inserterslowdown) ct.get(new Wrap(i)) // slow down, mate
@@ -232,7 +232,7 @@ class IteratorSpec extends Spec {
 
       def consistentIteration(it: Iterator[(Wrap, Int)]) = {
         class Iter extends Thread {
-          override def run() {
+          override def run(): Unit = {
             val elems = it.toSeq
             if (elems.nonEmpty) {
               val maxelem = elems.maxBy((x: (Wrap, Int)) => x._1.i)._1.i
