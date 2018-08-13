@@ -24,16 +24,15 @@ import scala.collection.parallel.Combiner
  *  @define coll mutable parallel set
  */
 trait ParSet[T]
-extends scala.collection/*.immutable*/.GenSet[T]
-   with GenericParTemplate[T, ParSet]
+extends GenericParTemplate[T, ParSet]
    with parallel.ParSet[T]
    with ParIterable[T]
-   with ParSetLike[T, ParSet[T], scala.collection.immutable.Set[T]]
+   with ParSetLike[T, ParSet, ParSet[T], scala.collection.immutable.Set[T]]
 {
 self =>
   override def empty: ParSet[T] = ParHashSet[T]()
 
-  override def companion: GenericCompanion[ParSet] with GenericParCompanion[ParSet] = ParSet
+  override def companion: GenericParCompanion[ParSet] = ParSet
 
   override def stringPrefix = "ParSet"
 
@@ -48,5 +47,5 @@ self =>
 object ParSet extends ParSetFactory[ParSet] {
   def newCombiner[T]: Combiner[T, ParSet[T]] = HashSetCombiner[T]
 
-  implicit def canBuildFrom[T]: CanCombineFrom[Coll, T, ParSet[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[T]: CanCombineFrom[ParSet[_], T, ParSet[T]] = new GenericCanCombineFrom[T]
 }

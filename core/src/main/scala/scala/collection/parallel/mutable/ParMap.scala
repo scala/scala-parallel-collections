@@ -28,11 +28,10 @@ import scala.collection.parallel.Combiner
  *  @since 2.9
  */
 trait ParMap[K, V]
-extends GenMap[K, V]
-   with parallel.ParMap[K, V]
+extends parallel.ParMap[K, V]
    with ParIterable[(K, V)]
    with GenericParMapTemplate[K, V, ParMap]
-   with ParMapLike[K, V, ParMap[K, V], mutable.Map[K, V]]
+   with ParMapLike[K, V, ParMap, ParMap[K, V], mutable.Map[K, V]]
 {
 
   protected[this] override def newCombiner: Combiner[(K, V), ParMap[K, V]] = ParMap.newCombiner[K, V]
@@ -42,8 +41,6 @@ extends GenMap[K, V]
   override def empty: ParMap[K, V] = new ParHashMap[K, V]
 
   def seq: scala.collection.mutable.Map[K, V]
-
-  override def updated [U >: V](key: K, value: U): ParMap[K, U] = this + ((key, value))
 
   /** The same map with a given default function.
    *  Note: `get`, `contains`, `iterator`, `keys`, etc are not affected by `withDefault`.
@@ -74,8 +71,9 @@ object ParMap extends ParMapFactory[ParMap] {
 
   class WithDefault[K, V](underlying: ParMap[K, V], d: K => V)
   extends scala.collection.parallel.ParMap.WithDefault(underlying, d) with ParMap[K, V] {
-    override def += (kv: (K, V)) = {underlying += kv; this}
-    def -= (key: K) = {underlying -= key; this}
+    def knownSize = underlying.knownSize
+    def addOne(kv: (K, V)) = {underlying += kv; this}
+    def subtractOne(key: K) = {underlying -= key; this}
     override def empty = new WithDefault(underlying.empty, d)
     override def updated[U >: V](key: K, value: U): WithDefault[K, U] = new WithDefault[K, U](underlying.updated[U](key, value), d)
     override def + [U >: V](kv: (K, U)): WithDefault[K, U] = updated(kv._1, kv._2)

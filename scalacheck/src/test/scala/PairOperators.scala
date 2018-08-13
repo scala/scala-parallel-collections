@@ -43,8 +43,8 @@ trait PairOperators[K, V] extends Operators[(K, V)] {
 
   def flatMapFunctions = for {
     (kfm, vfm) <- koperators.flatMapFunctions zip voperators.flatMapFunctions
-  } yield new Function1[(K, V), Traversable[(K, V)]] {
-    def apply(kv: (K, V)) = kfm(kv._1).toIterable zip vfm(kv._2).toIterable
+  } yield new Function1[(K, V), Iterable[(K, V)]] {
+    def apply(kv: (K, V)) = kfm(kv._1) zip vfm(kv._2)
   }
 
   def filterPredicates = zipPredicates(koperators.filterPredicates, voperators.filterPredicates)
@@ -65,9 +65,9 @@ trait PairOperators[K, V] extends Operators[(K, V)] {
     def apply(kv1: (K, V), kv2: (K, V)) = (kop(kv1._1, kv2._1), vop(kv1._2, kv2._2))
   })
 
-  def addAllTraversables = for {
-    (kt, vt) <- koperators.addAllTraversables zip voperators.addAllTraversables
-  } yield kt.toIterable zip vt.toIterable
+  def addAllIterables = for {
+    (kt, vt) <- koperators.addAllIterables zip voperators.addAllIterables
+  } yield kt zip vt
 
   def newArray(sz: Int) = new Array[(K, V)](sz)
 

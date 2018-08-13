@@ -16,10 +16,8 @@ package collection.parallel.mutable
 
 
 import scala.collection.generic.GenericParTemplate
-import scala.collection.generic.GenericCompanion
 import scala.collection.generic.GenericParCompanion
 import scala.collection.generic.CanCombineFrom
-import scala.collection.generic.CanBuildFrom
 import scala.collection.generic.ParFactory
 import scala.collection.parallel.Combiner
 import scala.collection.parallel.SeqSplitter
@@ -28,7 +26,6 @@ import scala.collection.parallel.Task
 import scala.collection.parallel.CHECK_RATE
 import scala.collection.mutable.ArraySeq
 import scala.collection.mutable.Builder
-import scala.collection.GenTraversableOnce
 import scala.reflect.ClassTag
 
 /** Parallel sequence holding elements in a linear array.
@@ -55,30 +52,39 @@ import scala.reflect.ClassTag
  *
  */
 @SerialVersionUID(1L)
-class ParArray[T] private[mutable] (val arrayseq: ArraySeq[T])
+class ParArray[T] private[mutable] (val arrayseq: ArraySeq[T], sz: Int)
 extends ParSeq[T]
    with GenericParTemplate[T, ParArray]
-   with ParSeqLike[T, ParArray[T], ArraySeq[T]]
+   with ParSeqLike[T, ParArray, ParArray[T], ArraySeq[T]]
    with Serializable
 {
 self =>
 
   @transient private var array: Array[Any] = arrayseq.array.asInstanceOf[Array[Any]]
 
-  override def companion: GenericCompanion[ParArray] with GenericParCompanion[ParArray] = ParArray
+  override def companion: GenericParCompanion[ParArray] = ParArray
 
-  def this(sz: Int) = this {
+  def this(arr: ArraySeq[T]) = this(arr, arr.length)
+
+  def this(sz: Int) = this({
     require(sz >= 0)
-    new ArraySeq[T](sz)
+    ArraySeq.make(new Array[Any](sz)).asInstanceOf[ArraySeq[T]]
+  }, sz)
+
+  def apply(i: Int) = {
+    if (i >= sz) throw new IndexOutOfBoundsException(i.toString)
+    array(i).asInstanceOf[T]
   }
 
-  def apply(i: Int) = array(i).asInstanceOf[T]
+  def update(i: Int, elem: T) = {
+    if (i >= sz) throw new IndexOutOfBoundsException(i.toString)
+    array(i) = elem
+  }
 
-  def update(i: Int, elem: T) = array(i) = elem
+  def length = sz
+  def knownSize = sz
 
-  def length = arrayseq.length
-
-  override def seq = arrayseq
+  def seq = (if (length == arrayseq.length) arrayseq else arrayseq.take(length)): ArraySeq[T]
 
   protected[parallel] def splitter: ParArrayIterator = {
     val pit = new ParArrayIterator
@@ -306,10 +312,11 @@ self =>
       this
     }
 
-    override def copyToArray[U >: T](array: Array[U], from: Int, len: Int): Unit = {
+    override def copyToArray[U >: T](array: Array[U], from: Int, len: Int): Int = {
       val totallen = (self.length - i) min len min (array.length - from)
       Array.copy(arr, i, array, from, totallen)
       i += totallen
+      totallen
     }
 
     override def prefixLength(pred: T => Boolean): Int = {
@@ -366,10 +373,11 @@ self =>
       pos
     }
 
-    override def sameElements(that: Iterator[_]): Boolean = {
+    override def sameElements[B >: T](that: IterableOnce[B]): Boolean = {
       var same = true
-      while (i < until && that.hasNext) {
-        if (arr(i) != that.next) {
+      val thatIt = that.iterator
+      while (i < until && thatIt.hasNext) {
+        if (arr(i) != thatIt.next) {
           i = until
           same = false
         }
@@ -413,12 +421,11 @@ self =>
       }
     }
 
-    override def flatmap2combiner[S, That](f: T => GenTraversableOnce[S], cb: Combiner[S, That]): Combiner[S, That] = {
+    override def flatmap2combiner[S, That](f: T => IterableOnce[S], cb: Combiner[S, That]): Combiner[S, That] = {
       //val cb = pbf(self.repr)
       while (i < until) {
-        val traversable = f(arr(i).asInstanceOf[T])
-        if (traversable.isInstanceOf[Iterable[_]]) cb ++= traversable.asInstanceOf[Iterable[S]].iterator
-        else cb ++= traversable.seq
+        val it = f(arr(i).asInstanceOf[T])
+        cb ++= it
         i += 1
       }
       cb
@@ -577,25 +584,23 @@ self =>
 
   /* operations */
 
-  private def buildsArray[S, That](c: Builder[S, That]) = c.isInstanceOf[ParArrayCombiner[_]]
-
-  override def map[S, That](f: T => S)(implicit bf: CanBuildFrom[ParArray[T], S, That]) = if (buildsArray(bf(repr))) {
+  override def map[S](f: T => S) = {
     // reserve an array
-    val targarrseq = new ArraySeq[S](length)
-    val targetarr = targarrseq.array.asInstanceOf[Array[Any]]
+    val targetarr = new Array[Any](length)
+    val targarrseq = ArraySeq.make(targetarr).asInstanceOf[ArraySeq[S]]
 
     // fill it in parallel
     tasksupport.executeAndWaitResult(new Map[S](f, targetarr, 0, length))
 
     // wrap it into a parallel array
-    (new ParArray[S](targarrseq)).asInstanceOf[That]
-  } else super.map(f)(bf)
+    new ParArray[S](targarrseq)
+  }
 
-  override def scan[U >: T, That](z: U)(op: (U, U) => U)(implicit cbf: CanBuildFrom[ParArray[T], U, That]): That =
-    if (tasksupport.parallelismLevel > 1 && buildsArray(cbf(repr))) {
+  override def scan[U >: T](z: U)(op: (U, U) => U) =
+    if (tasksupport.parallelismLevel > 1) {
       // reserve an array
-      val targarrseq = new ArraySeq[U](length + 1)
-      val targetarr = targarrseq.array.asInstanceOf[Array[Any]]
+      val targetarr = new Array[Any](length + 1)
+      val targarrseq = ArraySeq.make(targetarr).asInstanceOf[ArraySeq[U]]
       targetarr(0) = z
 
       // do a parallel prefix scan
@@ -604,8 +609,8 @@ self =>
       })
 
       // wrap the array into a parallel array
-      (new ParArray[U](targarrseq)).asInstanceOf[That]
-    } else super.scan(z)(op)(cbf)
+      new ParArray[U](targarrseq)
+    } else super.scan(z)(op)
 
   /* tasks */
 
@@ -688,7 +693,7 @@ self =>
  *  @define coll parallel array
  */
 object ParArray extends ParFactory[ParArray] {
-  implicit def canBuildFrom[T]: CanCombineFrom[Coll, T, ParArray[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[T]: CanCombineFrom[ParArray[_], T, ParArray[T]] = new GenericCanCombineFrom[T]
   def newBuilder[T]: Combiner[T, ParArray[T]] = newCombiner
   def newCombiner[T]: Combiner[T, ParArray[T]] = ParArrayCombiner[T]
 
@@ -700,10 +705,8 @@ object ParArray extends ParFactory[ParArray] {
    */
   def handoff[T](arr: Array[T], sz: Int): ParArray[T] = wrapOrRebuild(arr, sz)
 
-  private def wrapOrRebuild[T](arr: AnyRef, sz: Int) = arr match {
-    case arr: Array[AnyRef] => new ParArray[T](new ExposedArraySeq[T](arr, sz))
-    case _ => new ParArray[T](new ExposedArraySeq[T](scala.runtime.ScalaRunTime.toObjectArray(arr), sz))
-  }
+  private def wrapOrRebuild[T](arr: AnyRef, sz: Int) =
+    new ParArray[T](ArraySeq.make(scala.runtime.ScalaRunTime.toObjectArray(arr)).asInstanceOf[ArraySeq[T]], sz)
 
   def createFromCopy[T <: AnyRef : ClassTag](arr: Array[T]): ParArray[T] = {
     val newarr = new Array[T](arr.length)
@@ -711,10 +714,13 @@ object ParArray extends ParFactory[ParArray] {
     handoff(newarr)
   }
 
-  def fromTraversables[T](xss: GenTraversableOnce[T]*) = {
+  @deprecated("fromTraversables has been renamed to fromIterables", "0.1.3")
+  @inline final def fromTraversables[T](xss: IterableOnce[T]*): ParArray[T] = fromIterables(xss: _*)
+
+  def fromIterables[T](xss: IterableOnce[T]*): ParArray[T] = {
     val cb = ParArrayCombiner[T]()
     for (xs <- xss) {
-      cb ++= xs.seq
+      cb ++= xs
     }
     cb.result
   }

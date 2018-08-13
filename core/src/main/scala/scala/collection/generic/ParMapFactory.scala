@@ -17,7 +17,6 @@ package generic
 import scala.collection.parallel.ParMap
 import scala.collection.parallel.ParMapLike
 import scala.collection.parallel.Combiner
-import scala.collection.mutable.Builder
 import scala.language.higherKinds
 
 /** A template class for companion objects of `ParMap` and subclasses thereof.
@@ -31,9 +30,20 @@ import scala.language.higherKinds
  *  @author Aleksandar Prokopec
  *  @since 2.8
  */
-abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] with ParMapLike[X, Y, CC[X, Y], _]]
-extends GenMapFactory[CC]
-   with GenericParMapCompanion[CC] {
+abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] with ParMapLike[X, Y, CC, CC[X, Y], _]]
+extends GenericParMapCompanion[CC] {
+
+  type Coll = MapColl
+
+  /** A collection of type $Coll that contains given key/value bindings.
+    *  @param elems   the key/value pairs that make up the $coll
+    *  @tparam K      the type of the keys
+    *  @tparam V      the type of the associated values
+    *  @return        a new $coll consisting key/value pairs given by `elems`.
+    */
+  def apply[K, V](elems: (K, V)*): CC[K, V] = (newCombiner[K, V] ++= elems).result()
+
+  def empty[K, V]: CC[K, V]
 
   type MapColl = CC[_, _]
 
@@ -41,7 +51,7 @@ extends GenMapFactory[CC]
    *  @tparam K      the type of the keys
    *  @tparam V      the type of the associated values
    */
-  override def newBuilder[K, V]: Builder[(K, V), CC[K, V]] = newCombiner[K, V]
+  def newBuilder[K, V]: mutable.Builder[(K, V), CC[K, V]] = newCombiner[K, V]
 
   /** The default combiner for $Coll objects.
    *  @tparam K     the type of the keys
@@ -55,4 +65,3 @@ extends GenMapFactory[CC]
   }
 
 }
-

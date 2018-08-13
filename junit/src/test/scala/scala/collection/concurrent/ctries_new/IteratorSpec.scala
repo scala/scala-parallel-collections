@@ -128,7 +128,7 @@ class IteratorSpec extends Spec {
 
     def assertEqual(a: Map[Wrap, Int], b: Map[Wrap, Int]): Unit = {
       if (a != b) {
-        println(a.size + " vs " + b.size)
+        println(a.size.toString + " vs " + b.size)
       }
       assert(a == b)
     }

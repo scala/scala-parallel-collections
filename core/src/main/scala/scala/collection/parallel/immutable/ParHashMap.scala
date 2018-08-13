@@ -13,18 +13,16 @@
 package scala
 package collection.parallel.immutable
 
-import scala.collection.parallel.ParMapLike
-import scala.collection.parallel.Combiner
-import scala.collection.parallel.IterableSplitter
+import scala.collection.parallel.{IterableSplitter, Combiner, Task}
 import scala.collection.mutable.UnrolledBuffer.Unrolled
 import scala.collection.mutable.UnrolledBuffer
 import scala.collection.generic.ParMapFactory
 import scala.collection.generic.CanCombineFrom
 import scala.collection.generic.GenericParMapTemplate
 import scala.collection.generic.GenericParMapCompanion
-import scala.collection.immutable.{ HashMap, TrieIterator }
+import scala.collection.immutable.{OldHashMap, TrieIterator}
 import scala.annotation.unchecked.uncheckedVariance
-import scala.collection.parallel.Task
+import scala.collection.Hashing
 
 /** Immutable parallel hash map, based on hash tries.
  *
@@ -43,16 +41,16 @@ import scala.collection.parallel.Task
  *  @define Coll `immutable.ParHashMap`
  *  @define coll immutable parallel hash map
  */
-@SerialVersionUID(1L)
-class ParHashMap[K, +V] private[immutable] (private[this] val trie: HashMap[K, V])
+@SerialVersionUID(3L)
+class ParHashMap[K, +V] private[immutable] (private[this] val trie: OldHashMap[K, V])
 extends ParMap[K, V]
    with GenericParMapTemplate[K, V, ParHashMap]
-   with ParMapLike[K, V, ParHashMap[K, V], HashMap[K, V]]
+   with ParMapLike[K, V, ParHashMap, ParHashMap[K, V], OldHashMap[K, V]]
    with Serializable
 {
 self =>
 
-  def this() = this(HashMap.empty[K, V])
+  def this() = this(OldHashMap.empty[K, V])
 
   override def mapCompanion: GenericParMapCompanion[ParHashMap] = ParHashMap
 
@@ -72,6 +70,8 @@ self =>
 
   override def size = trie.size
 
+  def knownSize = trie.size
+
   protected override def reuse[S, That](oldc: Option[Combiner[S, That]], newc: Combiner[S, That]) = oldc match {
     case Some(old) => old
     case None => newc
@@ -81,7 +81,7 @@ self =>
   extends IterableSplitter[(K, V)] {
     var i = 0
     def dup = triter match {
-      case t: TrieIterator[_] =>
+      case t: TrieIterator[(K, V)] =>
         dupFromIterator(t.dupIterator)
       case _ =>
         val buff = triter.toBuffer
@@ -126,7 +126,7 @@ self =>
     println("Parallel hash trie")
     println("Top level inner trie type: " + trie.getClass)
     trie match {
-      case hm: HashMap.HashMap1[k, v] =>
+      case hm: OldHashMap.OldHashMap1[K, V] =>
         println("single node type")
         println("key stored: " + hm.getKey)
         println("hash of key: " + hm.getHash)
@@ -151,7 +151,7 @@ object ParHashMap extends ParMapFactory[ParHashMap] {
     new CanCombineFromMap[K, V]
   }
 
-  def fromTrie[K, V](t: HashMap[K, V]) = new ParHashMap(t)
+  def fromTrie[K, V](t: OldHashMap[K, V]) = new ParHashMap(t)
 
   var totalcombines = new java.util.concurrent.atomic.AtomicInteger(0)
 }
@@ -160,11 +160,11 @@ private[parallel] abstract class HashMapCombiner[K, V]
 extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V), HashMapCombiner[K, V]](HashMapCombiner.rootsize) {
 //self: EnvironmentPassingCombiner[(K, V), ParHashMap[K, V]] =>
   import HashMapCombiner._
-  val emptyTrie = HashMap.empty[K, V]
+  val emptyTrie = OldHashMap.empty[K, V]
 
-  def +=(elem: (K, V)) = {
+  def addOne(elem: (K, V)) = {
     sz += 1
-    val hc = emptyTrie.computeHash(elem._1)
+    val hc = Hashing.computeHash(elem._1)
     val pos = hc & 0x1f
     if (buckets(pos) eq null) {
       // initialize bucket
@@ -177,7 +177,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
 
   def result = {
     val bucks = buckets.filter(_ != null).map(_.headPtr)
-    val root = new Array[HashMap[K, V]](bucks.length)
+    val root = new Array[OldHashMap[K, V]](bucks.length)
 
     combinerTaskSupport.executeAndWaitResult(new CreateTrie(bucks, root, 0, bucks.length))
 
@@ -192,14 +192,14 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
     if (sz == 0) new ParHashMap[K, V]
     else if (sz == 1) new ParHashMap[K, V](root(0))
     else {
-      val trie = new HashMap.HashTrieMap(bitmap, root, sz)
+      val trie = new OldHashMap.HashTrieMap(bitmap, root, sz)
       new ParHashMap[K, V](trie)
     }
   }
 
   def groupByKey[Repr](cbf: () => Combiner[V, Repr]): ParHashMap[K, Repr] = {
     val bucks = buckets.filter(_ != null).map(_.headPtr)
-    val root = new Array[HashMap[K, AnyRef]](bucks.length)
+    val root = new Array[OldHashMap[K, AnyRef]](bucks.length)
 
     combinerTaskSupport.executeAndWaitResult(new CreateGroupedTrie(cbf, bucks, root, 0, bucks.length))
 
@@ -212,9 +212,9 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
     val sz = root.foldLeft(0)(_ + _.size)
 
     if (sz == 0) new ParHashMap[K, Repr]
-    else if (sz == 1) new ParHashMap[K, Repr](root(0).asInstanceOf[HashMap[K, Repr]])
+    else if (sz == 1) new ParHashMap[K, Repr](root(0).asInstanceOf[OldHashMap[K, Repr]])
     else {
-      val trie = new HashMap.HashTrieMap(bitmap, root.asInstanceOf[Array[HashMap[K, Repr]]], sz)
+      val trie = new OldHashMap.HashTrieMap(bitmap, root.asInstanceOf[Array[OldHashMap[K, Repr]]], sz)
       new ParHashMap[K, Repr](trie)
     }
   }
@@ -226,7 +226,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
 
   /* tasks */
 
-  class CreateTrie(bucks: Array[Unrolled[(K, V)]], root: Array[HashMap[K, V]], offset: Int, howmany: Int)
+  class CreateTrie(bucks: Array[Unrolled[(K, V)]], root: Array[OldHashMap[K, V]], offset: Int, howmany: Int)
   extends Task[Unit, CreateTrie] {
     @volatile var result = ()
     def leaf(prev: Option[Unit]) = {
@@ -238,8 +238,8 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
       }
       result = result
     }
-    private def createTrie(elems: Unrolled[(K, V)]): HashMap[K, V] = {
-      var trie = new HashMap[K, V]
+    private def createTrie(elems: Unrolled[(K, V)]): OldHashMap[K, V] = {
+      var trie = OldHashMap.empty[K, V]
 
       var unrolled = elems
       var i = 0
@@ -248,7 +248,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
         val chunksz = unrolled.size
         while (i < chunksz) {
           val kv = chunkarr(i)
-          val hc = trie.computeHash(kv._1)
+          val hc = Hashing.computeHash(kv._1)
           trie = trie.updated0(kv._1, hc, rootbits, kv._2, kv, null)
           i += 1
         }
@@ -265,20 +265,20 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
     def shouldSplitFurther = howmany > scala.collection.parallel.thresholdFromSize(root.length, combinerTaskSupport.parallelismLevel)
   }
 
-  class CreateGroupedTrie[Repr](cbf: () => Combiner[V, Repr], bucks: Array[Unrolled[(K, V)]], root: Array[HashMap[K, AnyRef]], offset: Int, howmany: Int)
+  class CreateGroupedTrie[Repr](cbf: () => Combiner[V, Repr], bucks: Array[Unrolled[(K, V)]], root: Array[OldHashMap[K, AnyRef]], offset: Int, howmany: Int)
   extends Task[Unit, CreateGroupedTrie[Repr]] {
     @volatile var result = ()
     def leaf(prev: Option[Unit]) = {
       var i = offset
       val until = offset + howmany
       while (i < until) {
-        root(i) = createGroupedTrie(bucks(i)).asInstanceOf[HashMap[K, AnyRef]]
+        root(i) = createGroupedTrie(bucks(i)).asInstanceOf[OldHashMap[K, AnyRef]]
         i += 1
       }
       result = result
     }
-    private def createGroupedTrie(elems: Unrolled[(K, V)]): HashMap[K, Repr] = {
-      var trie = new HashMap[K, Combiner[V, Repr]]
+    private def createGroupedTrie(elems: Unrolled[(K, V)]): OldHashMap[K, Repr] = {
+      var trie = OldHashMap.empty[K, Combiner[V, Repr]]
 
       var unrolled = elems
       var i = 0
@@ -287,7 +287,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
         val chunksz = unrolled.size
         while (i < chunksz) {
           val kv = chunkarr(i)
-          val hc = trie.computeHash(kv._1)
+          val hc = Hashing.computeHash(kv._1)
 
           // check to see if already present
           val cmb: Combiner[V, Repr] = trie.get0(kv._1, hc, rootbits) match {
@@ -304,23 +304,23 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
         unrolled = unrolled.next
       }
 
-      evaluateCombiners(trie).asInstanceOf[HashMap[K, Repr]]
+      evaluateCombiners(trie).asInstanceOf[OldHashMap[K, Repr]]
     }
-    private def evaluateCombiners(trie: HashMap[K, Combiner[V, Repr]]): HashMap[K, Repr] = trie match {
-      case hm1: HashMap.HashMap1[_, _] =>
+    private def evaluateCombiners(trie: OldHashMap[K, Combiner[V, Repr]]): OldHashMap[K, Repr] = trie match {
+      case hm1: OldHashMap.OldHashMap1[_, _] =>
         val evaledvalue = hm1.value.result
-        new HashMap.HashMap1[K, Repr](hm1.key, hm1.hash, evaledvalue, null)
-      case hmc: HashMap.HashMapCollision1[_, _] =>
+        new OldHashMap.OldHashMap1[K, Repr](hm1.key, hm1.hash, evaledvalue, null)
+      case hmc: OldHashMap.OldHashMapCollision1[_, _] =>
         val evaledkvs = hmc.kvs map { p => (p._1, p._2.result) }
-        new HashMap.HashMapCollision1[K, Repr](hmc.hash, evaledkvs)
-      case htm: HashMap.HashTrieMap[k, v] =>
+        new OldHashMap.OldHashMapCollision1[K, Repr](hmc.hash, evaledkvs)
+      case htm: OldHashMap.HashTrieMap[k, v] =>
         var i = 0
         while (i < htm.elems.length) {
-          htm.elems(i) = evaluateCombiners(htm.elems(i)).asInstanceOf[HashMap[k, v]]
+          htm.elems(i) = evaluateCombiners(htm.elems(i)).asInstanceOf[OldHashMap[k, v]]
           i += 1
         }
-        htm.asInstanceOf[HashMap[K, Repr]]
-      case empty => empty.asInstanceOf[HashMap[K, Repr]]
+        htm.asInstanceOf[OldHashMap[K, Repr]]
+      case empty => empty.asInstanceOf[OldHashMap[K, Repr]]
     }
     def split = {
       val fp = howmany / 2

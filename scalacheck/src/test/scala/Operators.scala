@@ -8,7 +8,7 @@ trait Operators[T] {
   def findPredicates: List[T => Boolean]
   def mapFunctions: List[T => T]
   def partialMapFunctions: List[PartialFunction[T, T]]
-  def flatMapFunctions: List[T => Traversable[T]]
+  def flatMapFunctions: List[T => Iterable[T]]
   def filterPredicates: List[T => Boolean]
   def filterNotPredicates: List[T => Boolean]
   def partitionPredicates: List[T => Boolean]
@@ -16,7 +16,7 @@ trait Operators[T] {
   def dropWhilePredicates: List[T => Boolean]
   def spanPredicates: List[T => Boolean]
   def foldArguments: List[(T, (T, T) => T)]
-  def addAllTraversables: List[Traversable[T]]
+  def addAllIterables: List[Iterable[T]]
   def newArray(sz: Int): Array[T]
   def groupByFunctions: List[T => T]
 }

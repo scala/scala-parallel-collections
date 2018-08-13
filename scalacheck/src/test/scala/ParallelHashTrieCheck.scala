@@ -30,7 +30,7 @@ abstract class ParallelHashMapCheck[K, V](tp: String) extends ParallelMapCheck[K
     hm
   }
 
-  def fromTraversable(t: Traversable[(K, V)]) = {
+  def fromIterable(t: Iterable[(K, V)]) = {
     var phm = new ParHashMap[K, V]
     phm.tasksupport = tasksupport
     var i = 0
@@ -76,13 +76,13 @@ abstract class ParallelHashSetCheck[T](tp: String) extends ParallelSetCheck[T]("
   def tasksupport: TaskSupport
 
   def ofSize(vals: Seq[Gen[T]], sz: Int) = {
-    var hm = new immutable.HashSet[T]
+    var hm = immutable.OldHashSet.empty[T]
     val gen = vals(rnd.nextInt(vals.size))
     for (i <- 0 until sz) hm += sample(gen)
     hm
   }
 
-  def fromTraversable(t: Traversable[T]) = {
+  def fromIterable(t: Iterable[T]) = {
     var phs = new ParHashSet[T]
     phs.tasksupport = tasksupport
     var i = 0

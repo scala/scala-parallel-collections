@@ -50,7 +50,7 @@ trait IntOperators extends Operators[Int] {
     (Int.MinValue, math.max(_, _)),
     (Int.MaxValue, math.min(_, _))
   )
-  def addAllTraversables = List(
+  def addAllIterables = List(
     List[Int](),
     List(1),
     List(1, 2),

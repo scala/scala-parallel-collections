@@ -24,7 +24,7 @@ import parallel.Combiner
  */
 trait Parallelizable[+A, +ParRepr <: Parallel] extends Any {
 
-  def seq: TraversableOnce[A]
+  def seq: IterableOnce[A]
 
   /** Returns a parallel implementation of this collection.
    *

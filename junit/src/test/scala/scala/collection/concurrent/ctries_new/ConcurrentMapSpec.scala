@@ -69,7 +69,7 @@ class ConcurrentMapSpec extends Spec {
             var k = Int.MaxValue
             do {
               if (k != Int.MaxValue) repeats += 1
-              k = ct.lookup(new Wrap(j))
+              k = ct.getOrElse(new Wrap(j), 0)
             } while (!ct.replace(new Wrap(j), k, -k))
           }
           //println("Thread %d repeats: %d".format(index, repeats))
@@ -98,7 +98,7 @@ class ConcurrentMapSpec extends Spec {
           for (i <- 0 until sz) {
             val j = (offs + i) % sz
             ct.putIfAbsent(new Wrap(j), j)
-            assert(ct.lookup(new Wrap(j)) == j)
+            assert(ct.getOrElse(new Wrap(j), null) == j)
           }
         }
       }

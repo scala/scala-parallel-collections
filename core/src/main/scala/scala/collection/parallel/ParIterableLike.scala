@@ -14,23 +14,12 @@ package scala
 package collection.parallel
 
 import scala.language.{ higherKinds, implicitConversions }
-
 import scala.collection.mutable.Builder
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.IterableLike
-import scala.collection.Parallel
-import scala.collection.CustomParallelizable
+import scala.collection.{CustomParallelizable, IterableOps, Parallel}
 import scala.collection.generic._
-import scala.collection.GenIterableLike
-import scala.collection.GenIterable
-import scala.collection.GenTraversableOnce
-import scala.collection.GenTraversable
 import immutable.HashMapCombiner
 import scala.reflect.ClassTag
-
-import scala.annotation.unchecked.uncheckedVariance
-
-import scala.collection.parallel.ParallelCollectionImplicits._
 
 
 /** A template trait for parallel collections of type `ParIterable[T]`.
@@ -158,13 +147,17 @@ import scala.collection.parallel.ParallelCollectionImplicits._
  *  @define Coll `ParIterable`
  *  @define coll parallel iterable
  */
-trait ParIterableLike[+T, +Repr <: ParIterable[T], +Sequential <: Iterable[T] with IterableLike[T, Sequential]]
-extends GenIterableLike[T, Repr]
+trait ParIterableLike[+T, +CC[X] <: ParIterable[X], +Repr <: ParIterable[T], +Sequential <: Iterable[T] with IterableOps[T, Iterable, Sequential]]
+extends IterableOnce[T]
    with CustomParallelizable[T, Repr]
    with Parallel
    with HasNewCombiner[T, Repr]
 {
-self: ParIterableLike[T, Repr, Sequential] =>
+self =>
+
+  def size: Int
+  def stringPrefix: String
+  def companion: GenericParCompanion[CC]
 
   @transient
   @volatile
@@ -343,11 +336,6 @@ self: ParIterableLike[T, Repr, Sequential] =>
     def asCombiner = cb.asInstanceOf[Combiner[Elem, To]]
   }
 
-  protected[this] def bf2seq[S, That](bf: CanBuildFrom[Repr, S, That]) = new CanBuildFrom[Sequential, S, That] {
-    def apply(from: Sequential) = bf.apply(newCombiner.fromSequential(from))
-    def apply() = bf.apply()
-  }
-
   protected[this] def sequentially[S, That <: Parallel](b: Sequential => Sequential) = newCombiner.fromSequential(b(seq))
 
   def mkString(start: String, sep: String, end: String): String = seq.mkString(start, sep, end)
@@ -357,8 +345,6 @@ self: ParIterableLike[T, Repr, Sequential] =>
   def mkString: String = seq.mkString("")
 
   override def toString = seq.mkString(stringPrefix + "(", ", ", ")")
-
-  def canEqual(other: Any) = true
 
   /** Reduces the elements of this sequence using the specified associative binary operator.
    *
@@ -500,26 +486,17 @@ self: ParIterableLike[T, Repr, Sequential] =>
     reduce((x, y) => if (cmp.lteq(f(x), f(y))) x else y)
   }
 
-  def map[S, That](f: T => S)(implicit bf: CanBuildFrom[Repr, S, That]): That = if (bf(repr).isCombiner) {
-    tasksupport.executeAndWaitResult(new Map[S, That](f, combinerFactory(() => bf(repr).asCombiner), splitter) mapResult { _.resultWithTaskSupport })
-  } else setTaskSupport(seq.map(f)(bf2seq(bf)), tasksupport)
-  /*bf ifParallel { pbf =>
-    tasksupport.executeAndWaitResult(new Map[S, That](f, pbf, splitter) mapResult { _.result })
-  } otherwise seq.map(f)(bf2seq(bf))*/
+  def map[S](f: T => S): CC[S] = {
+    tasksupport.executeAndWaitResult(new Map[S, CC[S]](f, combinerFactory(() => companion.newCombiner[S]), splitter) mapResult { _.resultWithTaskSupport })
+  }
 
-  def collect[S, That](pf: PartialFunction[T, S])(implicit bf: CanBuildFrom[Repr, S, That]): That = if (bf(repr).isCombiner) {
-    tasksupport.executeAndWaitResult(new Collect[S, That](pf, combinerFactory(() => bf(repr).asCombiner), splitter) mapResult { _.resultWithTaskSupport })
-  } else setTaskSupport(seq.collect(pf)(bf2seq(bf)), tasksupport)
-  /*bf ifParallel { pbf =>
-    tasksupport.executeAndWaitResult(new Collect[S, That](pf, pbf, splitter) mapResult { _.result })
-  } otherwise seq.collect(pf)(bf2seq(bf))*/
+  def collect[S](pf: PartialFunction[T, S]): CC[S] = {
+    tasksupport.executeAndWaitResult(new Collect[S, CC[S]](pf, combinerFactory(() => companion.newCombiner[S]), splitter) mapResult { _.resultWithTaskSupport })
+  }
 
-  def flatMap[S, That](f: T => GenTraversableOnce[S])(implicit bf: CanBuildFrom[Repr, S, That]): That = if (bf(repr).isCombiner) {
-    tasksupport.executeAndWaitResult(new FlatMap[S, That](f, combinerFactory(() => bf(repr).asCombiner), splitter) mapResult { _.resultWithTaskSupport })
-  } else setTaskSupport(seq.flatMap(f)(bf2seq(bf)), tasksupport)
-  /*bf ifParallel { pbf =>
-    tasksupport.executeAndWaitResult(new FlatMap[S, That](f, pbf, splitter) mapResult { _.result })
-  } otherwise seq.flatMap(f)(bf2seq(bf))*/
+  def flatMap[S](f: T => IterableOnce[S]): CC[S] = {
+    tasksupport.executeAndWaitResult(new FlatMap[S, CC[S]](f, combinerFactory(() => companion.newCombiner[S]), splitter) mapResult { _.resultWithTaskSupport })
+  }
 
   /** Tests whether a predicate holds for all elements of this $coll.
    *
@@ -605,12 +582,10 @@ self: ParIterableLike[T, Repr, Sequential] =>
     tasksupport.executeAndWaitResult(new FilterNot(pred, combinerFactory, splitter) mapResult { _.resultWithTaskSupport })
   }
 
-  def ++[U >: T, That](that: GenTraversableOnce[U])(implicit bf: CanBuildFrom[Repr, U, That]): That = {
-    if (that.isParallel && bf.isParallel) {
+  def ++[U >: T](that: IterableOnce[U]): CC[U] = that match {
+    case other: ParIterable[U] =>
       // println("case both are parallel")
-      val other = that.asParIterable
-      val pbf = bf.asParallel
-      val cfactory = combinerFactory(() => pbf(repr))
+      val cfactory = combinerFactory(() => companion.newCombiner[U])
       val copythis = new Copy(cfactory, splitter)
       val copythat = wrap {
         val othtask = new other.Copy(cfactory, other.splitter)
@@ -620,22 +595,15 @@ self: ParIterableLike[T, Repr, Sequential] =>
         _.resultWithTaskSupport
       }
       tasksupport.executeAndWaitResult(task)
-    } else if (bf(repr).isCombiner) {
+    case _ =>
       // println("case parallel builder, `that` not parallel")
-      val copythis = new Copy(combinerFactory(() => bf(repr).asCombiner), splitter)
+      val copythis = new Copy(combinerFactory(() => companion.newCombiner[U]), splitter)
       val copythat = wrap {
-        val cb = bf(repr).asCombiner
-        for (elem <- that.seq) cb += elem
+        val cb = companion.newCombiner[U]
+        cb ++= that
         cb
       }
       tasksupport.executeAndWaitResult((copythis parallel copythat) { _ combine _ } mapResult { _.resultWithTaskSupport })
-    } else {
-      // println("case not a parallel builder")
-      val b = bf(repr)
-      this.splitter.copy2builder[U, That, Builder[U, That]](b)
-      for (elem <- that.seq) b += elem
-      setTaskSupport(b.result(), tasksupport)
-    }
   }
 
   def partition(pred: T => Boolean): (Repr, Repr) = {
@@ -687,7 +655,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
     cb.resultWithTaskSupport
   }
 
-  override def slice(unc_from: Int, unc_until: Int): Repr = {
+  def slice(unc_from: Int, unc_until: Int): Repr = {
     val from = unc_from min size max 0
     val until = unc_until min size max from
     if ((until - from) <= MIN_FOR_COPY) slice_sequential(from, until)
@@ -718,30 +686,21 @@ self: ParIterableLike[T, Repr, Sequential] =>
    *  Note: The neutral element `z` may be applied more than once.
    *
    *  @tparam U         element type of the resulting collection
-   *  @tparam That      type of the resulting collection
    *  @param z          neutral element for the operator `op`
    *  @param op         the associative operator for the scan
-   *  @param bf         $pbfinfo
-   *  @return           a collection containing the prefix scan of the elements in the original collection
-   *
-   *  @usecase def scan(z: T)(op: (T, T) => T): $Coll[T]
-   *    @inheritdoc
-   *
-   *    @return           a new $coll containing the prefix scan of the elements in this $coll
+   *  @return           a new $coll containing the prefix scan of the elements in this $coll
    */
-  def scan[U >: T, That](z: U)(op: (U, U) => U)(implicit bf: CanBuildFrom[Repr, U, That]): That = if (bf(repr).isCombiner) {
-    if (tasksupport.parallelismLevel > 1) {
-      if (size > 0) tasksupport.executeAndWaitResult(new CreateScanTree(0, size, z, op, splitter) mapResult {
-        tree => tasksupport.executeAndWaitResult(new FromScanTree(tree, z, op, combinerFactory(() => bf(repr).asCombiner)) mapResult {
-          cb => cb.resultWithTaskSupport
-        })
-      }) else setTaskSupport((bf(repr) += z).result(), tasksupport)
-    } else setTaskSupport(seq.scan(z)(op)(bf2seq(bf)), tasksupport)
-  } else setTaskSupport(seq.scan(z)(op)(bf2seq(bf)), tasksupport)
+  def scan[U >: T](z: U)(op: (U, U) => U): CC[U] = {
+    if (size > 0) tasksupport.executeAndWaitResult(new CreateScanTree(0, size, z, op, splitter) mapResult {
+      tree => tasksupport.executeAndWaitResult(new FromScanTree(tree, z, op, combinerFactory(() => companion.newCombiner[U])) mapResult {
+        cb => cb.resultWithTaskSupport
+      })
+    }) else setTaskSupport((companion.newCombiner[U] += z).result(), tasksupport)
+  }
 
-  def scanLeft[S, That](z: S)(op: (S, T) => S)(implicit bf: CanBuildFrom[Repr, S, That]) = setTaskSupport(seq.scanLeft(z)(op)(bf2seq(bf)), tasksupport)
+  def scanLeft[S](z: S)(op: (S, T) => S): Iterable[S] = seq.scanLeft(z)(op)
 
-  def scanRight[S, That](z: S)(op: (T, S) => S)(implicit bf: CanBuildFrom[Repr, S, That]) = setTaskSupport(seq.scanRight(z)(op)(bf2seq(bf)), tasksupport)
+  def scanRight[S](z: S)(op: (T, S) => S): Iterable[S] = seq.scanRight(z)(op)
 
   /** Takes the longest prefix of elements that satisfy the predicate.
    *
@@ -815,31 +774,46 @@ self: ParIterableLike[T, Repr, Sequential] =>
     )
   }
 
-  def copyToArray[U >: T](xs: Array[U]) = copyToArray(xs, 0)
+  def copyToArray[U >: T](xs: Array[U]): Unit = copyToArray(xs, 0)
 
-  def copyToArray[U >: T](xs: Array[U], start: Int) = copyToArray(xs, start, xs.length - start)
+  def copyToArray[U >: T](xs: Array[U], start: Int): Unit = copyToArray(xs, start, xs.length - start)
 
-  def copyToArray[U >: T](xs: Array[U], start: Int, len: Int) = if (len > 0) {
+  def copyToArray[U >: T](xs: Array[U], start: Int, len: Int): Unit = if (len > 0) {
     tasksupport.executeAndWaitResult(new CopyToArray(start, len, xs, splitter))
   }
 
-  def sameElements[U >: T](that: GenIterable[U]) = seq.sameElements(that)
+  // FIXME Push down to `ParSeq`?
+  def sameElements[U >: T](that: IterableOnce[U]) = seq.iterator.sameElements(that)
 
-  def zip[U >: T, S, That](that: GenIterable[S])(implicit bf: CanBuildFrom[Repr, (U, S), That]): That = if (bf(repr).isCombiner && that.isParSeq) {
-    val thatseq = that.asParSeq
-    tasksupport.executeAndWaitResult(new Zip(combinerFactory(() => bf(repr).asCombiner), splitter, thatseq.splitter) mapResult { _.resultWithTaskSupport })
-  } else setTaskSupport(seq.zip(that)(bf2seq(bf)), tasksupport)
+  def zip[U >: T, S](that: ParIterable[S]): CC[(U, S)] = {
+    that match {
+      case thatseq: ParSeq[S] =>
+        tasksupport.executeAndWaitResult(new Zip(combinerFactory(() => companion.newCombiner[(U, S)]), splitter, thatseq.splitter) mapResult { _.resultWithTaskSupport })
+      case _ =>
+        (companion.newBuilder[(U, S)] ++= setTaskSupport(seq.zip(that.seq), tasksupport)).result()
+    }
+  }
+  def zip[U >: T, S](that: Iterable[S]): CC[(U, S)] =
+    (companion.newBuilder[(U, S)] ++= setTaskSupport(seq.zip(that), tasksupport)).result()
 
-  def zipWithIndex[U >: T, That](implicit bf: CanBuildFrom[Repr, (U, Int), That]): That = this zip immutable.ParRange(0, size, 1, inclusive = false)
 
-  def zipAll[S, U >: T, That](that: GenIterable[S], thisElem: U, thatElem: S)(implicit bf: CanBuildFrom[Repr, (U, S), That]): That = if (bf(repr).isCombiner && that.isParSeq) {
-    val thatseq = that.asParSeq
+  /** Zips this $coll with its indices.
+    *
+    *  @tparam  U    the type of the first half of the returned pairs (this is always a supertype
+    *                 of the collection's element type `T`).
+    *  @return        A new collection of type $Coll containing pairs consisting of all elements of this
+    *                 $coll paired with their index. Indices start at 0.
+    */
+  def zipWithIndex[U >: T]: CC[(U, Int)] = this zip immutable.ParRange(0, size, 1, inclusive = false)
+
+  def zipAll[S, U >: T](that: ParIterable[S], thisElem: U, thatElem: S): CC[(U, S)] = {
+    val thatseq = that.toSeq
     tasksupport.executeAndWaitResult(
-      new ZipAll(size max thatseq.length, thisElem, thatElem, combinerFactory(() => bf(repr).asCombiner), splitter, thatseq.splitter) mapResult {
+      new ZipAll(size max thatseq.length, thisElem, thatElem, combinerFactory(() => companion.newCombiner[(U, S)]), splitter, thatseq.splitter) mapResult {
         _.resultWithTaskSupport
       }
     )
-  } else setTaskSupport(seq.zipAll(that, thisElem, thatElem)(bf2seq(bf)), tasksupport)
+  }
 
   protected def toParCollection[U >: T, That](cbf: () => Combiner[U, That]): That = {
     tasksupport.executeAndWaitResult(new ToParCollection(combinerFactory(cbf), splitter) mapResult { _.resultWithTaskSupport })
@@ -849,39 +823,37 @@ self: ParIterableLike[T, Repr, Sequential] =>
     tasksupport.executeAndWaitResult(new ToParMap(combinerFactory(cbf), splitter)(ev) mapResult { _.resultWithTaskSupport })
   }
 
-  override def toArray[U >: T: ClassTag]: Array[U] = {
+  def toArray[U >: T: ClassTag]: Array[U] = {
     val arr = new Array[U](size)
     copyToArray(arr)
     arr
   }
 
-  override def toList: List[T] = seq.toList
+  def toList: List[T] = seq.toList
 
-  override def toIndexedSeq: scala.collection.immutable.IndexedSeq[T] = seq.toIndexedSeq
+  def toIndexedSeq: scala.collection.immutable.IndexedSeq[T] = seq.toIndexedSeq
 
-  override def toStream: Stream[T] = seq.toStream
+  @deprecated("Use `to(LazyList)` instead.", "0.1.3")
+  def toStream: Stream[T] = seq.toStream
 
-  override def toIterator: Iterator[T] = splitter
+  def toIterator: Iterator[T] = splitter
 
-  // the methods below are overridden
+  def toBuffer[U >: T]: scala.collection.mutable.Buffer[U] = seq.toBuffer // have additional, parallel buffers?
 
-  override def toBuffer[U >: T]: scala.collection.mutable.Buffer[U] = seq.toBuffer // have additional, parallel buffers?
+  @deprecated("Use `toIterable` instead", "0.1.3")
+  def toTraversable: ParIterable[T] = this.asInstanceOf[ParIterable[T]]
 
-  override def toTraversable: GenTraversable[T] = this.asInstanceOf[GenTraversable[T]]
+  def toIterable: ParIterable[T] = this.asInstanceOf[ParIterable[T]]
 
-  override def toIterable: ParIterable[T] = this.asInstanceOf[ParIterable[T]]
+  def toSeq: ParSeq[T] = toParCollection[T, ParSeq[T]](() => ParSeq.newCombiner[T])
 
-  override def toSeq: ParSeq[T] = toParCollection[T, ParSeq[T]](() => ParSeq.newCombiner[T])
+  def toSet[U >: T]: immutable.ParSet[U] = toParCollection[U, immutable.ParSet[U]](() => immutable.ParSet.newCombiner[U])
 
-  override def toSet[U >: T]: immutable.ParSet[U] = toParCollection[U, immutable.ParSet[U]](() => immutable.ParSet.newCombiner[U])
+  def toMap[K, V](implicit ev: T <:< (K, V)): immutable.ParMap[K, V] = toParMap[K, V, immutable.ParMap[K, V]](() => immutable.ParMap.newCombiner[K, V])
 
-  override def toMap[K, V](implicit ev: T <:< (K, V)): immutable.ParMap[K, V] = toParMap[K, V, immutable.ParMap[K, V]](() => immutable.ParMap.newCombiner[K, V])
+  def toVector: Vector[T] = to(Vector)
 
-  override def toVector: Vector[T] = to[Vector]
-
-  override def to[Col[_]](implicit cbf: CanBuildFrom[Nothing, T, Col[T @uncheckedVariance]]): Col[T @uncheckedVariance] = if (cbf().isCombiner) {
-    toParCollection[T, Col[T]](() => cbf().asCombiner)
-  } else seq.to(cbf)
+  def to[C](factory: collection.Factory[T, C]): C = factory.fromSpecific(this)
 
   /* tasks */
 
@@ -1068,7 +1040,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
   }
 
   protected[this] class FlatMap[S, That]
-  (f: T => GenTraversableOnce[S], pbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T])
+  (f: T => IterableOnce[S], pbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T])
   extends Transformer[Combiner[S, That], FlatMap[S, That]] {
     @volatile var result: Combiner[S, That] = null
     def leaf(prev: Option[Combiner[S, That]]) = result = pit.flatmap2combiner(f, pbf())
@@ -1311,7 +1283,7 @@ self: ParIterableLike[T, Repr, Sequential] =>
     } else {
       val opits = othpit.psplitWithSignalling(pit.remaining)
       val diff = len - pit.remaining
-      Seq(
+      scala.collection.immutable.Seq(
         new ZipAll(pit.remaining, thiselem, thatelem, pbf, pit, opits(0)), // nothing wrong will happen with the cast below - elem T is never accessed
         new ZipAll(diff, thiselem, thatelem, pbf, immutable.repetition(thiselem, diff).splitter.asInstanceOf[IterableSplitter[T]], opits(1))
       )

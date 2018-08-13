@@ -15,17 +15,14 @@ package collection.parallel.immutable
 
 
 
+import scala.collection.Hashing
 import scala.collection.parallel.ParSetLike
 import scala.collection.parallel.Combiner
 import scala.collection.parallel.IterableSplitter
 import scala.collection.mutable.UnrolledBuffer.Unrolled
 import scala.collection.mutable.UnrolledBuffer
-import scala.collection.generic.ParSetFactory
-import scala.collection.generic.CanCombineFrom
-import scala.collection.generic.GenericParTemplate
-import scala.collection.generic.GenericParCompanion
-import scala.collection.generic.GenericCompanion
-import scala.collection.immutable.{ HashSet, TrieIterator }
+import scala.collection.generic.{CanCombineFrom, GenericParCompanion, GenericParTemplate, ParSetFactory}
+import scala.collection.immutable.{OldHashSet, TrieIterator}
 import scala.collection.parallel.Task
 
 
@@ -47,17 +44,17 @@ import scala.collection.parallel.Task
  *  @define coll immutable parallel hash set
  */
 @SerialVersionUID(1L)
-class ParHashSet[T] private[immutable] (private[this] val trie: HashSet[T])
+class ParHashSet[T] private[immutable] (private[this] val trie: OldHashSet[T])
 extends ParSet[T]
    with GenericParTemplate[T, ParHashSet]
-   with ParSetLike[T, ParHashSet[T], HashSet[T]]
+   with ParSetLike[T, ParHashSet, ParHashSet[T], OldHashSet[T]]
    with Serializable
 {
 self =>
 
-  def this() = this(HashSet.empty[T])
+  def this() = this(OldHashSet.empty[T])
 
-  override def companion: GenericCompanion[ParHashSet] with GenericParCompanion[ParHashSet] = ParHashSet
+  override def companion: GenericParCompanion[ParHashSet] = ParHashSet
 
   override def empty: ParHashSet[T] = new ParHashSet[T]
 
@@ -71,7 +68,8 @@ self =>
 
   def contains(e: T): Boolean = trie.contains(e)
 
-  override def size = trie.size
+  def size = trie.size
+  def knownSize = trie.size
 
   protected override def reuse[S, That](oldc: Option[Combiner[S, That]], newc: Combiner[S, That]) = oldc match {
     case Some(old) => old
@@ -129,10 +127,10 @@ self =>
 object ParHashSet extends ParSetFactory[ParHashSet] {
   def newCombiner[T]: Combiner[T, ParHashSet[T]] = HashSetCombiner[T]
 
-  implicit def canBuildFrom[T]: CanCombineFrom[Coll, T, ParHashSet[T]] =
+  implicit def canBuildFrom[T]: CanCombineFrom[ParHashSet[_], T, ParHashSet[T]] =
     new GenericCanCombineFrom[T]
 
-  def fromTrie[T](t: HashSet[T]) = new ParHashSet(t)
+  def fromTrie[T](t: OldHashSet[T]) = new ParHashSet(t)
 }
 
 
@@ -140,11 +138,11 @@ private[immutable] abstract class HashSetCombiner[T]
 extends scala.collection.parallel.BucketCombiner[T, ParHashSet[T], Any, HashSetCombiner[T]](HashSetCombiner.rootsize) {
 //self: EnvironmentPassingCombiner[T, ParHashSet[T]] =>
   import HashSetCombiner._
-  val emptyTrie = HashSet.empty[T]
+  val emptyTrie = OldHashSet.empty[T]
 
-  def +=(elem: T) = {
+  def addOne(elem: T) = {
     sz += 1
-    val hc = emptyTrie.computeHash(elem)
+    val hc = Hashing.computeHash(elem)
     val pos = hc & 0x1f
     if (buckets(pos) eq null) {
       // initialize bucket
@@ -155,9 +153,9 @@ extends scala.collection.parallel.BucketCombiner[T, ParHashSet[T], Any, HashSetC
     this
   }
 
-  def result = {
+  def result() = {
     val bucks = buckets.filter(_ != null).map(_.headPtr)
-    val root = new Array[HashSet[T]](bucks.length)
+    val root = new Array[OldHashSet[T]](bucks.length)
 
     combinerTaskSupport.executeAndWaitResult(new CreateTrie(bucks, root, 0, bucks.length))
 
@@ -172,14 +170,14 @@ extends scala.collection.parallel.BucketCombiner[T, ParHashSet[T], Any, HashSetC
     if (sz == 0) new ParHashSet[T]
     else if (sz == 1) new ParHashSet[T](root(0))
     else {
-      val trie = new HashSet.HashTrieSet(bitmap, root, sz)
+      val trie = new OldHashSet.HashTrieSet(bitmap, root, sz)
       new ParHashSet[T](trie)
     }
   }
 
   /* tasks */
 
-  class CreateTrie(bucks: Array[Unrolled[Any]], root: Array[HashSet[T]], offset: Int, howmany: Int)
+  class CreateTrie(bucks: Array[Unrolled[Any]], root: Array[OldHashSet[T]], offset: Int, howmany: Int)
   extends Task[Unit, CreateTrie] {
     var result = ()
     def leaf(prev: Option[Unit]) = {
@@ -190,8 +188,8 @@ extends scala.collection.parallel.BucketCombiner[T, ParHashSet[T], Any, HashSetC
         i += 1
       }
     }
-    private def createTrie(elems: Unrolled[Any]): HashSet[T] = {
-      var trie = new HashSet[T]
+    private def createTrie(elems: Unrolled[Any]): OldHashSet[T] = {
+      var trie = OldHashSet.empty[T]
 
       var unrolled = elems
       var i = 0
@@ -200,7 +198,7 @@ extends scala.collection.parallel.BucketCombiner[T, ParHashSet[T], Any, HashSetC
         val chunksz = unrolled.size
         while (i < chunksz) {
           val v = chunkarr(i).asInstanceOf[T]
-          val hc = trie.computeHash(v)
+          val hc = Hashing.computeHash(v)
           trie = trie.updated0(v, hc, rootbits)  // internal API, private[collection]
           i += 1
         }

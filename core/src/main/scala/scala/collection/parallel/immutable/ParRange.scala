@@ -44,6 +44,7 @@ self =>
   override def seq = range
 
   @inline final def length = range.length
+  @inline final def knownSize = range.knownSize
 
   @inline final def apply(idx: Int) = range.apply(idx)
 
@@ -116,7 +117,7 @@ self =>
 
 object ParRange {
   def apply(start: Int, end: Int, step: Int, inclusive: Boolean) = new ParRange(
-    if (inclusive) new Range.Inclusive(start, end, step)
-    else new Range(start, end, step)
+    if (inclusive) Range.inclusive(start, end, step)
+    else Range(start, end, step)
   )
 }

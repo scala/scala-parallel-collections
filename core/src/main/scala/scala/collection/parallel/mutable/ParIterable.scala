@@ -28,12 +28,10 @@ import scala.collection.parallel.{ ParIterableLike, Combiner }
  *  @author Aleksandar Prokopec
  *  @since 2.9
  */
-trait ParIterable[T] extends scala.collection.GenIterable[T]
-                        with scala.collection.parallel.ParIterable[T]
+trait ParIterable[T] extends scala.collection.parallel.ParIterable[T]
                         with GenericParTemplate[T, ParIterable]
-                        with ParIterableLike[T, ParIterable[T], Iterable[T]]
-                        with Mutable {
-  override def companion: GenericCompanion[ParIterable] with GenericParCompanion[ParIterable] = ParIterable
+                        with ParIterableLike[T, ParIterable, ParIterable[T], Iterable[T]] {
+  override def companion: GenericParCompanion[ParIterable] = ParIterable
   //protected[this] override def newBuilder = ParIterable.newBuilder[T]
 
   // if `mutable.ParIterableLike` is introduced, please move these methods there
@@ -47,7 +45,7 @@ trait ParIterable[T] extends scala.collection.GenIterable[T]
 /** $factoryInfo
  */
 object ParIterable extends ParFactory[ParIterable] {
-  implicit def canBuildFrom[T]: CanCombineFrom[Coll, T, ParIterable[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[T]: CanCombineFrom[ParIterable[_], T, ParIterable[T]] = new GenericCanCombineFrom[T]
 
   def newBuilder[T]: Combiner[T, ParIterable[T]] = ParArrayCombiner[T]
   def newCombiner[T]: Combiner[T, ParIterable[T]] = ParArrayCombiner[T]

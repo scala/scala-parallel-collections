@@ -13,8 +13,6 @@
 package scala
 package collection
 
-import scala.collection.generic.CanBuildFrom
-import scala.collection.generic.CanCombineFrom
 import scala.collection.parallel.mutable.ParArray
 import scala.collection.mutable.UnrolledBuffer
 import scala.annotation.unchecked.uncheckedVariance
@@ -43,22 +41,22 @@ package object parallel {
 
   def setTaskSupport[Coll](c: Coll, t: TaskSupport): Coll = {
     c match {
-      case pc: ParIterableLike[_, _, _] => pc.tasksupport = t
+      case pc: ParIterableLike[_, _, _, _] => pc.tasksupport = t
       case _ => // do nothing
     }
     c
   }
 
   /** Adds toParArray method to collection classes. */
-  implicit class CollectionsHaveToParArray[C, T](c: C)(implicit asGto: C => scala.collection.GenTraversableOnce[T]) {
+  implicit class CollectionsHaveToParArray[C, T](c: C)(implicit asGto: C => scala.collection.IterableOnce[T]) {
     def toParArray = {
       val t = asGto(c)
       if (t.isInstanceOf[ParArray[_]]) t.asInstanceOf[ParArray[T]]
       else {
-        val it = t.toIterator
+        val it = t.iterator
         val cb = mutable.ParArrayCombiner[T]()
-        while (it.hasNext) cb += it.next
-        cb.result
+        while (it.hasNext) cb += it.next()
+        cb.result()
       }
     }
   }
@@ -68,14 +66,7 @@ package object parallel {
 package parallel {
   /** Implicit conversions used in the implementation of parallel collections. */
   private[collection] object ParallelCollectionImplicits {
-    implicit def factory2ops[From, Elem, To](bf: CanBuildFrom[From, Elem, To]) = new FactoryOps[From, Elem, To] {
-      def isParallel = bf.isInstanceOf[Parallel]
-      def asParallel = bf.asInstanceOf[CanCombineFrom[From, Elem, To]]
-      def ifParallel[R](isbody: CanCombineFrom[From, Elem, To] => R) = new Otherwise[R] {
-        def otherwise(notbody: => R) = if (isParallel) isbody(asParallel) else notbody
-      }
-    }
-    implicit def traversable2ops[T](t: scala.collection.GenTraversableOnce[T]) = new TraversableOps[T] {
+    implicit def traversable2ops[T](t: scala.collection.IterableOnce[T]) = new TraversableOps[T] {
       def isParallel = t.isInstanceOf[Parallel]
       def isParIterable = t.isInstanceOf[ParIterable[_]]
       def asParIterable = t.asInstanceOf[ParIterable[T]]
@@ -85,16 +76,6 @@ package parallel {
         def otherwise(notbody: => R) = if (isParallel) isbody(asParSeq) else notbody
       }
     }
-  }
-
-  trait FactoryOps[From, Elem, To] {
-    trait Otherwise[R] {
-      def otherwise(notbody: => R): R
-    }
-
-    def isParallel: Boolean
-    def asParallel: CanCombineFrom[From, Elem, To]
-    def ifParallel[R](isbody: CanCombineFrom[From, Elem, To] => R): Otherwise[R]
   }
 
   trait TraversableOps[T] {
@@ -139,13 +120,13 @@ package parallel {
     }
     def remaining = until - index
     def dup = new BufferSplitter(buffer, index, until, signalDelegate)
-    def split: Seq[IterableSplitter[T]] = if (remaining > 1) {
+    def split: scala.Seq[IterableSplitter[T]] = if (remaining > 1) {
       val divsz = (until - index) / 2
-      Seq(
+      scala.Seq(
         new BufferSplitter(buffer, index, index + divsz, signalDelegate),
         new BufferSplitter(buffer, index + divsz, until, signalDelegate)
       )
-    } else Seq(this)
+    } else scala.Seq(this)
     private[parallel] override def debugInformation = {
       buildString {
         append =>

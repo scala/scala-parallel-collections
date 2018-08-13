@@ -18,8 +18,9 @@ import scala.collection.generic.ParMapFactory
 import scala.collection.generic.GenericParMapTemplate
 import scala.collection.generic.GenericParMapCompanion
 import scala.collection.generic.CanCombineFrom
-import scala.collection.parallel.ParMapLike
 import scala.collection.parallel.Combiner
+
+import scala.language.higherKinds
 
 /** A template trait for immutable parallel maps.
  *
@@ -32,11 +33,10 @@ import scala.collection.parallel.Combiner
  *  @since 2.9
  */
 trait ParMap[K, +V]
-extends scala.collection/*.immutable*/.GenMap[K, V]
-   with GenericParMapTemplate[K, V, ParMap]
+extends GenericParMapTemplate[K, V, ParMap]
    with parallel.ParMap[K, V]
    with ParIterable[(K, V)]
-   with ParMapLike[K, V, ParMap[K, V], scala.collection.immutable.Map[K, V]]
+   with ParMapLike[K, V, ParMap, ParMap[K, V], scala.collection.immutable.Map[K, V]]
 {
 self =>
 
@@ -45,12 +45,6 @@ self =>
   override def empty: ParMap[K, V] = new ParHashMap[K, V]
 
   override def stringPrefix = "ParMap"
-
-  override def toMap[P, Q](implicit ev: (K, V) <:< (P, Q)): ParMap[P, Q] = this.asInstanceOf[ParMap[P, Q]]
-
-  override def updated [U >: V](key: K, value: U): ParMap[K, U] = this + ((key, value))
-
-  def + [U >: V](kv: (K, U)): ParMap[K, U]
 
   /** The same map with a given default function.
    *  Note: `get`, `contains`, `iterator`, `keys`, etc are not affected by `withDefault`.
@@ -73,6 +67,29 @@ self =>
 
 }
 
+trait ParMapLike[
+    K,
+    +V,
+    +CC[X, Y] <: ParMap[X, Y],
+    +Repr <: ParMapLike[K, V, ParMap, Repr, Sequential] with ParMap[K, V],
+    +Sequential <: Map[K, V] with MapOps[K, V, Map, Sequential]]
+  extends parallel.ParMapLike[K, V, CC, Repr, Sequential]
+    with parallel.ParIterableLike[(K, V), ParIterable, Repr, Sequential] {
+
+  def mapCompanion: GenericParMapCompanion[CC]
+
+  def empty: Repr
+
+  override def toMap[P, Q](implicit ev: (K, V) <:< (P, Q)): ParMap[P, Q] = this.asInstanceOf[ParMap[P, Q]]
+
+  override def updated [U >: V](key: K, value: U): CC[K, U] = this + ((key, value))
+
+  def + [U >: V](kv: (K, U)): CC[K, U]
+
+  def - (key: K): Repr
+
+}
+
 
 
 object ParMap extends ParMapFactory[ParMap] {
@@ -84,6 +101,7 @@ object ParMap extends ParMapFactory[ParMap] {
 
   class WithDefault[K, +V](underlying: ParMap[K, V], d: K => V)
   extends scala.collection.parallel.ParMap.WithDefault[K, V](underlying, d) with ParMap[K, V] {
+    def knownSize = underlying.knownSize
     override def empty = new WithDefault(underlying.empty, d)
     override def updated[U >: V](key: K, value: U): WithDefault[K, U] = new WithDefault[K, U](underlying.updated[U](key, value), d)
     override def + [U >: V](kv: (K, U)): WithDefault[K, U] = updated(kv._1, kv._2)

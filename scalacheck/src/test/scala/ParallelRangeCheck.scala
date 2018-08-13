@@ -26,7 +26,7 @@ abstract class ParallelRangeCheck(val tasksupport: TaskSupport) extends Parallel
   override def instances(vals: Seq[Gen[Int]]): Gen[Seq[Int]] = sized { start =>
     sized { end =>
       sized { step =>
-        new Range(start, end, if (step != 0) step else 1)
+        Range(start, end, if (step != 0) step else 1)
       }
     }
   }
@@ -41,11 +41,6 @@ abstract class ParallelRangeCheck(val tasksupport: TaskSupport) extends Parallel
       pa.tasksupport = tasksupport
       for (i <- 0 until a.length) pa(i) = a(i)
       pa
-  }
-
-  override def traversable2Seq(t: Traversable[Int]): Seq[Int] = t match {
-    case r: Range => r
-    case _ => t.toSeq
   }
 
   def values = Seq(choose(-100, 100))

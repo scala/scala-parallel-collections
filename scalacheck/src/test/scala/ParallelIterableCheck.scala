@@ -6,6 +6,7 @@ import org.scalacheck.Gen._
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
+import scala.language.higherKinds
 import scala.collection._
 import scala.collection.parallel._
 
@@ -14,7 +15,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
 
   def values: Seq[Gen[T]]
   def ofSize(vals: Seq[Gen[T]], sz: Int): Iterable[T]
-  def fromTraversable(t: Traversable[T]): CollType
+  def fromIterable(t: Iterable[T]): CollType
   def isCheckingViews: Boolean
   def hasStrictOrder: Boolean
 
@@ -30,7 +31,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
   )
 
   // used to check if constructed collection is valid
-  def checkDataStructureInvariants(orig: Traversable[T], cf: AnyRef) = {
+  def checkDataStructureInvariants(orig: Iterable[T], cf: AnyRef) = {
     // can be overridden in subclasses
     true
   }
@@ -49,42 +50,44 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
 
   def sampleValue: T = sample(values(rnd.nextInt(values.length)))
 
-  def collectionPairs = for (inst <- instances(values)) yield (inst, fromTraversable(inst))
+  def collectionPairs = for (inst <- instances(values)) yield (inst, fromIterable(inst))
 
   def collectionPairsWithLengths = for (inst <- instances(values); s <- choose(0, inst.size))
-    yield (inst, fromTraversable(inst), s)
+    yield (inst, fromIterable(inst), s)
 
   def collectionPairsWith2Indices = for (
       inst <- instances(values);
       f <- choose(0, inst.size);
       s <- choose(0, inst.size))
-    yield (inst, fromTraversable(inst), f, s)
+    yield (inst, fromIterable(inst), f, s)
 
   def collectionTriplets = for (inst <- instances(values);
       updStart <- choose(0, inst.size); howMany <- choose(0, inst.size)) yield {
     val modif = inst.toSeq.patch(updStart, inst.toSeq, howMany)
-    (inst, fromTraversable(inst), modif)
+    (inst, fromIterable(inst), modif)
   }
 
-  def areEqual(t1: GenTraversable[T], t2: GenTraversable[T]) = if (hasStrictOrder) {
-    t1 == t2 && t2 == t1
+  def areEqual(t1: Iterable[T], t2: ParIterable[T]) = if (hasStrictOrder) {
+    t1.iterator.sameElements(t2) && t2.sameElements(t1)
   } else (t1, t2) match { // it is slightly delicate what `equal` means if the order is not strict
-    case (m1: GenMap[_, _], m2: GenMap[_, _]) => m1 == m2 && m2 == m1
-    case (i1: GenIterable[_], i2: GenIterable[_]) =>
-      val i1s = i1.toSet
-      val i2s = i2.toSet
-      i1s == i2s && i2s == i1s
-    case _ => t1 == t2 && t2 == t1
+    case (m1: Map[_, _], m2: ParMap[_, _]) =>
+      val am1: Map[Any, Any] = m1.asInstanceOf[Map[Any, Any]]
+      val am2: ParMap[Any, Any] = m2.asInstanceOf[ParMap[Any, Any]]
+      am1.forall { case (k, v) => am2.get(k).contains(v) } && am2.forall { case (k, v) => am1.get(k).contains(v) }
+    case _ =>
+      val s1 = t1.toSet
+      val s2 = t2.toSet
+      s1.forall(s2) && s2.forall(s1)
   }
 
-  def printDebugInfo(coll: ParIterableLike[_, _, _]): Unit = {
+  def printDebugInfo[A, CC[X] <: ParIterable[X], C <: ParIterable[A], S <: Iterable[A] with IterableOps[A, Iterable, S]](coll: ParIterableLike[A, CC, C, S]): Unit = {
     println("Collection debug info: ")
     coll.printDebugBuffer
     println("Task debug info: ")
     println(coll.tasksupport.debugMessages.mkString("\n"))
   }
 
-  def printComparison(t: Traversable[_], coll: ParIterable[_], tf: Traversable[_], cf: ParIterable[_], ind: Int): Unit = {
+  def printComparison(t: Iterable[_], coll: ParIterable[_], tf: Iterable[_], cf: ParIterable[_], ind: Int): Unit = {
     printDebugInfo(coll)
     println("Operator: " + ind)
     println("sz: " + t.size)
@@ -100,8 +103,8 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     println("size: " + cf.size)
     println(cf)
     println
-    println("tf == cf - " + (tf == cf))
-    println("cf == tf - " + (cf == tf))
+    println("tf sameElements cf - " + (tf.iterator sameElements  cf))
+    println("cf sameElements tf - " + (cf.iterator sameElements tf))
   }
 
   property("reductions must be equal for assoc. operators") = forAllNoShrink(collectionPairs) { case (t, coll) =>
@@ -206,7 +209,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
       val tf = t.filter(p)
       val cf = coll.filter(p)
       val invs = checkDataStructureInvariants(tf, cf)
-      if (tf != cf || cf != tf || !invs) {
+      if (!areEqual(tf, cf) || !invs) {
         printDebugInfo(coll)
         println("Operator: " + ind)
         println("sz: " + t.size)
@@ -221,12 +224,11 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
         println
         println(tf)
         println
-        println("tf == cf - " + (tf == cf))
-        println("cf == tf - " + (cf == tf))
+        println("areEqual(tf, cf) - " + areEqual(tf, cf))
         printDataStructureDebugInfo(cf)
         println("valid: " + invs)
       }
-      ("op index: " + ind) |: tf == cf && cf == tf && invs
+      ("op index: " + ind) |: (areEqual(tf, cf) && invs)
     }).reduceLeft(_ && _)
   }
 
@@ -234,31 +236,31 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     (for ((p, ind) <- filterNotPredicates.zipWithIndex) yield {
       val tf = t.filterNot(p)
       val cf = coll.filterNot(p)
-      if (tf != cf || cf != tf) printComparison(t, coll, tf, cf, ind)
-      ("op index: " + ind) |: tf == cf && cf == tf
+      if (!areEqual(tf, cf)) printComparison(t, coll, tf, cf, ind)
+      ("op index: " + ind) |: areEqual(tf, cf)
     }).reduceLeft(_ && _)
   }
 
   if (!isCheckingViews) property("partitions must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
     (for ((p, ind) <- partitionPredicates.zipWithIndex) yield {
-      val tpart = t.partition(p)
-      val cpart = coll.partition(p)
-      if (tpart != cpart) {
+      val tpart @ (tpart1, tpart2) = t.partition(p)
+      val cpart @ (cpart1, cpart2) = coll.partition(p)
+      if (!areEqual(tpart1, cpart1) || !areEqual(tpart2, cpart2)) {
         println("from: " + t)
         println("and: " + coll)
         println(cpart)
         println(tpart)
       }
-      ("op index: " + ind) |: tpart == cpart
+      ("op index: " + ind) |: (areEqual(tpart1, cpart1) && areEqual(tpart2, cpart2))
     }).reduceLeft(_ && _)
   }
 
   if (hasStrictOrder) property("takes must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (t, coll, n) =>
-    ("take " + n + " elements") |: t.take(n) == coll.take(n)
+    ("take " + n + " elements") |: t.take(n).iterator.sameElements(coll.take(n))
   }
 
   if (hasStrictOrder) property("drops must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (t, coll, n) =>
-    ("drop " + n + " elements") |: t.drop(n) == coll.drop(n)
+    ("drop " + n + " elements") |: t.drop(n).iterator.sameElements(coll.drop(n))
   }
 
   if (hasStrictOrder) property("slices must be equal") = forAllNoShrink(collectionPairsWith2Indices)
@@ -267,7 +269,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     val until = if (from + slicelength > t.size) t.size else from + slicelength
     val tsl = t.slice(from, until)
     val collsl = coll.slice(from, until)
-    if (tsl != collsl) {
+    if (!tsl.iterator.sameElements(collsl)) {
       println("---------------------- " + from + ", " + until)
       println("from: " + t)
       println("and: " + coll)
@@ -282,42 +284,42 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
       println(collsl.iterator.next)
       println(collsl.iterator.hasNext)
     }
-    ("slice from " + from + " until " + until) |: tsl == collsl
+    ("slice from " + from + " until " + until) |: tsl.iterator.sameElements(collsl)
   }
 
   if (hasStrictOrder) property("splits must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (t, coll, n) =>
-    val tspl = t.splitAt(n)
-    val cspl = coll.splitAt(n)
-    if (tspl != cspl) {
+    val tspl @ (tspl1, tspl2) = t.splitAt(n)
+    val cspl @ (cspl1, cspl2) = coll.splitAt(n)
+    if (!tspl1.iterator.sameElements(cspl1) || !tspl2.iterator.sameElements(cspl2)) {
       println("at: " + n)
       println("from: " + t)
       println("and: " + coll)
       println(tspl)
       println(cspl)
     }
-    ("splitAt " + n) |: tspl == cspl
+    ("splitAt " + n) |: (tspl1.iterator.sameElements(cspl1) && tspl2.iterator.sameElements(cspl2))
   }
 
   if (hasStrictOrder) property("takeWhiles must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
     (for ((pred, ind) <- takeWhilePredicates.zipWithIndex) yield {
       val tt = t.takeWhile(pred)
       val ct = coll.takeWhile(pred)
-      if (tt != ct) {
+      if (!tt.iterator.sameElements(ct)) {
         println("from: " + t)
         println("and: " + coll)
         println("taking while...")
         println(tt)
         println(ct)
       }
-      ("operator " + ind) |: tt == ct
+      ("operator " + ind) |: tt.iterator.sameElements(ct)
     }).reduceLeft(_ && _)
   }
 
   if (hasStrictOrder) property("spans must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
     (for ((pred, ind) <- spanPredicates.zipWithIndex) yield {
-      val tsp = t.span(pred)
-      val csp = coll.span(pred)
-      if (tsp != csp) {
+      val tsp @ (tsp1, tsp2) = t.span(pred)
+      val csp @ (csp1, csp2) = coll.span(pred)
+      if (!tsp1.iterator.sameElements(csp1) || !tsp2.iterator.sameElements(csp2)) {
         println("from: " + t)
         println("and: " + coll)
         println("span with predicate " + ind)
@@ -327,13 +329,13 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
         println(coll.span(pred))
         println("---------------------------------")
       }
-      ("operator " + ind) |: tsp == csp
+      ("operator " + ind) |: (tsp1.iterator.sameElements(csp1) && tsp2.iterator.sameElements(csp2))
     }).reduceLeft(_ && _)
   }
 
   if (hasStrictOrder) property("dropWhiles must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
     (for ((pred, ind) <- dropWhilePredicates.zipWithIndex) yield {
-      ("operator " + ind) |: t.dropWhile(pred) == coll.dropWhile(pred)
+      ("operator " + ind) |: t.dropWhile(pred).iterator.sameElements(coll.dropWhile(pred))
     }).reduceLeft(_ && _)
   }
 
@@ -365,9 +367,9 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
         println(cr.iterator.toList)
       }
       ("adding " |: areEqual(tr, cr)) &&
-      (for ((trav, ind) <- (addAllTraversables).zipWithIndex) yield {
+      (for ((trav, ind) <- addAllIterables.zipWithIndex) yield {
         val tadded = t ++ trav
-        val cadded = coll ++ collection.parallel.mutable.ParArray(trav.toSeq: _*)
+        val cadded = coll ++ trav
         if (!areEqual(tadded, cadded)) {
           println("----------------------")
           println("from: " + t)
@@ -403,30 +405,34 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
       (for (((first, op), ind) <- foldArguments.zipWithIndex) yield {
         val tscan = t.scanLeft(first)(op)
         val cscan = coll.scan(first)(op)
-        if (tscan != cscan || cscan != tscan) {
+        if (!tscan.iterator.sameElements(cscan) || !cscan.sameElements(tscan)) {
           println("from: " + t)
           println("and: " + coll)
           println("scans are: ")
           println(tscan)
           println(cscan)
         }
-        ("operator " + ind) |: tscan == cscan && cscan == tscan
+        ("operator " + ind) |: tscan.iterator.sameElements(cscan) && cscan.sameElements(tscan)
       }).reduceLeft(_ && _)
   }
 
   property("groupBy must be equal") = forAllNoShrink(collectionPairs) {
     case (t, coll) =>
       (for ((f, ind) <- groupByFunctions.zipWithIndex) yield {
-        val tgroup = t.groupBy(f)
-        val cgroup = coll.groupBy(f)
-        if (tgroup != cgroup || cgroup != tgroup) {
+        val tgroup: scala.collection.Map[T, Iterable[T]] = t.groupBy(f)
+        val cgroup: scala.collection.parallel.ParMap[T, ParIterable[T]] = coll.groupBy(f)
+        val cgroupseq: scala.collection.parallel.ParMap[T, Iterable[T]] = cgroup.map { case (k, xs) => (k, xs.seq) }
+        val areMapsEqual =
+          tgroup.forall { case (k, v) => cgroupseq.get(k).contains(v) } &&
+            cgroupseq.forall { case (k, v) => tgroup.get(k).contains(v) }
+        if (!areMapsEqual) {
           println("from: " + t)
           println("and: " + coll)
           println("groups are: ")
           println(tgroup)
-          println(cgroup)
+          println(cgroupseq)
         }
-        ("operator " + ind) |: tgroup == cgroup && cgroup == tgroup
+        ("operator " + ind) |: areMapsEqual
       }).reduceLeft(_ && _)
   }
 

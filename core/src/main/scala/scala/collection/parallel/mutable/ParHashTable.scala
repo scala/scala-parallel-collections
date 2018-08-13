@@ -21,7 +21,8 @@ import scala.collection.parallel.IterableSplitter
  *  enriching the data structure by fulfilling certain requirements
  *  for their parallel construction and iteration.
  */
-trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]] extends scala.collection.mutable.HashTable[K, Entry] {
+trait ParHashTable[K, V, Entry >: Null <: HashEntry[K, Entry]] extends scala.collection.mutable.HashTable[K, V, Entry]
+  with WithContents[K, V, Entry] {
 
   override def alwaysInitSizeMap = true
 
@@ -77,7 +78,7 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]] extends scala.collec
 
     def dup = newIterator(idx, until, totalsize, es)
 
-    def split: Seq[IterableSplitter[T]] = if (remaining > 1) {
+    def split: scala.Seq[IterableSplitter[T]] = if (remaining > 1) {
       if (until > idx) {
         // there is at least one more slot for the next iterator
         // divide the rest of the table
@@ -95,7 +96,7 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]] extends scala.collec
         val fes = es
         val ftotal = totalsize - stotal
 
-        Seq(
+        scala.Seq(
           newIterator(fidx, funtil, ftotal, fes),
           newIterator(sidx, suntil, stotal, ses)
         )
@@ -106,7 +107,7 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]] extends scala.collec
         val arrpit = new scala.collection.parallel.BufferSplitter[T](arr, 0, arr.length, signalDelegate)
         arrpit.split
       }
-    } else Seq(this.asInstanceOf[IterRepr])
+    } else scala.Seq(this.asInstanceOf[IterRepr])
 
     private def convertToArrayBuffer(chainhead: Entry): mutable.ArrayBuffer[T] = {
       val buff = mutable.ArrayBuffer[Entry]()
@@ -142,6 +143,55 @@ trait ParHashTable[K, Entry >: Null <: HashEntry[K, Entry]] extends scala.collec
         idx += 1
       }
       c
+    }
+  }
+
+}
+
+trait WithContents[K, V, Entry >: Null <: HashEntry[K, Entry]] { this: scala.collection.mutable.HashTable[K, V, Entry] =>
+
+  protected def initWithContents(c: ParHashTable.Contents[K, Entry]) = {
+    if (c != null) {
+      _loadFactor = c.loadFactor
+      table = c.table
+      tableSize = c.tableSize
+      threshold = c.threshold
+      seedvalue = c.seedvalue
+      sizemap = c.sizemap
+    }
+    if (alwaysInitSizeMap && sizemap == null) sizeMapInitAndRebuild()
+  }
+
+  private[collection] def hashTableContents = new ParHashTable.Contents(
+    _loadFactor,
+    table,
+    tableSize,
+    threshold,
+    seedvalue,
+    sizemap
+  )
+}
+
+private[collection] object ParHashTable {
+  class Contents[A, Entry >: Null <: HashEntry[A, Entry]](
+    val loadFactor: Int,
+    val table: Array[HashEntry[A, Entry]],
+    val tableSize: Int,
+    val threshold: Int,
+    val seedvalue: Int,
+    val sizemap: Array[Int]
+  ) {
+    import scala.collection.DebugUtils._
+    private[collection] def debugInformation = buildString {
+      append =>
+        append("Hash table contents")
+        append("-------------------")
+        append("Table: [" + arrayString(table, 0, table.length) + "]")
+        append("Table size: " + tableSize)
+        append("Load factor: " + loadFactor)
+        append("Seedvalue: " + seedvalue)
+        append("Threshold: " + threshold)
+        append("Sizemap: [" + arrayString(sizemap, 0, sizemap.length) + "]")
     }
   }
 }

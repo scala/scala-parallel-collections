@@ -26,17 +26,16 @@ import scala.collection.generic._
  *  @since 2.9
  */
 trait ParSet[T]
-   extends GenSet[T]
-   with GenericParTemplate[T, ParSet]
+   extends GenericParTemplate[T, ParSet]
    with ParIterable[T]
-   with ParSetLike[T, ParSet[T], Set[T]]
+   with ParSetLike[T, ParSet, ParSet[T], Set[T]]
 { self =>
 
   override def empty: ParSet[T] = mutable.ParHashSet[T]()
 
   //protected[this] override def newCombiner: Combiner[T, ParSet[T]] = ParSet.newCombiner[T]
 
-  override def companion: GenericCompanion[ParSet] with GenericParCompanion[ParSet] = ParSet
+  override def companion: GenericParCompanion[ParSet] = ParSet
 
   override def stringPrefix = "ParSet"
 }
@@ -44,5 +43,5 @@ trait ParSet[T]
 object ParSet extends ParSetFactory[ParSet] {
   def newCombiner[T]: Combiner[T, ParSet[T]] = mutable.ParHashSetCombiner[T]
 
-  implicit def canBuildFrom[T]: CanCombineFrom[Coll, T, ParSet[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[T]: CanCombineFrom[ParSet[_], T, ParSet[T]] = new GenericCanCombineFrom[T]
 }

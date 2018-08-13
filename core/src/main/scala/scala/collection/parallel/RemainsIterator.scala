@@ -17,7 +17,6 @@ import scala.collection.generic.Signalling
 import scala.collection.generic.DelegatedSignalling
 import scala.collection.generic.IdleSignalling
 import scala.collection.mutable.Builder
-import scala.collection.GenTraversableOnce
 import scala.collection.parallel.immutable.repetition
 
 private[collection] trait RemainsIterator[+T] extends Iterator[T] {
@@ -89,15 +88,6 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
     r
   }
 
-  override def copyToArray[U >: T](array: Array[U], from: Int, len: Int): Unit = {
-    var i = from
-    val until = from + len
-    while (i < until && hasNext) {
-      array(i) = next()
-      i += 1
-    }
-  }
-
   def reduceLeft[U >: T](howmany: Int, op: (U, U) => U): U = {
     var i = howmany - 1
     var u: U = next()
@@ -127,12 +117,9 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
     cb
   }
 
-  def flatmap2combiner[S, That](f: T => GenTraversableOnce[S], cb: Combiner[S, That]): Combiner[S, That] = {
-    //val cb = pbf(repr)
+  def flatmap2combiner[S, That](f: T => IterableOnce[S], cb: Combiner[S, That]): Combiner[S, That] = {
     while (hasNext) {
-      val traversable = f(next()).seq
-      if (traversable.isInstanceOf[Iterable[_]]) cb ++= traversable.asInstanceOf[Iterable[S]].iterator
-      else cb ++= traversable
+      cb ++= f(next())
     }
     cb
   }
@@ -301,7 +288,7 @@ private[collection] trait AugmentedSeqIterator[+T] extends AugmentedIterableIter
     total
   }
 
-  override def indexWhere(pred: T => Boolean): Int = {
+  def indexWhere(pred: T => Boolean): Int = {
     var i = 0
     var loop = true
     while (hasNext && loop) {
@@ -656,7 +643,7 @@ self =>
   override def zipAllParSeq[S, U >: T, R >: S](that: SeqSplitter[S], thisElem: U, thatElem: R) = new ZippedAll[U, R](that, thisElem, thatElem)
 
   def reverse: SeqSplitter[T] = {
-    val pa = mutable.ParArray.fromTraversables(self).reverse
+    val pa = mutable.ParArray.fromIterables(self).reverse
     new pa.ParArrayIterator {
       override def reverse = self
     }
