@@ -6,7 +6,7 @@ scalaVersionsByJvm in ThisBuild := {
   val v213 = "2.13.0-M3"
   Map(
     8 -> List(v213 -> true),
-    9 -> List(v213 -> false))
+    11 -> List(v213 -> false))
 }
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xfatal-warnings")
@@ -53,7 +53,9 @@ lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(
 )
 
 lazy val junit = project.in(file("junit")).settings(
-  libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
+  libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test,
+  // for javax.xml.bind.DatatypeConverter, used in SerializationStabilityTest
+  libraryDependencies += "javax.xml.bind" % "jaxb-api" % "2.3.0" % Test,
   testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v"),
   fork in Test := true,
   disablePublishing
