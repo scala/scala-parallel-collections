@@ -55,7 +55,7 @@ lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(
 lazy val junit = project.in(file("junit")).settings(
   libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test,
   // for javax.xml.bind.DatatypeConverter, used in SerializationStabilityTest
-  libraryDependencies += "javax.xml.bind" % "jaxb-api" % "2.3.0" % Test,
+  libraryDependencies += "javax.xml.bind" % "jaxb-api" % "2.3.1" % Test,
   testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v"),
   fork in Test := true,
   disablePublishing
