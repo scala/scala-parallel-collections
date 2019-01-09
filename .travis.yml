@@ -1,7 +1,5 @@
 language: scala
 
-sudo: required
-
 env:
   global:
     # PGP_PASSPHRASE
@@ -16,3 +14,13 @@ script: admin/build.sh
 jdk:
   - oraclejdk8
   - openjdk11
+
+cache:
+  directories:
+  - $HOME/.ivy2/cache
+  - $HOME/.sbt/boot
+  - $HOME/.sbt/launchers
+
+before_cache:
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
