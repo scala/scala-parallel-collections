@@ -15,6 +15,22 @@ cancelable in Global := true
 
 disablePublishing  // in root
 
+// not sure why `in ThisBuild` doesn't work for this; see
+// https://github.com/sbt/sbt-header/issues/153
+lazy val commonSettings = Seq(
+  headerLicense  := Some(HeaderLicense.Custom(
+    s"""|Scala (https://www.scala-lang.org)
+        |
+        |Copyright EPFL and Lightbend, Inc.
+        |
+        |Licensed under Apache License 2.0
+        |(http://www.apache.org/licenses/LICENSE-2.0).
+        |
+        |See the NOTICE file distributed with this work for
+        |additional information regarding copyright ownership.
+        |""".stripMargin)))
+commonSettings  // in root
+
 /** Create an OSGi version range for standard Scala / Lightbend versioning
   * schemes that describes binary compatible versions. */
 def osgiVersionRange(version: String): String =
@@ -25,7 +41,10 @@ def osgiVersionRange(version: String): String =
 def osgiImport(pattern: String, version: String): String =
   pattern + ";version=\"" + osgiVersionRange(version) + "\""
 
-lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(
+lazy val core = project.in(file("core"))
+  .settings(scalaModuleSettings)
+  .settings(commonSettings)
+  .settings(
   name := "scala-parallel-collections",
   OsgiKeys.exportPackage := Seq(
     s"scala.collection.parallel.*;version=${version.value}",
@@ -36,23 +55,12 @@ lazy val core = project.in(file("core")).settings(scalaModuleSettings).settings(
   ),
   // Use correct version for scala package imports
   OsgiKeys.importPackage := Seq(osgiImport("scala*", scalaVersion.value), "*"),
-  mimaPreviousVersion := None,
-  headers := Map(
-    "scala" ->
-      (de.heikoseeberger.sbtheader.HeaderPattern.cStyleBlockComment,
-      """|/*                     __                                               *\
-         |**     ________ ___   / /  ___     Scala API                            **
-         |**    / __/ __// _ | / /  / _ |    (c) 2003-2017, LAMP/EPFL             **
-         |**  __\ \/ /__/ __ |/ /__/ __ |    http://scala-lang.org/               **
-         |** /____/\___/_/ |_/____/_/ | |                                         **
-         |**                          |/                                          **
-         |\*                                                                      */
-         |
-         |""".stripMargin)
-  )
+  mimaPreviousVersion := None
 )
 
-lazy val junit = project.in(file("junit")).settings(
+lazy val junit = project.in(file("junit"))
+  .settings(commonSettings)
+  .settings(
   libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test,
   // for javax.xml.bind.DatatypeConverter, used in SerializationStabilityTest
   libraryDependencies += "javax.xml.bind" % "jaxb-api" % "2.3.1" % Test,
@@ -61,14 +69,18 @@ lazy val junit = project.in(file("junit")).settings(
   disablePublishing
 ).dependsOn(testmacros, core)
 
-lazy val scalacheck = project.in(file("scalacheck")).settings(
+lazy val scalacheck = project.in(file("scalacheck"))
+  .settings(commonSettings)
+  .settings(
   libraryDependencies += "org.scalacheck" % "scalacheck_2.12" % "1.14.0",
   fork in Test := true,
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5"),
   disablePublishing
 ).dependsOn(core)
 
-lazy val testmacros = project.in(file("testmacros")).settings(
+lazy val testmacros = project.in(file("testmacros"))
+  .settings(commonSettings)
+  .settings(
   libraryDependencies += scalaOrganization.value % "scala-compiler" % scalaVersion.value,
   disablePublishing
 )
