@@ -5,7 +5,7 @@ version in ThisBuild := "0.1.3-SNAPSHOT"
 resolvers in ThisBuild += "scala-integration" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
 
 scalaVersionsByJvm in ThisBuild := {
-  val v213 = "2.13.0-pre-021a9a4"
+  val v213 = "2.13.0-pre-b9306a2"
   Map(
     8 -> List(v213 -> true),
     11 -> List(v213 -> false))
