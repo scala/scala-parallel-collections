@@ -14,7 +14,6 @@ package scala
 package collection.parallel
 
 import scala.collection.Map
-import scala.collection.GenMap
 import scala.collection.generic.ParMapFactory
 import scala.collection.generic.GenericParMapTemplate
 import scala.collection.generic.GenericParMapCompanion
@@ -31,10 +30,9 @@ import scala.collection.generic.CanCombineFrom
  *  @since 2.9
  */
 trait ParMap[K, +V]
-extends GenMap[K, V]
-   with GenericParMapTemplate[K, V, ParMap]
+extends GenericParMapTemplate[K, V, ParMap]
    with ParIterable[(K, V)]
-   with ParMapLike[K, V, ParMap[K, V], Map[K, V]]
+   with ParMapLike[K, V, ParMap, ParMap[K, V], Map[K, V]]
 {
 self =>
 
@@ -46,9 +44,6 @@ self =>
 
   override def stringPrefix = "ParMap"
 
-  override def updated [U >: V](key: K, value: U): ParMap[K, U] = this + ((key, value))
-
-  def + [U >: V](kv: (K, U)): ParMap[K, U]
 }
 
 
@@ -64,7 +59,7 @@ object ParMap extends ParMapFactory[ParMap] {
    *  because of variance issues.
    */
   abstract class WithDefault[A, +B](underlying: ParMap[A, B], d: A => B) extends ParMap[A, B] {
-    override def size               = underlying.size
+    def size                        = underlying.size
     def get(key: A)                 = underlying.get(key)
     def splitter                    = underlying.splitter
     override def default(key: A): B = d(key)

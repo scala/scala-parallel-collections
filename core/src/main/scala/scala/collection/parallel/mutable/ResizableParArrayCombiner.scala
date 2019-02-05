@@ -26,14 +26,14 @@ trait ResizableParArrayCombiner[T] extends LazyCombiner[T, ParArray[T], ExposedA
   final def newLazyCombiner(c: ArrayBuffer[ExposedArrayBuffer[T]]) = ResizableParArrayCombiner(c)
 
   def allocateAndCopy = if (chain.size > 1) {
-    val arrayseq = new ArraySeq[T](size)
-    val array = arrayseq.array.asInstanceOf[Array[Any]]
+    val array = new Array[Any](size)
+    val arrayseq = ArraySeq.make(array).asInstanceOf[ArraySeq[T]]
 
     combinerTaskSupport.executeAndWaitResult(new CopyChainToArray(array, 0, size))
 
     new ParArray(arrayseq)
   } else { // optimisation if there is only 1 array
-    new ParArray(new ExposedArraySeq[T](chain(0).internalArray, size))
+    new ParArray(ArraySeq.make(chain(0).internalArray).asInstanceOf[ArraySeq[T]], size)
   }
 
   override def toString = "ResizableParArrayCombiner(" + size + "): " //+ chain
@@ -84,7 +84,8 @@ trait ResizableParArrayCombiner[T] extends LazyCombiner[T, ParArray[T], ExposedA
 
 object ResizableParArrayCombiner {
   def apply[T](c: ArrayBuffer[ExposedArrayBuffer[T]]): ResizableParArrayCombiner[T] = {
-    new { val chain = c } with ResizableParArrayCombiner[T] // was: with EnvironmentPassingCombiner[T, ParArray[T]]
+    class ResizableParArrayCombinerC[A](val chain: ArrayBuffer[ExposedArrayBuffer[A]]) extends ResizableParArrayCombiner[A] // was: with EnvironmentPassingCombiner[T, ParArray[T]]
+    new ResizableParArrayCombinerC[T](c)
   }
   def apply[T](): ResizableParArrayCombiner[T] = apply(new ArrayBuffer[ExposedArrayBuffer[T]] += new ExposedArrayBuffer[T])
 }

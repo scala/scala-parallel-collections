@@ -30,7 +30,7 @@ abstract class ParallelConcurrentTrieMapCheck[K, V](tp: String) extends Parallel
     ct
   }
 
-  def fromTraversable(t: Traversable[(K, V)]) = {
+  def fromIterable(t: Iterable[(K, V)]) = {
     val pct = new ParTrieMap[K, V]
     pct.tasksupport = tasksupport
     var i = 0
@@ -62,7 +62,7 @@ with PairValues[Int, Int]
       println("could not match data structure type: " + ds.getClass)
   }
 
-  override def checkDataStructureInvariants(orig: Traversable[(Int, Int)], ds: AnyRef) = ds match {
+  override def checkDataStructureInvariants(orig: Iterable[(Int, Int)], ds: AnyRef) = ds match {
     // case pm: ParHashMap[k, v] if 1 == 0 => // disabled this to make tests faster
     //   val invs = pm.brokenInvariants
 

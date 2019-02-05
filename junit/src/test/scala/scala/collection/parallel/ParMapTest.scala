@@ -10,7 +10,7 @@ class ParMapTest {
 
   @Test
   def test: Unit = {
-    val gm: GenMap[Int, Int] = GenMap(0 -> 0, 1 -> 1).par
+    val gm: ParMap[Int, Int] = Map(0 -> 0, 1 -> 1).par
 
     // ops
     assertTrue(gm.isDefinedAt(1))
@@ -19,9 +19,9 @@ class ParMapTest {
     assertTrue(gm.getOrElse(2, 3) == 3)
     assertTrue(gm.keysIterator.toSet == Set(0, 1))
     assertTrue(gm.valuesIterator.toSet == Set(0, 1))
-    assertTrue(gm.keySet == Set(0, 1))
-    assertTrue(gm.keys.toSet == Set(0, 1))
-    assertTrue(gm.values.toSet == Set(0, 1))
+    assertTrue(gm.keySet == ParSet(0, 1))
+    assertTrue(gm.keys.toSet == ParSet(0, 1))
+    assertTrue(gm.values.toSet == ParSet(0, 1))
     try {
       gm.default(-1)
       assertTrue(false)

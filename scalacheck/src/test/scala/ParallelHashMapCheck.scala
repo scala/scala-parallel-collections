@@ -30,7 +30,7 @@ abstract class ParallelHashMapCheck[K, V](tp: String) extends ParallelMapCheck[K
     hm
   }
 
-  def fromTraversable(t: Traversable[(K, V)]) = {
+  def fromIterable(t: Iterable[(K, V)]) = {
     val phm = new ParHashMap[K, V]
     phm.tasksupport = tasksupport
     var i = 0
@@ -62,7 +62,7 @@ with PairValues[Int, Int]
       println("could not match data structure type: " + ds.getClass)
   }
 
-  override def checkDataStructureInvariants(orig: Traversable[(Int, Int)], ds: AnyRef) = ds match {
+  override def checkDataStructureInvariants(orig: Iterable[(Int, Int)], ds: AnyRef) = ds match {
     // case pm: ParHashMap[k, v] if 1 == 0 => // disabled this to make tests faster
     //   val invs = pm.brokenInvariants
 

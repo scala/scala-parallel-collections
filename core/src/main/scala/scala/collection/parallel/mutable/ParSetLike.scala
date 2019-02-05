@@ -15,9 +15,9 @@ package collection
 package parallel.mutable
 
 import scala.collection.mutable.Cloneable
-import scala.collection.GenSetLike
-import scala.collection.generic.Growable
-import scala.collection.generic.Shrinkable
+import scala.language.higherKinds
+import scala.collection.mutable.Growable
+import scala.collection.mutable.Shrinkable
 
 /** A template trait for mutable parallel sets. This trait is mixed in with concrete
  *  parallel sets to override the representation type.
@@ -32,11 +32,11 @@ import scala.collection.generic.Shrinkable
  *  @since 2.9
  */
 trait ParSetLike[T,
-                 +Repr <: ParSetLike[T, Repr, Sequential] with ParSet[T],
-                 +Sequential <: mutable.Set[T] with mutable.SetLike[T, Sequential]]
-extends GenSetLike[T, Repr]
-   with scala.collection.parallel.ParIterableLike[T, Repr, Sequential]
-   with scala.collection.parallel.ParSetLike[T, Repr, Sequential]
+                 +CC[X] <: ParIterable[X],
+                 +Repr <: ParSetLike[T, CC, Repr, Sequential] with ParSet[T],
+                 +Sequential <: mutable.Set[T] with mutable.SetOps[T, mutable.Set, Sequential]]
+extends scala.collection.parallel.ParIterableLike[T, CC, Repr, Sequential]
+   with scala.collection.parallel.ParSetLike[T, CC, Repr, Sequential]
    with Growable[T]
    with Shrinkable[T]
    with Cloneable[Repr]
@@ -44,13 +44,14 @@ extends GenSetLike[T, Repr]
 self =>
   override def empty: Repr
 
-  def +=(elem: T): this.type
+  def addOne(elem: T): this.type
 
-  def -=(elem: T): this.type
+  def subtractOne(elem: T): this.type
 
   def +(elem: T) = this.clone() += elem
 
   def -(elem: T) = this.clone() -= elem
 
+  override def clone(): Repr = empty ++= this
   // note: should not override toSet
 }

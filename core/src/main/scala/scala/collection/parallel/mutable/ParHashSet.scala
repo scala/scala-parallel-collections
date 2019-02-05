@@ -41,7 +41,7 @@ import scala.collection.parallel.Task
 class ParHashSet[T] private[collection] (contents: FlatHashTable.Contents[T])
 extends ParSet[T]
    with GenericParTemplate[T, ParHashSet]
-   with ParSetLike[T, ParHashSet[T], scala.collection.mutable.HashSet[T]]
+   with ParSetLike[T, ParHashSet, ParHashSet[T], scala.collection.mutable.HashSet[T]]
    with ParFlatHashTable[T]
    with Serializable
 {
@@ -58,18 +58,19 @@ extends ParSet[T]
 
   override def iterator = splitter
 
-  override def size = tableSize
-
   def clear() = clearTable()
 
-  override def seq = new scala.collection.mutable.HashSet(hashTableContents)
+  // TODO Redesign ParHashSet so that it can be converted to a mutable.HashSet in constant time
+  def seq = scala.collection.mutable.HashSet.from(this)
 
-  def +=(elem: T) = {
+  def knownSize = tableSize
+
+  def addOne(elem: T) = {
     addElem(elem)
     this
   }
 
-  def -=(elem: T) = {
+  def subtractOne(elem: T) = {
     removeElem(elem)
     this
   }
@@ -113,7 +114,7 @@ extends ParSet[T]
  *  @define coll parallel hash set
  */
 object ParHashSet extends ParSetFactory[ParHashSet] {
-  implicit def canBuildFrom[T]: CanCombineFrom[Coll, T, ParHashSet[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[T]: CanCombineFrom[ParHashSet[_], T, ParHashSet[T]] = new GenericCanCombineFrom[T]
 
   override def newBuilder[T]: Combiner[T, ParHashSet[T]] = newCombiner
 
@@ -128,7 +129,7 @@ with scala.collection.mutable.FlatHashTable.HashUtils[T] {
   private val nonmasklen = ParHashSetCombiner.nonmasklength
   private val seedvalue = 27
 
-  def +=(elem: T) = {
+  def addOne(elem: T) = {
     val entry = elemToEntry(elem)
     sz += 1
     val hc = improve(entry.hashCode, seedvalue)

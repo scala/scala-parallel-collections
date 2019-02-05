@@ -93,8 +93,8 @@ trait Combiner[-Elem, +To] extends Builder[Elem, To] with Sizing with Parallel {
 
   /** Add all elements from a sequential collection and return the result.
    */
-  def fromSequential(seq: TraversableOnce[Elem]): To = {
-    for (x <- seq) this += x
+  def fromSequential(seq: IterableOnce[Elem]): To = {
+    for (x <- seq.iterator) this += x
     result()
   }
 }

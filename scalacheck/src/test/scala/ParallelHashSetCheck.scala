@@ -30,7 +30,7 @@ abstract class ParallelHashSetCheck[T](tp: String) extends ParallelSetCheck[T]("
     hm
   }
 
-  def fromTraversable(t: Traversable[T]) = {
+  def fromIterable(t: Iterable[T]) = {
     val phs = new ParHashSet[T]
     phs.tasksupport = tasksupport
     var i = 0
@@ -54,7 +54,7 @@ with IntValues
       println("could not match data structure type: " + ds.getClass)
   }
 
-  override def checkDataStructureInvariants(orig: Traversable[Int], ds: AnyRef) = ds match {
+  override def checkDataStructureInvariants(orig: Iterable[Int], ds: AnyRef) = ds match {
     // case pm: ParHashSet[t] if 1 == 0 =>
     //   // for an example of how not to write code proceed below
     //   val invs = pm.brokenInvariants

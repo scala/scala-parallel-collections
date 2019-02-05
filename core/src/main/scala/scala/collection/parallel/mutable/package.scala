@@ -14,7 +14,6 @@ package scala
 package collection.parallel
 
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.ArraySeq
 import scala.collection.generic.Sizing
 
 package object mutable {
@@ -73,9 +72,4 @@ package mutable {
     }
   }
 
-  private[mutable] class ExposedArraySeq[T](arr: Array[AnyRef], sz: Int) extends ArraySeq[T](sz) {
-    override val array = arr
-    override val length = sz
-    override def stringPrefix = "ArraySeq"
-  }
 }

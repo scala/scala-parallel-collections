@@ -26,14 +26,14 @@ extends Combiner[T, ParArray[T]] {
   // because size is doubling, random access is O(logn)!
   val buff = new DoublingUnrolledBuffer[Any]
 
-  def +=(elem: T) = {
+  def addOne(elem: T) = {
     buff += elem
     this
   }
 
   def result = {
-    val arrayseq = new ArraySeq[T](size)
-    val array = arrayseq.array.asInstanceOf[Array[Any]]
+    val array = new Array[Any](size)
+    val arrayseq = ArraySeq.make(array).asInstanceOf[ArraySeq[T]]
 
     combinerTaskSupport.executeAndWaitResult(new CopyUnrolledToArray(array, 0, size))
 

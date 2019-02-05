@@ -40,7 +40,7 @@ import scala.collection.concurrent.TrieMapIterator
 final class ParTrieMap[K, V] private[collection] (private val ctrie: TrieMap[K, V])
 extends ParMap[K, V]
    with GenericParMapTemplate[K, V, ParTrieMap]
-   with ParMapLike[K, V, ParTrieMap[K, V], TrieMap[K, V]]
+   with ParMapLike[K, V, ParTrieMap, ParTrieMap[K, V], TrieMap[K, V]]
    with ParTrieMapCombiner[K, V]
    with Serializable
 {
@@ -68,12 +68,12 @@ extends ParMap[K, V]
 
   def remove(key: K): Option[V] = ctrie.remove(key)
 
-  def +=(kv: (K, V)): this.type = {
+  def addOne(kv: (K, V)): this.type = {
     ctrie.+=(kv)
     this
   }
 
-  def -=(key: K): this.type = {
+  def subtractOne(key: K): this.type = {
     ctrie.-=(key)
     this
   }
@@ -89,6 +89,8 @@ extends ParMap[K, V]
         cn.cachedSize(ctrie)
     }
   }
+
+  def knownSize = -1
 
   override def stringPrefix = "ParTrieMap"
 

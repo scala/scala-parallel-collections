@@ -2,14 +2,16 @@ import ScalaModulePlugin._
 
 version in ThisBuild := "0.1.3-SNAPSHOT"
 
+resolvers in ThisBuild += "scala-integration" at "https://scala-ci.typesafe.com/artifactory/scala-integration/"
+
 scalaVersionsByJvm in ThisBuild := {
-  val v213 = "2.13.0-M3"
+  val v213 = "2.13.0-pre-e40c95e"
   Map(
     8 -> List(v213 -> true),
     11 -> List(v213 -> false))
 }
 
-scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xfatal-warnings")
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature"/*, "-Xfatal-warnings"*/)
 
 cancelable in Global := true
 
@@ -72,7 +74,7 @@ lazy val junit = project.in(file("junit"))
 lazy val scalacheck = project.in(file("scalacheck"))
   .settings(commonSettings)
   .settings(
-  libraryDependencies += "org.scalacheck" % "scalacheck_2.12" % "1.14.0",
+  libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0",
   fork in Test := true,
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5"),
   disablePublishing

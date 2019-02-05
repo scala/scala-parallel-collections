@@ -13,12 +13,12 @@
 package scala
 package collection.parallel
 
-import scala.collection.{ SeqLike, GenSeq, GenIterable, Iterator }
+import scala.language.higherKinds
+
+import scala.collection.{AnyConstr, BufferedIterator, Iterator, SeqOps}
 import scala.collection.generic.DefaultSignalling
 import scala.collection.generic.AtomicIndexFlag
-import scala.collection.generic.CanBuildFrom
 import scala.collection.generic.VolatileAbort
-
 import scala.collection.parallel.ParallelCollectionImplicits._
 
 /** A template trait for sequences of type `ParSeq[T]`, representing
@@ -50,10 +50,28 @@ import scala.collection.parallel.ParallelCollectionImplicits._
  *  @author Aleksandar Prokopec
  *  @since 2.9
  */
-trait ParSeqLike[+T, +Repr <: ParSeq[T], +Sequential <: Seq[T] with SeqLike[T, Sequential]]
-extends scala.collection.GenSeqLike[T, Repr]
-   with ParIterableLike[T, Repr, Sequential] {
+trait ParSeqLike[+T, +CC[X] <: ParSeq[X], +Repr <: ParSeq[T], +Sequential <: scala.collection.Seq[T] with SeqOps[T, AnyConstr, Sequential]]
+extends ParIterableLike[T, CC, Repr, Sequential]
+   with Equals {
 self =>
+
+  def length: Int
+  def apply(index: Int): T
+
+  override def hashCode() = scala.util.hashing.MurmurHash3.orderedHash(this, "ParSeq".hashCode)
+
+  /** The equals method for arbitrary parallel sequences. Compares this
+    * parallel sequence to some other object.
+    *  @param    that  The object to compare the sequence to
+    *  @return   `true` if `that` is a sequence that has the same elements as
+    *            this sequence in the same order, `false` otherwise
+    */
+  override def equals(that: Any): Boolean = that match {
+    case that: ParSeq[_] => (that eq this.asInstanceOf[AnyRef]) || (that canEqual this) && (this sameElements that)
+    case _               => false
+  }
+
+  def canEqual(other: Any): Boolean = true
 
   protected[this] type SuperParIterator = IterableSplitter[T]
 
@@ -66,7 +84,7 @@ self =>
 
   override def iterator: PreciseSplitter[T] = splitter
 
-  override def size = length
+  final def size = length
 
   /** Used to iterate elements using indices */
   protected abstract class Elements(start: Int, val end: Int) extends SeqSplitter[T] with BufferedIterator[T] {
@@ -98,6 +116,16 @@ self =>
     override def toString = "Elements(" + start + ", " + end + ")"
   }
 
+  /** Tests whether this $coll contains given index.
+    *
+    *  The implementations of methods `apply` and `isDefinedAt` turn a `ParSeq[T]` into
+    *  a `PartialFunction[Int, T]`.
+    *
+    * @param    idx     the index to test
+    * @return   `true` if this $coll contains an element at position `idx`, `false` otherwise.
+    */
+  def isDefinedAt(idx: Int): Boolean = (idx >= 0) && (idx < length)
+
   /* ParallelSeq methods */
 
   /** Returns the length of the longest segment of elements starting at
@@ -119,6 +147,46 @@ self =>
     tasksupport.executeAndWaitResult(new SegmentLength(p, 0, splitter.psplitWithSignalling(realfrom, length - realfrom)(1) assign ctx))._1
   }
 
+  /** Returns the length of the longest prefix whose elements all satisfy some predicate.
+    *
+    *  $mayNotTerminateInf
+    *
+    *  @param   p     the predicate used to test elements.
+    *  @return  the length of the longest prefix of this $coll
+    *           such that every element of the segment satisfies the predicate `p`.
+    */
+  def prefixLength(p: T => Boolean): Int = segmentLength(p, 0)
+
+  /** Finds index of first occurrence of some value in this $coll.
+    *
+    *  @param   elem   the element value to search for.
+    *  @tparam  B      the type of the element `elem`.
+    *  @return  the index of the first element of this $coll that is equal (as determined by `==`)
+    *           to `elem`, or `-1`, if none exists.
+    */
+  def indexOf[B >: T](elem: B): Int = indexOf(elem, 0)
+
+  /** Finds index of first occurrence of some value in this $coll after or at some start index.
+    *
+    *  @param   elem   the element value to search for.
+    *  @tparam  B      the type of the element `elem`.
+    *  @param   from   the start index
+    *  @return  the index `>= from` of the first element of this $coll that is equal (as determined by `==`)
+    *           to `elem`, or `-1`, if none exists.
+    */
+  def indexOf[B >: T](elem: B, from: Int): Int = indexWhere(elem == _, from)
+
+
+  /** Finds index of first element satisfying some predicate.
+    *
+    *  $mayNotTerminateInf
+    *
+    *  @param   p     the predicate used to test elements.
+    *  @return  the index of the first element of this $coll that satisfies the predicate `p`,
+    *           or `-1`, if none exists.
+    */
+  def indexWhere(p: T => Boolean): Int = indexWhere(p, 0)
+
   /** Finds the first element satisfying some predicate.
    *
    *  $indexsignalling
@@ -136,6 +204,38 @@ self =>
     ctx.setIndexFlag(Int.MaxValue)
     tasksupport.executeAndWaitResult(new IndexWhere(p, realfrom, splitter.psplitWithSignalling(realfrom, length - realfrom)(1) assign ctx))
   }
+
+
+  /** Finds index of last occurrence of some value in this $coll.
+    *
+    *  $willNotTerminateInf
+    *
+    *  @param   elem   the element value to search for.
+    *  @tparam  B      the type of the element `elem`.
+    *  @return  the index of the last element of this $coll that is equal (as determined by `==`)
+    *           to `elem`, or `-1`, if none exists.
+    */
+  def lastIndexOf[B >: T](elem: B): Int = lastIndexWhere(elem == _)
+
+  /** Finds index of last occurrence of some value in this $coll before or at a given end index.
+    *
+    *  @param   elem   the element value to search for.
+    *  @param   end    the end index.
+    *  @tparam  B      the type of the element `elem`.
+    *  @return  the index `<= end` of the last element of this $coll that is equal (as determined by `==`)
+    *           to `elem`, or `-1`, if none exists.
+    */
+  def lastIndexOf[B >: T](elem: B, end: Int): Int = lastIndexWhere(elem == _, end)
+
+  /** Finds index of last element satisfying some predicate.
+    *
+    *  $willNotTerminateInf
+    *
+    *  @param   p     the predicate used to test elements.
+    *  @return  the index of the last element of this $coll that satisfies the predicate `p`,
+    *           or `-1`, if none exists.
+    */
+  def lastIndexWhere(p: T => Boolean): Int = lastIndexWhere(p, length - 1)
 
   /** Finds the last element satisfying some predicate.
    *
@@ -159,14 +259,11 @@ self =>
     tasksupport.executeAndWaitResult(new Reverse(() => newCombiner, splitter) mapResult { _.resultWithTaskSupport })
   }
 
-  def reverseMap[S, That](f: T => S)(implicit bf: CanBuildFrom[Repr, S, That]): That = if (bf(repr).isCombiner) {
+  def reverseMap[S](f: T => S): CC[S] = {
     tasksupport.executeAndWaitResult(
-      new ReverseMap[S, That](f, () => bf(repr).asCombiner, splitter) mapResult { _.resultWithTaskSupport }
+      new ReverseMap[S, CC[S]](f, () => companion.newCombiner[S], splitter) mapResult { _.resultWithTaskSupport }
     )
-  } else setTaskSupport(seq.reverseMap(f)(bf2seq(bf)), tasksupport)
-  /*bf ifParallel { pbf =>
-    tasksupport.executeAndWaitResult(new ReverseMap[S, That](f, pbf, splitter) mapResult { _.result })
-  } otherwise seq.reverseMap(f)(bf2seq(bf))*/
+  }
 
   /** Tests whether this $coll contains the given sequence at a given index.
    *
@@ -177,22 +274,28 @@ self =>
    *  @param offset  the starting offset for the search
    *  @return        `true` if there is a sequence `that` starting at `offset` in this sequence, `false` otherwise
    */
-  def startsWith[S](that: GenSeq[S], offset: Int): Boolean = that ifParSeq { pthat =>
-    if (offset < 0 || offset >= length) offset == length && pthat.length == 0
-    else if (pthat.length == 0) true
-    else if (pthat.length > length - offset) false
-    else {
-      val ctx = new DefaultSignalling with VolatileAbort
-      tasksupport.executeAndWaitResult(
-        new SameElements(splitter.psplitWithSignalling(offset, pthat.length)(1) assign ctx, pthat.splitter)
-      )
-    }
-  } otherwise seq.startsWith(that, offset)
+  def startsWith[S >: T](that: IterableOnce[S], offset: Int = 0): Boolean = that match {
+    case pt: ParSeq[S] =>
+      if (offset < 0 || offset >= length) offset == length && pt.isEmpty
+      else if (pt.isEmpty) true
+      else if (pt.length > length - offset) false
+      else {
+        val ctx = new DefaultSignalling with VolatileAbort
+        tasksupport.executeAndWaitResult(
+          new SameElements[S](splitter.psplitWithSignalling(offset, pt.length)(1) assign ctx, pt.splitter)
+        )
+      }
+    case _ => seq.startsWith(that, offset)
+  }
 
-  override def sameElements[U >: T](that: GenIterable[U]): Boolean = that ifParSeq { pthat =>
-    val ctx = new DefaultSignalling with VolatileAbort
-    length == pthat.length && tasksupport.executeAndWaitResult(new SameElements(splitter assign ctx, pthat.splitter))
-  } otherwise seq.sameElements(that)
+  override def sameElements[U >: T](that: IterableOnce[U]): Boolean = {
+    that match {
+      case pthat: ParSeq[U] =>
+        val ctx = new DefaultSignalling with VolatileAbort
+        length == pthat.length && tasksupport.executeAndWaitResult(new SameElements(splitter assign ctx, pthat.splitter))
+      case _ => super.sameElements(that)
+    }
+  }
 
   /** Tests whether this $coll ends with the given parallel sequence.
    *
@@ -202,37 +305,49 @@ self =>
    *  @param that     the sequence to test
    *  @return         `true` if this $coll has `that` as a suffix, `false` otherwise
    */
-  def endsWith[S](that: GenSeq[S]): Boolean = that ifParSeq { pthat =>
+  def endsWith[S >: T](that: ParSeq[S]): Boolean = {
     if (that.length == 0) true
     else if (that.length > length) false
     else {
       val ctx = new DefaultSignalling with VolatileAbort
       val tlen = that.length
-      tasksupport.executeAndWaitResult(new SameElements(splitter.psplitWithSignalling(length - tlen, tlen)(1) assign ctx, pthat.splitter))
+      tasksupport.executeAndWaitResult(new SameElements[S](splitter.psplitWithSignalling(length - tlen, tlen)(1) assign ctx, that.splitter))
     }
-  } otherwise seq.endsWith(that)
+  }
 
-  def patch[U >: T, That](from: Int, patch: GenSeq[U], replaced: Int)(implicit bf: CanBuildFrom[Repr, U, That]): That = {
+  /** Tests whether this $coll ends with the given collection.
+    *
+    *  $abortsignalling
+    *
+    *  @tparam S       the type of the elements of `that` sequence
+    *  @param that     the sequence to test
+    *  @return         `true` if this $coll has `that` as a suffix, `false` otherwise
+    */
+  def endsWith[S >: T](that: Iterable[S]): Boolean = seq.endsWith(that)
+
+  def patch[U >: T](from: Int, patch: scala.collection.Seq[U], replaced: Int): CC[U] = patch_sequential(from, patch, replaced)
+
+  def patch[U >: T](from: Int, patch: ParSeq[U], replaced: Int): CC[U] = {
     val realreplaced = replaced min (length - from)
-    if (patch.isParSeq && bf(repr).isCombiner && (size - realreplaced + patch.size) > MIN_FOR_COPY) {
+    if ((size - realreplaced + patch.size) > MIN_FOR_COPY) {
       val that = patch.asParSeq
       val pits = splitter.psplitWithSignalling(from, replaced, length - from - realreplaced)
-      val cfactory = combinerFactory(() => bf(repr).asCombiner)
-      val copystart = new Copy[U, That](cfactory, pits(0))
+      val cfactory = combinerFactory(() => companion.newCombiner[U])
+      val copystart = new Copy[U, CC[U]](cfactory, pits(0))
       val copymiddle = wrap {
-        val tsk = new that.Copy[U, That](cfactory, that.splitter)
+        val tsk = new that.Copy[U, CC[U]](cfactory, that.splitter)
         tasksupport.executeAndWaitResult(tsk)
       }
-      val copyend = new Copy[U, That](cfactory, pits(2))
+      val copyend = new Copy[U, CC[U]](cfactory, pits(2))
       tasksupport.executeAndWaitResult(((copystart parallel copymiddle) { _ combine _ } parallel copyend) { _ combine _ } mapResult {
         _.resultWithTaskSupport
       })
     } else patch_sequential(from, patch.seq, replaced)
   }
 
-  private def patch_sequential[U >: T, That](fromarg: Int, patch: Seq[U], r: Int)(implicit bf: CanBuildFrom[Repr, U, That]): That = {
+  private def patch_sequential[U >: T](fromarg: Int, patch: scala.collection.Seq[U], r: Int): CC[U] = {
     val from = 0 max fromarg
-    val b = bf(repr)
+    val b = companion.newBuilder[U]
     val repl = (r min (length - from)) max 0
     val pits = splitter.psplitWithSignalling(from, repl, length - from - repl)
     b ++= pits(0)
@@ -241,37 +356,55 @@ self =>
     setTaskSupport(b.result(), tasksupport)
   }
 
-  def updated[U >: T, That](index: Int, elem: U)(implicit bf: CanBuildFrom[Repr, U, That]): That = if (bf(repr).isCombiner) {
+  def updated[U >: T](index: Int, elem: U): CC[U] = {
     tasksupport.executeAndWaitResult(
-      new Updated(index, elem, combinerFactory(() => bf(repr).asCombiner), splitter) mapResult {
+      new Updated(index, elem, combinerFactory(() => companion.newCombiner[U]), splitter) mapResult {
         _.resultWithTaskSupport
       }
     )
-  } else setTaskSupport(seq.updated(index, elem)(bf2seq(bf)), tasksupport)
-  /*bf ifParallel { pbf =>
-    tasksupport.executeAndWaitResult(new Updated(index, elem, pbf, splitter) mapResult { _.result })
-  } otherwise seq.updated(index, elem)(bf2seq(bf))*/
+  }
 
-  def +:[U >: T, That](elem: U)(implicit bf: CanBuildFrom[Repr, U, That]): That = {
+  def +:[U >: T, That](elem: U): CC[U] = {
     patch(0, mutable.ParArray(elem), 0)
   }
 
-  def :+[U >: T, That](elem: U)(implicit bf: CanBuildFrom[Repr, U, That]): That = {
+  def :+[U >: T, That](elem: U): CC[U] = {
     patch(length, mutable.ParArray(elem), 0)
   }
 
-  def padTo[U >: T, That](len: Int, elem: U)(implicit bf: CanBuildFrom[Repr, U, That]): That = if (length < len) {
-    patch(length, new immutable.Repetition(elem, len - length), 0)
-  } else patch(length, Nil, 0)
 
-  override def zip[U >: T, S, That](that: GenIterable[S])(implicit bf: CanBuildFrom[Repr, (U, S), That]): That = if (bf(repr).isCombiner && that.isParSeq) {
-    val thatseq = that.asParSeq
-    tasksupport.executeAndWaitResult(
-      new Zip(length min thatseq.length, combinerFactory(() => bf(repr).asCombiner), splitter, thatseq.splitter) mapResult {
-        _.resultWithTaskSupport
-      }
-    )
-  } else super.zip(that)(bf)
+  /** Produces a new sequence which contains all elements of this $coll and also all elements of
+    *  a given sequence. `xs union ys`  is equivalent to `xs ++ ys`.
+    *
+    * Another way to express this
+    * is that `xs union ys` computes the order-preserving multi-set union of `xs` and `ys`.
+    * `union` is hence a counter-part of `diff` and `intersect` which also work on multi-sets.
+    *
+    * $willNotTerminateInf
+    *
+    *  @param that   the sequence to add.
+    *  @tparam B     the element type of the returned $coll.
+    *  @return       a new $coll which contains all elements of this $coll
+    *                  followed by all elements of `that`.
+    */
+  def union[B >: T](that: scala.collection.Seq[B]): CC[B] = this ++ that
+  def union[B >: T](that: ParSeq[B]): CC[B] = this ++ that
+
+  def padTo[U >: T](len: Int, elem: U): CC[U] = if (length < len) {
+    patch(length, new immutable.Repetition(elem, len - length), 0)
+  } else patch(length, ParSeq.newBuilder[U].result(), 0)
+
+  override def zip[U >: T, S](that: ParIterable[S]): CC[(U, S)] = /*if (bf(repr).isCombiner && that.isParSeq)*/ {
+    that match {
+      case thatseq: ParSeq[S] =>
+        tasksupport.executeAndWaitResult(
+          new Zip(length min thatseq.length, combinerFactory(() => companion.newCombiner[(U, S)]), splitter, thatseq.splitter) mapResult {
+            _.resultWithTaskSupport
+          }
+        )
+      case _ => super.zip(that)
+    }
+  }
 
   /** Tests whether every element of this $coll relates to the
    *  corresponding element of another parallel sequence by satisfying a test predicate.
@@ -285,12 +418,14 @@ self =>
    *                   `p(x, y)` is `true` for all corresponding elements `x` of this $coll
    *                   and `y` of `that`, otherwise `false`
    */
-  def corresponds[S](that: GenSeq[S])(p: (T, S) => Boolean): Boolean = that ifParSeq { pthat =>
+  def corresponds[S](that: ParSeq[S])(p: (T, S) => Boolean): Boolean = {
     val ctx = new DefaultSignalling with VolatileAbort
-    length == pthat.length && tasksupport.executeAndWaitResult(new Corresponds(p, splitter assign ctx, pthat.splitter))
-  } otherwise seq.corresponds(that)(p)
+    length == that.length && tasksupport.executeAndWaitResult(new Corresponds(p, splitter assign ctx, that.splitter))
+  }
 
-  def diff[U >: T](that: GenSeq[U]): Repr = sequentially {
+  def diff[U >: T](that: ParSeq[U]): Repr = diff(that.seq)
+
+  def diff[U >: T](that: scala.collection.Seq[U]): Repr = sequentially {
     _ diff that
   }
 
@@ -315,7 +450,7 @@ self =>
    *                  ''n'' times in `that`, then the first ''n'' occurrences of `x` will be retained
    *                  in the result, but any following occurrences will be omitted.
    */
-  def intersect[U >: T](that: GenSeq[U]) = sequentially {
+  def intersect[U >: T](that: scala.collection.Seq[U]) = sequentially {
     _ intersect that
   }
 

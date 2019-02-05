@@ -30,7 +30,6 @@ trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
 
   abstract class ParFlatHashTableIterator(var idx: Int, val until: Int, val totalsize: Int)
   extends IterableSplitter[T] with SizeMapUtils {
-    import scala.collection.DebugUtils._
 
     private[this] var traversed = 0
     private[this] val itertable = table
@@ -68,9 +67,10 @@ trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
       val sndtotal = remaining - fsttotal
       val sndit = newIterator(sndidx, snduntil, sndtotal)
 
-      Seq(fstit, sndit)
-    } else Seq(this)
+      scala.Seq(fstit, sndit)
+    } else scala.Seq(this)
 
+    import DebugUtils._
     override def debugInformation = buildString {
       append =>
       append("Parallel flat hash table iterator")

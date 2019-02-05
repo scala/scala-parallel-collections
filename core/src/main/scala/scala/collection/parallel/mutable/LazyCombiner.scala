@@ -13,7 +13,7 @@
 package scala
 package collection.parallel.mutable
 
-import scala.collection.generic.Growable
+import scala.collection.mutable.Growable
 import scala.collection.generic.Sizing
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.parallel.Combiner
@@ -30,7 +30,7 @@ trait LazyCombiner[Elem, +To, Buff <: Growable[Elem] with Sizing] extends Combin
 //self: scala.collection.parallel.EnvironmentPassingCombiner[Elem, To] =>
   val chain: ArrayBuffer[Buff]
   val lastbuff = chain.last
-  def +=(elem: Elem) = { lastbuff += elem; this }
+  def addOne(elem: Elem) = { lastbuff += elem; this }
   def result: To = allocateAndCopy
   def clear() = { chain.clear() }
   def combine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]): Combiner[N, NewTo] = if (this ne other) {

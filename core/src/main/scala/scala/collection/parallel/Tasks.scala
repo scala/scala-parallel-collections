@@ -27,7 +27,7 @@ trait Task[R, +Tp] {
    *  Optionally is provided with the result from the previous completed task
    *  or `None` if there was no previous task (or the previous task is uncompleted or unknown).
    */
-  def leaf(result: Option[R])
+  def leaf(result: Option[R]): Unit
 
   /** A result that can be accessed once the task is completed. */
   var result: R
@@ -97,11 +97,11 @@ trait Tasks {
 
     def split: Seq[WrappedTask[R, Tp]]
     /** Code that gets called after the task gets started - it may spawn other tasks instead of calling `leaf`. */
-    def compute()
+    def compute(): Unit
     /** Start task. */
-    def start()
+    def start(): Unit
     /** Wait for task to finish. */
-    def sync()
+    def sync(): Unit
     /** Try to cancel the task.
      *  @return     `true` if cancellation is successful.
      */
@@ -197,7 +197,7 @@ trait AdaptiveWorkStealingTasks extends Tasks {
       var curr = this
       var chain = "chain: "
       while (curr != null) {
-        chain += curr + " ---> "
+        chain += curr.toString + " ---> "
         curr = curr.next
       }
       println(chain)
