@@ -325,6 +325,7 @@ self =>
     */
   def endsWith[S >: T](that: Iterable[S]): Boolean = seq.endsWith(that)
 
+  /** Overload of ''patch'' that takes a sequential collection as parameter */
   def patch[U >: T](from: Int, patch: scala.collection.Seq[U], replaced: Int): CC[U] = patch_sequential(from, patch, replaced)
 
   def patch[U >: T](from: Int, patch: ParSeq[U], replaced: Int): CC[U] = {
@@ -387,8 +388,10 @@ self =>
     *  @return       a new $coll which contains all elements of this $coll
     *                  followed by all elements of `that`.
     */
-  def union[B >: T](that: scala.collection.Seq[B]): CC[B] = this ++ that
   def union[B >: T](that: ParSeq[B]): CC[B] = this ++ that
+
+  /** Overload of ''union'' that takes a sequential collection as parameter */
+  def union[B >: T](that: scala.collection.Seq[B]): CC[B] = this ++ that
 
   def padTo[U >: T](len: Int, elem: U): CC[U] = if (length < len) {
     patch(length, new immutable.Repetition(elem, len - length), 0)

@@ -191,6 +191,9 @@ self =>
     def - (key: K): ParMap[K, S] = ParMap[K, S]() ++ this - key
   }
 
+  // Transformation operations (`map`, `collect`, `flatMap` and `concat`) are overloaded
+  // to return a `ParMap` rather than a `ParIterable`
+
   /** Builds a new map by applying a function to all elements of this $coll.
     *
     *  @param f      the function to apply to each element.

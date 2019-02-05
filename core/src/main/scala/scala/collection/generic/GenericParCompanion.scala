@@ -28,6 +28,9 @@ import scala.language.{higherKinds, implicitConversions}
  */
 trait GenericParCompanion[+CC[X] <: ParIterable[X]] {
 
+  // `empty` and `apply` were previously inherited from `GenericCompanion` but this class
+  // has been removed in 2.13. I’ve copied their old implementation here.
+
   /** An empty collection of type `$Coll[A]`
     *  @tparam A      the type of the ${coll}'s elements
     */

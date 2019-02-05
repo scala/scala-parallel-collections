@@ -35,6 +35,9 @@ extends GenericParMapCompanion[CC] {
 
   type Coll = MapColl
 
+  // `apply` and `empty` methods were previously inherited from `GenMapFactory`, which
+  // has been removed from the Scala library in 2.13
+
   /** A collection of type $Coll that contains given key/value bindings.
     *  @param elems   the key/value pairs that make up the $coll
     *  @tparam K      the type of the keys
