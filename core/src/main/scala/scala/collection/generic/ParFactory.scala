@@ -30,6 +30,9 @@ import scala.language.higherKinds
 abstract class ParFactory[CC[X] <: ParIterable[X] with GenericParTemplate[X, CC]]
 extends GenericParCompanion[CC] {
 
+  // The methods below were previously inherited from `GenTraversableFactory`, but this
+  // class has been removed in 2.13.
+
   /** Concatenates all argument collections into a single $coll.
    *
    *  @param xss the collections that are to be concatenated.
