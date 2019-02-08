@@ -26,7 +26,8 @@ import scala.annotation.tailrec
 sealed abstract class OldHashSet[A]
   extends AbstractSet[A]
     with SetOps[A, OldHashSet, OldHashSet[A]]
-    with StrictOptimizedIterableOps[A, OldHashSet, OldHashSet[A]] {
+    with StrictOptimizedIterableOps[A, OldHashSet, OldHashSet[A]]
+    with Serializable {
 
   import OldHashSet.{bufferSize, LeafOldHashSet, nullToEmpty}
 

@@ -30,7 +30,8 @@ sealed abstract class OldHashMap[K, +V]
   extends AbstractMap[K, V]
     with MapOps[K, V, OldHashMap, OldHashMap[K, V]]
     with StrictOptimizedIterableOps[(K, V), Iterable, OldHashMap[K, V]]
-    with StrictOptimizedMapOps[K, V, OldHashMap, OldHashMap[K, V]] {
+    with StrictOptimizedMapOps[K, V, OldHashMap, OldHashMap[K, V]]
+    with Serializable {
 
   import OldHashMap.{bufferSize, liftMerger, Merger, MergeFunction, nullToEmpty}
 
