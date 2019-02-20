@@ -293,7 +293,7 @@ trait ForkJoinTasks extends Tasks with HavingForkJoinPool {
 }
 
 object ForkJoinTasks {
-  lazy val defaultForkJoinPool: ForkJoinPool = new ForkJoinPool()
+  lazy val defaultForkJoinPool: ForkJoinPool = ForkJoinPool.commonPool()
 }
 
 /* Some boilerplate due to no deep mixin composition. Not sure if it can be done differently without them.
