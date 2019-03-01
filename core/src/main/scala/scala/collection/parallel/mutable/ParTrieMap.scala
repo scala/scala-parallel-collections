@@ -90,7 +90,7 @@ extends ParMap[K, V]
     }
   }
 
-  def knownSize = -1
+  override def knownSize = -1
 
   override def stringPrefix = "ParTrieMap"
 

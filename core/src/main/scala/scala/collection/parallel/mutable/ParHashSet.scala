@@ -63,7 +63,7 @@ extends ParSet[T]
   // TODO Redesign ParHashSet so that it can be converted to a mutable.HashSet in constant time
   def seq = scala.collection.mutable.HashSet.from(this)
 
-  def knownSize = tableSize
+  override def knownSize = tableSize
 
   def addOne(elem: T) = {
     addElem(elem)

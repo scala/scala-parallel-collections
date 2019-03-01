@@ -62,7 +62,7 @@ self =>
 
   def splitter = new ParHashMapIterator(1, table.length, size, table(0).asInstanceOf[DefaultEntry[K, V]])
 
-  def knownSize = tableSize
+  override def knownSize = tableSize
 
   def clear() = clearTable()
 
