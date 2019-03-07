@@ -8,7 +8,8 @@ scalaVersionsByJvm in ThisBuild := {
   val v213 = "2.13.0-pre-d645559"  // Feb 27
   Map(
     8 -> List(v213 -> true),
-    11 -> List(v213 -> false))
+    11 -> List(v213 -> false),
+    12 -> List(v213 -> false))
 }
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature"/*, "-Xfatal-warnings"*/)
