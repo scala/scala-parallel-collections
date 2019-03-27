@@ -50,7 +50,7 @@ sealed abstract class OldHashSet[A]
       super.subsetOf(that)
   }
 
-  override def concat(that: collection.IterableOnce[A])(implicit dummy: DummyImplicit): OldHashSet[A] = that match {
+  override def concat(that: collection.IterableOnce[A]): OldHashSet[A] = that match {
     case that: OldHashSet[A] =>
       val buffer = new Array[OldHashSet[A]](bufferSize(this.size + that.size))
       nullToEmpty(union0(that, 0, buffer, 0))
