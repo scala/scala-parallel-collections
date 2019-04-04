@@ -395,10 +395,12 @@ trait ExecutionContextTasks extends Tasks {
    *  Otherwise, the driver will be a Scala `Future`-based implementation.
    */
   private val driver: Tasks = executionContext match {
-    case eci: scala.concurrent.impl.ExecutionContextImpl => eci.executor match {
-      case fjp: ForkJoinPool => new ForkJoinTaskSupport(fjp)
-      case _ => new FutureTasks(environment)
-    }
+    case fjp: ForkJoinPool => new ForkJoinTaskSupport(fjp)
+    case eci: scala.concurrent.impl.ExecutionContextImpl => 
+      eci.executor match {
+        case fjp: ForkJoinPool => new ForkJoinTaskSupport(fjp)
+        case _ => new FutureTasks(environment)
+      }
     case _ => new FutureTasks(environment)
   }
 
