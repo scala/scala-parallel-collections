@@ -4,7 +4,7 @@ This Scala standard module contains the package
 `scala.collection.parallel`, with all of the parallel collections that
 used to be part of the Scala standard library.
 
-As of Scala 2.13.0-M1, this module is a separate JAR that can be
+For Scala 2.13, this module is a separate JAR that can be
 omitted from projects that do not use parallel collections.
 
 ## Maintenance status
@@ -13,19 +13,13 @@ This module is maintained by the Scala team at Lightbend.  If you are
 interested in participating, please jump right in on issues and pull
 requests.
 
-Modest, targeted improvements to the existing codebase are welcome at
-any time.  More fundamental or sweeping changes should probably wait
-until after the
-[Scala 2.13 collections rework](http://www.scala-lang.org/blog/2017/02/28/collections-rework.html)
-is closer to final form.
-
 ## Usage
 
 To depend on scala-parallel-collections in sbt, add this to your `build.sbt`:
 
 ```
 libraryDependencies +=
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0"
 ```
 
 In your code, adding this import:
@@ -45,7 +39,7 @@ cross-built project, the dependency should take this form:
 libraryDependencies ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, major)) if major >= 13 =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
     case _ =>
       Seq()
   }
@@ -66,7 +60,7 @@ You may able to avoid the problem by directly constructing your
 parallel collections rather than going through `.par`.  For other
 possible workarounds, see
 https://github.com/scala/scala-parallel-collections/issues/22,
-which is still under discussion (as of April 2017).
+which is still under discussion.
 
 ## Releasing
 
