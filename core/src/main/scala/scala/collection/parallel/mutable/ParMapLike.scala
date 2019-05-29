@@ -43,6 +43,8 @@ extends scala.collection.parallel.ParIterableLike[(K, V), ParIterable, Repr, Seq
 {
   // note: should not override toMap
 
+  override def knownSize: Int = -1
+
   def put(key: K, value: V): Option[V]
 
   def +[U >: V](kv: (K, U)) = this.clone().asInstanceOf[CC[K, U]] += kv

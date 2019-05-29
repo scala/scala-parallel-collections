@@ -147,7 +147,7 @@ self =>
     def - (elem: K): ParSet[K] =
       ParSet[K]() ++ this - elem // !!! concrete overrides abstract problem
     def size = self.size
-    def knownSize = self.knownSize
+    override def knownSize = self.knownSize
     override def foreach[U](f: K => U) = for ((k, v) <- self) f(k)
     override def seq = self.seq.keySet
   }
@@ -155,7 +155,7 @@ self =>
   protected class DefaultValuesIterable extends ParIterable[V] {
     def splitter = valuesIterator(self.splitter)
     def size = self.size
-    def knownSize = self.knownSize
+    override def knownSize = self.knownSize
     override def foreach[U](f: V => U) = for ((k, v) <- self) f(v)
     def seq = self.seq.values
   }
@@ -174,7 +174,7 @@ self =>
     def get(key: K) = if (!p(key)) None else self.get(key)
     def seq = self.seq.view.filterKeys(p).to(Map)
     def size = filtered.size
-    def knownSize = filtered.knownSize
+    override def knownSize = filtered.knownSize
     def + [U >: V](kv: (K, U)): ParMap[K, U] = ParMap[K, U]() ++ this + kv
     def - (key: K): ParMap[K, V] = ParMap[K, V]() ++ this - key
   }
@@ -183,7 +183,7 @@ self =>
     override def foreach[U](g: ((K, S)) => U): Unit = for ((k, v) <- self) g((k, f(v)))
     def splitter = self.splitter.map(kv => (kv._1, f(kv._2)))
     def size = self.size
-    def knownSize = self.knownSize
+    override def knownSize = self.knownSize
     override def contains(key: K) = self.contains(key)
     def get(key: K) = self.get(key).map(f)
     def seq = self.seq.view.mapValues(f).to(Map)

@@ -52,7 +52,7 @@ extends ParSeq[T]
   def apply(idx: Int) = vector.apply(idx)
 
   def length = vector.length
-  def knownSize = vector.knownSize
+  override def knownSize = vector.knownSize
 
   def splitter: SeqSplitter[T] = {
     val pit = new ParVectorIterator(vector.startIndex, vector.endIndex)

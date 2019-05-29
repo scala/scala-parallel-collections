@@ -27,6 +27,7 @@ extends ParIterable[T]
    with ParSetLike[T, ParSet, ParSet[T], scala.collection.mutable.Set[T]]
 {
 self =>
+  override def knownSize: Int = -1
   override def companion: GenericParCompanion[ParSet] = ParSet
   override def empty: ParSet[T] = ParHashSet()
   def seq: scala.collection.mutable.Set[T]

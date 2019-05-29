@@ -44,7 +44,7 @@ self =>
   override def seq = range
 
   @inline final def length = range.length
-  @inline final def knownSize = range.knownSize
+  @inline final override def knownSize = range.knownSize
 
   @inline final def apply(idx: Int) = range.apply(idx)
 
