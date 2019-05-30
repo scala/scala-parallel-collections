@@ -82,7 +82,7 @@ self =>
   }
 
   def length = sz
-  def knownSize = sz
+  override def knownSize = sz
 
   def seq = (if (length == arrayseq.length) arrayseq else arrayseq.take(length)): ArraySeq[T]
 

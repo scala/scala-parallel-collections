@@ -42,6 +42,8 @@ extends scala.collection.parallel.ParIterableLike[T, CC, Repr, Sequential]
    with Cloneable[Repr]
 {
 self =>
+  override def knownSize: Int = -1
+
   override def empty: Repr
 
   def addOne(elem: T): this.type

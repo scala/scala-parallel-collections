@@ -27,7 +27,7 @@ package immutable {
     self =>
 
     def apply(idx: Int) = if (0 <= idx && idx < length) elem else throw new IndexOutOfBoundsException("" + idx)
-    def knownSize = length
+    override def knownSize = length
     override def seq: collection.immutable.Seq[T] = new collection.AbstractSeq[T] with collection.immutable.Seq[T] with CustomParallelizable[T, ParSeq[T]] {
         override def length: Int = self.length
         override def apply(idx: Int): T = self.apply(idx)

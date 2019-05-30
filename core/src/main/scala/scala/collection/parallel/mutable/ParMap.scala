@@ -33,6 +33,7 @@ extends parallel.ParMap[K, V]
    with GenericParMapTemplate[K, V, ParMap]
    with ParMapLike[K, V, ParMap, ParMap[K, V], mutable.Map[K, V]]
 {
+  override def knownSize: Int = -1
 
   protected[this] override def newCombiner: Combiner[(K, V), ParMap[K, V]] = ParMap.newCombiner[K, V]
 
