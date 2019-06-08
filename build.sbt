@@ -72,15 +72,6 @@ lazy val junit = project.in(file("junit"))
   disablePublishing
 ).dependsOn(testmacros, core)
 
-lazy val scalacheck = project.in(file("scalacheck"))
-  .settings(commonSettings)
-  .settings(
-  libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0",
-  fork in Test := true,
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5"),
-  disablePublishing
-).dependsOn(core)
-
 lazy val testmacros = project.in(file("testmacros"))
   .settings(commonSettings)
   .settings(
