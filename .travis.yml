@@ -12,7 +12,7 @@ env:
 script: admin/build.sh
 
 jdk:
-  - oraclejdk8
+  - openjdk8
   - openjdk11
 
 cache:
