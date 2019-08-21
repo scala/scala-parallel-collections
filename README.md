@@ -30,6 +30,10 @@ import scala.collection.parallel.CollectionConverters._
 
 will enable use of the `.par` method as in earlier Scala versions.
 
+### Scaladoc
+
+Here is the [full Scaladoc](https://static.javadoc.io/org.scala-lang.modules/scala-parallel-collections_2.13/0.2.0/scala/collection/index.html).
+
 ### Cross-building: dependency
 
 This module is published only for the Scala 2.13.x series, so in a
