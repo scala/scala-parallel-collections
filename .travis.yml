@@ -1,20 +1,15 @@
 language: scala
 
+scala:
+  - 2.13.0
+
 env:
-  global:
-    # PGP_PASSPHRASE
-    - secure: "aL0veasRyeyMG6GILAQlWdo7r7yEW3zuG5c79eCaO0j26EFSNHsW04gwEJrj1FNuD7YRTHxBQoUnaYF+lr8d9CVYS1+TkHmqIaYpbgkpVa4DY7WdCSaHdqr0C6FkBtCRhtFseS4db7HkT4EsJPFR42NR7/uo1pSY1V/SebanaRfMbCcBUOqzpFBIAHMOJzpFSO9EqAPI7MZKWT8iLU2gluhDAD/5LMG2iDsqUvuqWvCMPEV00a1G4Fq6O29KHYUTsGNgF8p+4GVRJgAxxQKydeNKDWuZ1cPGulxLTWSxlMlFtGuN1qEZUUbb93w+kgAXky5X7CkOcBEtQs8+XgiMc0DvZvxvprPHYyGBUr6dRo8f1ztZtcDr3IEVZ6brfTflCufvokHrfdcIdsRj7MYnVS8QWHikPBaSsMjsqLEOh0VjtQQ4DkmMSo1U0XIIzMm3U61xrSpdMQYhByFWJA63m3pxj0Qt80TGABB0zW4+sLZaAuX+tjF6mA2JncKqUausJ4LWMPmxh35/s0tTc7FzQsZUjTVZ3Kii80uZPtDhiyXcPfErXMIXj8EjPm6n8pM+/AMdb+FH9vAkZ/T6LW9TOZsPY9dNqyZcyXmJ2vvza9HTOzTTutOf1dVqx9rFXD89uIwH8OQtsVpk0X0Oo7ctlNNRURk/oWEuD4VW0L3PviY="
-    # SONA_USER
-    - secure: "A4YfShet5qwZ3YJ4Tco01XHnXpkNabDs3k2wV+9zlNtzoZ8h1N7ouXgsXtS8hf4MS43XTZYZq5aUGXVG/bwNqjnqP5EdURmF8e+02BrqWcJQnAFtcZY9JsiakZNd89/JkcCQnyZuQ4Z3a/39VFEPx1fGfN3mFYNhS8w7MJ9lQlZ+EqUPxJPqExaUtlzD//Pw8bTDyQMOF53+7SWGJT/747l4h9ehaRHNTFaFbI+Eh/DYSLa4RNuV81GlP1UY/lUIFYbT3pusZ5bOnvfmcSqV7HwXip0fwaP2qlb+WPckegqv53Qs0mV9Wtf6nwA6LkiGigUDYSM6LMYG71QtKoeBqsWaujTZBBQwqsvlS46o65TyuXbJ5LLbMMDNl0BztIUYV3K1WJlblIvGhiBZlvGi6mZrwuzcbiav9hbXugQEvvu+7FB+hb0cvXcaNZa6aZmZb6ck+ZhDfJoyfwo4GJWZNR+BSPNs3es80xzdQ5wg0lPsWCIUn7G0+47PzMoMOdBoq5SkeoC8bjAQ/5bbz7/GxSmWPDjaUR+f/tXKcbpokXIJ1J8w8fMVSjEWbJ39pO7/ybmDDRZgV+tPZRymDs6Z8YRw1fdbO5Unp9lXgVUvFHfZcjP+kskOHBwCV9a2s/ZpC6cNGOQRXoy3f/K27Q52w2uBc5Joplo7UUmTbCkHo0w="
-    # SONA_PASS
-    - secure: "AnhwwEUWgN5ekyYrmT88UK6yMQ+CVYKJ+yqXuIp5N96S/sCotQWuQYtcES3mVLtt5l5/H5BMvFuiKN/Rej/w6HCo75h3TwRlX7U2HsK/7oIb+CbSgbjCbNE+b5St2fAn3TfJLjQg9rsvprOehu6xbDhwAzA55Q8FdelFc44WDCpTpxStZC4aG3dQggesHPMSkgZLcbOcg2iSVHkk0E6CiOGs5iSRUbZf5ioSbTzn3KA8yIBlD56JEnnOcbIB4ZhiqLUBG+E90eMOyC39UODxBUqe6bJegOFUTJBo/D38qGDQAOQDP5sNN1TKLh1s/riDWQNtLVLuHGuzNER98ggEfRa6jo3FX5VqqPfi36nzsXf3lCI8LoP+m4dx3Et8eduJASfxeRe2tFFrPXDHmzZQAXu963WiTH1DINaBNd8z0ZnxSMpQhDpl7m3tlMYOvUI+RYcY70XEq490EtnYtUlJBsI5NrU+Pr1qJOfvQbg8DYIdJ0w81Gb8gSfj5kCxFlaitbzQwd7f0aKBIvxxYPFTBm0Hd6qMJxOzvFVgm03YW1fYhmQYiY8nszr+evCDFCPWPX/AIqU1up/58uTX84jekxVHkGXieqDem1R0iYnhJbDocwSyBdc1j7xOZsq0z1NEu5TwwKBdWxSCJZ18wcdYVYaecr7K1GZ1wMd7g6zhuJg="
-  matrix:
-    - ADOPTOPENJDK=8
-    - ADOPTOPENJDK=11
+  - ADOPTOPENJDK=8
+  - ADOPTOPENJDK=11
 
 before_install:
   # adding $HOME/.sdkman to cache would create an empty directory, which interferes with the initial installation
-  - "[[ -d $HOME/.sdkman/bin/ ]] || rm -rf $HOME/.sdkman/"
+  - "[[ -d $HOME/.sdkman/bin ]] || rm -rf $HOME/.sdkman/"
   - curl -sL https://get.sdkman.io | bash
   - echo sdkman_auto_answer=true > $HOME/.sdkman/etc/config
   - source "$HOME/.sdkman/bin/sdkman-init.sh"
@@ -23,16 +18,17 @@ install:
   - sdk install java $(sdk list java | grep -o "$ADOPTOPENJDK\.[0-9\.]*hs-adpt" | head -1)
   - unset JAVA_HOME
   - java -Xmx32m -version
-  - javac -J-Xmx32m -version
+  - git fetch --tags # get all tags for sbt-dynver
 
-script: admin/build.sh
+script: ./build.sh
 
 before_cache:
-  - find $HOME/.sbt -name "*.lock" | xargs rm
-  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+  - rm -f $HOME/.ivy2/.sbt.ivy.lock
+  - find $HOME/.ivy2/cache     -name "ivydata-*.properties" | xargs rm
+  - find $HOME/.sbt            -name "*.lock"               | xargs rm
 cache:
   directories:
     - $HOME/.ivy2/cache
-    - $HOME/.sbt/boot
-    - $HOME/.sbt/launchers
+    - $HOME/.sbt
+    - $HOME/.cache/coursier
     - $HOME/.sdkman
