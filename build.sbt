@@ -22,7 +22,7 @@ def osgiImport(pattern: String, version: String): String =
 
 lazy val core = project.in(file("core"))
   .settings(ScalaModulePlugin.scalaModuleSettings)
-  .settings(ScalaModulePlugin.scalaModuleSettingsJVM)
+  .settings(ScalaModulePlugin.scalaModuleOsgiSettings)
   .settings(commonSettings)
   .settings(
   name := "scala-parallel-collections",
