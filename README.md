@@ -42,10 +42,10 @@ cross-built project, the dependency should take this form:
 ```scala
 libraryDependencies ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, major)) if major >= 13 =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
-    case _ =>
+    case Some((2, major)) if major <= 12 =>
       Seq()
+    case _ =>
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
   }
 }
 ```
