@@ -3,7 +3,7 @@ publish / skip := true // in root
 
 lazy val commonSettings: Seq[Setting[_]] =
   ScalaModulePlugin.scalaModuleSettings ++ Seq(
-    Compile / compile / scalacOptions ++= Seq("-Werror", "-Wconf:cat=deprecation:msg=nested class of a parent:s")
+    Compile / compile / scalacOptions += "-Werror"
   )
 
 lazy val core = project.in(file("core"))

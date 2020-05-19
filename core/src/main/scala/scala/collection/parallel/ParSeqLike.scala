@@ -399,7 +399,7 @@ self =>
     that match {
       case thatseq: ParSeq[S] =>
         tasksupport.executeAndWaitResult(
-          new Zip(length min thatseq.length, combinerFactory(() => companion.newCombiner[(U, S)]), splitter, thatseq.splitter) mapResult {
+          new ParSeqLikeZip(length min thatseq.length, combinerFactory(() => companion.newCombiner[(U, S)]), splitter, thatseq.splitter) mapResult {
             _.resultWithTaskSupport
           }
         )
@@ -472,14 +472,14 @@ self =>
 
   protected[this] def down(p: IterableSplitter[_]) = p.asInstanceOf[SeqSplitter[T]]
 
-  protected trait Accessor[R, Tp] extends super.Accessor[R, Tp] {
+  protected trait ParSeqLikeAccessor[R, Tp] extends Accessor[R, Tp] {
     protected[this] val pit: SeqSplitter[T]
   }
 
-  protected trait Transformer[R, Tp] extends Accessor[R, Tp] with super.Transformer[R, Tp]
+  protected trait ParSeqLikeTransformer[R, Tp] extends ParSeqLikeAccessor[R, Tp] with Transformer[R, Tp]
 
   protected[this] class SegmentLength(pred: T => Boolean, from: Int, protected[this] val pit: SeqSplitter[T])
-  extends Accessor[(Int, Boolean), SegmentLength] {
+  extends ParSeqLikeAccessor[(Int, Boolean), SegmentLength] {
     @volatile var result: (Int, Boolean) = null
     def leaf(prev: Option[(Int, Boolean)]) = if (from < pit.indexFlag) {
       val itsize = pit.remaining
@@ -497,7 +497,7 @@ self =>
   }
 
   protected[this] class IndexWhere(pred: T => Boolean, from: Int, protected[this] val pit: SeqSplitter[T])
-  extends Accessor[Int, IndexWhere] {
+  extends ParSeqLikeAccessor[Int, IndexWhere] {
     @volatile var result: Int = -1
     def leaf(prev: Option[Int]) = if (from < pit.indexFlag) {
       val r = pit.indexWhere(pred)
@@ -518,7 +518,7 @@ self =>
   }
 
   protected[this] class LastIndexWhere(pred: T => Boolean, pos: Int, protected[this] val pit: SeqSplitter[T])
-  extends Accessor[Int, LastIndexWhere] {
+  extends ParSeqLikeAccessor[Int, LastIndexWhere] {
     @volatile var result: Int = -1
     def leaf(prev: Option[Int]) = if (pos > pit.indexFlag) {
       val r = pit.lastIndexWhere(pred)
@@ -539,7 +539,7 @@ self =>
   }
 
   protected[this] class Reverse[U >: T, This >: Repr](cbf: () => Combiner[U, This], protected[this] val pit: SeqSplitter[T])
-  extends Transformer[Combiner[U, This], Reverse[U, This]] {
+  extends ParSeqLikeTransformer[Combiner[U, This], Reverse[U, This]] {
     @volatile var result: Combiner[U, This] = null
     def leaf(prev: Option[Combiner[U, This]]) = result = pit.reverse2combiner(reuse(prev, cbf()))
     protected[this] def newSubtask(p: SuperParIterator) = new Reverse(cbf, down(p))
@@ -547,7 +547,7 @@ self =>
   }
 
   protected[this] class ReverseMap[S, That](f: T => S, pbf: () => Combiner[S, That], protected[this] val pit: SeqSplitter[T])
-  extends Transformer[Combiner[S, That], ReverseMap[S, That]] {
+  extends ParSeqLikeTransformer[Combiner[S, That], ReverseMap[S, That]] {
     @volatile var result: Combiner[S, That] = null
     def leaf(prev: Option[Combiner[S, That]]) = result = pit.reverseMap2combiner(f, pbf())
     protected[this] def newSubtask(p: SuperParIterator) = new ReverseMap(f, pbf, down(p))
@@ -555,7 +555,7 @@ self =>
   }
 
   protected[this] class SameElements[U >: T](protected[this] val pit: SeqSplitter[T], val otherpit: SeqSplitter[U])
-  extends Accessor[Boolean, SameElements[U]] {
+  extends ParSeqLikeAccessor[Boolean, SameElements[U]] {
     @volatile var result: Boolean = true
     def leaf(prev: Option[Boolean]) = if (!pit.isAborted) {
       result = pit.sameElements(otherpit)
@@ -572,7 +572,7 @@ self =>
   }
 
   protected[this] class Updated[U >: T, That](pos: Int, elem: U, pbf: CombinerFactory[U, That], protected[this] val pit: SeqSplitter[T])
-  extends Transformer[Combiner[U, That], Updated[U, That]] {
+  extends ParSeqLikeTransformer[Combiner[U, That], Updated[U, That]] {
     @volatile var result: Combiner[U, That] = null
     def leaf(prev: Option[Combiner[U, That]]) = result = pit.updated2combiner(pos, elem, pbf())
     protected[this] def newSubtask(p: SuperParIterator) = throw new UnsupportedOperationException
@@ -584,8 +584,8 @@ self =>
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class Zip[U >: T, S, That](len: Int, cf: CombinerFactory[(U, S), That], protected[this] val pit: SeqSplitter[T], val otherpit: SeqSplitter[S])
-  extends Transformer[Combiner[(U, S), That], Zip[U, S, That]] {
+  protected[this] class ParSeqLikeZip[U >: T, S, That](len: Int, cf: CombinerFactory[(U, S), That], protected[this] val pit: SeqSplitter[T], val otherpit: SeqSplitter[S])
+  extends ParSeqLikeTransformer[Combiner[(U, S), That], ParSeqLikeZip[U, S, That]] {
     @volatile var result: Result = null
     def leaf(prev: Option[Result]) = result = pit.zip2combiner[U, S, That](otherpit, cf())
     protected[this] def newSubtask(p: SuperParIterator) = throw new UnsupportedOperationException
@@ -595,15 +595,15 @@ self =>
       val pits = pit.psplitWithSignalling(fp, sp)
       val opits = otherpit.psplitWithSignalling(fp, sp)
       Seq(
-        new Zip(fp, cf, pits(0), opits(0)),
-        new Zip(sp, cf, pits(1), opits(1))
+        new ParSeqLikeZip(fp, cf, pits(0), opits(0)),
+        new ParSeqLikeZip(sp, cf, pits(1), opits(1))
       )
     }
-    override def merge(that: Zip[U, S, That]) = result = result combine that.result
+    override def merge(that: ParSeqLikeZip[U, S, That]) = result = result combine that.result
   }
 
   protected[this] class Corresponds[S](corr: (T, S) => Boolean, protected[this] val pit: SeqSplitter[T], val otherpit: SeqSplitter[S])
-  extends Accessor[Boolean, Corresponds[S]] {
+  extends ParSeqLikeAccessor[Boolean, Corresponds[S]] {
     @volatile var result: Boolean = true
     def leaf(prev: Option[Boolean]) = if (!pit.isAborted) {
       result = pit.corresponds(corr)(otherpit)
