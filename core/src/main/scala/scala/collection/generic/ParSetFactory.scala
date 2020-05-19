@@ -17,7 +17,6 @@ package generic
 import scala.collection.parallel.Combiner
 import scala.collection.parallel.ParSet
 import scala.collection.parallel.ParSetLike
-import scala.language.higherKinds
 
 /**
  *  @define factoryInfo

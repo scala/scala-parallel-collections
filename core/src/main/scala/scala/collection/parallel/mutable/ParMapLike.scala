@@ -15,7 +15,6 @@ package collection.parallel
 package mutable
 
 import scala.collection.mutable.Cloneable
-import scala.language.higherKinds
 
 /** A template trait for mutable parallel maps. This trait is to be mixed in
  *  with concrete parallel maps to override the representation type.

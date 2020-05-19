@@ -240,7 +240,7 @@ trait ForkJoinTasks extends Tasks with HavingForkJoinPool {
   trait WrappedTask[R, +Tp] extends RecursiveAction with super.WrappedTask[R, Tp] {
     def start() = fork
     def sync() = join
-    def tryCancel = tryUnfork
+    def tryCancel() = tryUnfork
   }
 
   // specialize ctor

@@ -15,7 +15,6 @@ package collection
 package generic
 
 import scala.collection.parallel.ParIterable
-import scala.language.higherKinds
 
 /** A template class for companion objects of `ParIterable` and subclasses
  *  thereof. This class extends `TraversableFactory` and provides a set of

@@ -39,7 +39,7 @@ package immutable {
     class ParIterator(var i: Int = 0, val until: Int = length, elem: T = self.elem) extends SeqSplitter[T] {
       def remaining = until - i
       def hasNext = i < until
-      def next = { i += 1; elem }
+      def next() = { i += 1; elem }
       def dup = new ParIterator(i, until, elem)
       def psplit(sizes: Int*) = {
         val incr = sizes.scanLeft(0)(_ + _)

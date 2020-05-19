@@ -13,7 +13,7 @@
 package scala
 package collection.parallel
 
-import scala.language.{ higherKinds, implicitConversions }
+import scala.language.implicitConversions
 import scala.collection.mutable.Builder
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{CustomParallelizable, IterableOps, Parallel}
@@ -874,7 +874,7 @@ self =>
     protected[this] def newSubtask(p: IterableSplitter[T]): Accessor[R, Tp]
     def shouldSplitFurther = pit.shouldSplitFurther(self.repr, tasksupport.parallelismLevel)
     def split = pit.splitWithSignalling.map(newSubtask(_)) // default split procedure
-    private[parallel] override def signalAbort = pit.abort()
+    private[parallel] override def signalAbort() = pit.abort()
     override def toString = this.getClass.getSimpleName + "(" + pit.toString + ")(" + result + ")(supername: " + super.toString + ")"
   }
 

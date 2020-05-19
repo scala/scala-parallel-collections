@@ -58,7 +58,7 @@ extends ParMap[K, V]
 
   override def clear() = ctrie.clear()
 
-  def result = this
+  def result() = this
 
   def get(key: K): Option[V] = ctrie.get(key)
 

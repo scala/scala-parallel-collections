@@ -1,15 +1,12 @@
-ThisBuild / scalacOptions ++= Seq("-deprecation", "-feature"/*, "-Xfatal-warnings"*/)
-
 Global / cancelable := true
-
 publish / skip := true // in root
 
-lazy val commonSettings: Seq[Setting[_]] = Seq()
-
-commonSettings  // in root
+lazy val commonSettings: Seq[Setting[_]] =
+  ScalaModulePlugin.scalaModuleSettings ++ Seq(
+    Compile / compile / scalacOptions ++= Seq("-Werror", "-Wconf:cat=deprecation:msg=nested class of a parent:s")
+  )
 
 lazy val core = project.in(file("core"))
-  .settings(ScalaModulePlugin.scalaModuleSettings)
   .settings(commonSettings)
   .settings(
     name := "scala-parallel-collections"

@@ -15,7 +15,6 @@ package collection
 package parallel.mutable
 
 import scala.collection.mutable.Cloneable
-import scala.language.higherKinds
 import scala.collection.mutable.Growable
 import scala.collection.mutable.Shrinkable
 

@@ -12,7 +12,6 @@
 
 package scala.collection.generic
 
-import scala.language.higherKinds
 import scala.annotation.migration
 import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.mutable.Builder

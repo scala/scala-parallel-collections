@@ -60,7 +60,7 @@ self =>
 
     final def hasNext = ind < len
 
-    final def next = if (hasNext) {
+    final def next() = if (hasNext) {
       val r = range.apply(ind)
       ind += 1
       r

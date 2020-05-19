@@ -13,8 +13,6 @@
 package scala
 package collection.parallel
 
-import scala.language.higherKinds
-
 import scala.collection.{AnyConstr, BufferedIterator, Iterator, SeqOps}
 import scala.collection.generic.DefaultSignalling
 import scala.collection.generic.AtomicIndexFlag

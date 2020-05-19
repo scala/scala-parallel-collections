@@ -422,7 +422,7 @@ self =>
   class Taken(taken: Int) extends IterableSplitter[T] {
     var remaining = taken min self.remaining
     def hasNext = remaining > 0
-    def next = { remaining -= 1; self.next() }
+    def next() = { remaining -= 1; self.next() }
     def dup: IterableSplitter[T] = self.dup.take(taken)
     def split: Seq[IterableSplitter[T]] = takeSeq(self.split) { (p, n) => p.take(n) }
     protected[this] def takeSeq[PI <: IterableSplitter[T]](sq: Seq[PI])(taker: (PI, Int) => PI) = {
@@ -459,7 +459,7 @@ self =>
   class Mapped[S](f: T => S) extends IterableSplitter[S] {
     signalDelegate = self.signalDelegate
     def hasNext = self.hasNext
-    def next = f(self.next())
+    def next() = f(self.next())
     def remaining = self.remaining
     def dup: IterableSplitter[S] = self.dup map f
     def split: Seq[IterableSplitter[S]] = self.split.map { _ map f }
@@ -474,7 +474,7 @@ self =>
       curr = that
       curr.hasNext
     } else false
-    def next = if (curr eq self) {
+    def next() = if (curr eq self) {
       hasNext
       curr.next()
     } else curr.next()
@@ -489,7 +489,7 @@ self =>
   class Zipped[S](protected val that: SeqSplitter[S]) extends IterableSplitter[(T, S)] {
     signalDelegate = self.signalDelegate
     def hasNext = self.hasNext && that.hasNext
-    def next = (self.next(), that.next())
+    def next() = (self.next(), that.next())
     def remaining = self.remaining min that.remaining
     def dup: IterableSplitter[(T, S)] = self.dup.zipParSeq(that)
     def split: Seq[IterableSplitter[(T, S)]] = {
@@ -506,7 +506,7 @@ self =>
   extends IterableSplitter[(U, S)] {
     signalDelegate = self.signalDelegate
     def hasNext = self.hasNext || that.hasNext
-    def next = if (self.hasNext) {
+    def next() = if (self.hasNext) {
       if (that.hasNext) (self.next(), that.next())
       else (self.next(), thatelem)
     } else (thiselem, that.next())
@@ -656,7 +656,7 @@ self =>
       (pits(0).appendParSeq[U, SeqSplitter[U]](patch)) appendParSeq pits(2)
     }
     def hasNext = trio.hasNext
-    def next = trio.next
+    def next() = trio.next
     def remaining = trio.remaining
     def dup = self.dup.patchParSeq(from, patch, replaced)
     def split = trio.split

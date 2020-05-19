@@ -121,7 +121,7 @@ private[immutable] class LazyParVectorCombiner[T] extends Combiner[T, ParVector[
     sz = 0
   }
 
-  def result: ParVector[T] = {
+  def result(): ParVector[T] = {
     val rvb = new VectorBuilder[T]
     for (vb <- vectors) {
       rvb ++= vb.result
