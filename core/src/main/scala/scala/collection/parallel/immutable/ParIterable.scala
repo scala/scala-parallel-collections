@@ -25,9 +25,6 @@ import scala.collection.parallel.Combiner
  *  $sideeffects
  *
  *  @tparam T    the element type of the collection
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParIterable[+T]
 extends scala.collection.parallel.ParIterable[T]

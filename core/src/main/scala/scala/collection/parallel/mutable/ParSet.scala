@@ -17,8 +17,6 @@ import scala.collection.generic._
 import scala.collection.parallel.Combiner
 
 /** A mutable variant of `ParSet`.
- *
- *  @author Aleksandar Prokopec
  */
 trait ParSet[T]
 extends ParIterable[T]

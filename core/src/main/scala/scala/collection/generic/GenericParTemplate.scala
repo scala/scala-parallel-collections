@@ -24,8 +24,6 @@ import scala.annotation.unchecked.uncheckedVariance
  *
  *  @tparam A    the element type of the collection
  *  @tparam CC   the type constructor representing the collection class
- *  @author Aleksandar Prokopec
- *  @since 2.8
  */
 trait GenericParTemplate[+A, +CC[X] <: ParIterable[X]]
   extends GenericTraversableTemplate[A, CC]

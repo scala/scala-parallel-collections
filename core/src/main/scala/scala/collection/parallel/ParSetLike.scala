@@ -23,9 +23,6 @@ import scala.collection.{Set, SetOps}
  *  @tparam T    the element type of the set
  *  @define Coll `ParSet`
  *  @define coll parallel set
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParSetLike[T,
                  +CC[X] <: ParIterable[X],

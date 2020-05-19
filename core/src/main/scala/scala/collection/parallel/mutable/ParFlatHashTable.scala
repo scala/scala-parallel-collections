@@ -22,7 +22,6 @@ import scala.collection.parallel.IterableSplitter
  *  @define coll   table
  *  @define Coll   `ParFlatHashTable`
  *
- *  @author Aleksandar Prokopec
  */
 trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
 

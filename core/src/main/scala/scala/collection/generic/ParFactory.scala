@@ -24,7 +24,6 @@ import scala.collection.parallel.ParIterable
  *    This object provides a set of operations needed to create `$Coll` values.
  *  @define coll parallel collection
  *  @define Coll `ParIterable`
- *  @since 2.8
  */
 abstract class ParFactory[CC[X] <: ParIterable[X] with GenericParTemplate[X, CC]]
 extends GenericParCompanion[CC] {

@@ -29,9 +29,6 @@ import scala.collection.generic.Sizing
  *
  *  @tparam Elem   the type of the elements added to the builder
  *  @tparam To     the type of the collection the builder produces
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait Combiner[-Elem, +To] extends Builder[Elem, To] with Sizing with Parallel {
 

@@ -122,9 +122,6 @@ import scala.reflect.ClassTag
  *  Method `size` is implemented as a constant time operation for parallel collections, and parallel collection
  *  operations rely on this assumption.
  *
- *  @author Aleksandar Prokopec
- *  @since 2.9
- *
  *  @define sideeffects
  *  The higher-order functions passed to certain operations may contain side-effects. Since implementations
  *  of bulk operations may not be sequential, this means that side-effects may not be predictable and may

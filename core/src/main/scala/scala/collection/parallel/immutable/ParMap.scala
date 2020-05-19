@@ -27,8 +27,6 @@ import scala.collection.parallel.Combiner
  *  @tparam K    the key type of the map
  *  @tparam V    the value type of the map
  *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParMap[K, +V]
 extends GenericParMapTemplate[K, V, ParMap]

@@ -21,9 +21,6 @@ import scala.collection.generic._
  *  $sideeffects
  *
  *  @tparam T    the element type of the set
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParSet[T]
    extends GenericParTemplate[T, ParSet]

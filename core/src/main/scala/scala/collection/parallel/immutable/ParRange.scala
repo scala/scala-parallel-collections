@@ -26,8 +26,6 @@ import scala.collection.Iterator
  *
  *  @param range    the sequential range this parallel range was obtained from
  *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  *  @see  [[http://docs.scala-lang.org/overviews/parallel-collections/concrete-parallel-collections.html#parallel_range Scala's Parallel Collections Library overview]]
  *  section on `ParRange` for more information.
  *

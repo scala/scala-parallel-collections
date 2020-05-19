@@ -26,7 +26,6 @@ import scala.util.hashing.byteswap32
  *  hash table as an implementation.
  *
  *  @define coll flat hash table
- *  @since 2.3
  *  @tparam A   the type of the elements contained in the $coll.
  */
 private[collection] trait FlatHashTable[A] extends FlatHashTable.HashUtils[A] {

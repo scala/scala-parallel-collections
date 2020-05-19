@@ -35,8 +35,6 @@ import scala.collection.parallel.Task
  *
  *  @tparam T    the element type of the set
  *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  *  @see  [[http://docs.scala-lang.org/overviews/parallel-collections/concrete-parallel-collections.html#parallel_hash_tries Scala's Parallel Collections Library overview]]
  *  section on Parallel Hash Tries for more information.
  *

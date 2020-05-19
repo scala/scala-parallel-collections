@@ -28,9 +28,6 @@ import scala.annotation.unchecked.uncheckedVariance
  *  @tparam V    the value type of the map
  *  @define Coll `ParMap`
  *  @define coll parallel map
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParMapLike[K,
                  +V,

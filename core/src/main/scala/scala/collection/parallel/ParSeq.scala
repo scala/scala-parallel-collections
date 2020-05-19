@@ -26,8 +26,6 @@ import scala.collection.parallel.mutable.ParArrayCombiner
  *  $sideeffects
  *
  *  @tparam T      the type of the elements in this parallel sequence
- *
- *  @author Aleksandar Prokopec
  */
 trait ParSeq[+T] extends ParIterable[T]
                     with GenericParTemplate[T, ParSeq]

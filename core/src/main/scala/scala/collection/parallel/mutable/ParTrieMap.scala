@@ -32,8 +32,6 @@ import scala.collection.concurrent.TrieMapIterator
  *  to create the splitter. This means that parallel bulk operations can be
  *  called concurrently with the modifications.
  *
- *  @author Aleksandar Prokopec
- *  @since 2.10
  *  @see  [[http://docs.scala-lang.org/overviews/parallel-collections/concrete-parallel-collections.html#parallel_concurrent_tries Scala's Parallel Collections Library overview]]
  *  section on `ParTrieMap` for more information.
  */

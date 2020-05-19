@@ -29,9 +29,6 @@ import scala.annotation.tailrec
   *
   *  @tparam A      the type of the elements contained in this hash set.
   *
-  *  @author  Martin Odersky
-  *  @author  Tiark Rompf
-  *  @since   2.3
   *  @define Coll `immutable.OldHashSet`
   *  @define coll immutable hash set
   */

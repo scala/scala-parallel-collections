@@ -44,9 +44,6 @@ import scala.collection.parallel.ParallelCollectionImplicits._
  *
  *  This trait defines a new, more general `split` operation and reimplements the `split`
  *  operation of `ParallelIterable` trait using the new `split` operation.
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParSeqLike[+T, +CC[X] <: ParSeq[X], +Repr <: ParSeq[T], +Sequential <: scala.collection.Seq[T] with SeqOps[T, AnyConstr, Sequential]]
 extends ParIterableLike[T, CC, Repr, Sequential]

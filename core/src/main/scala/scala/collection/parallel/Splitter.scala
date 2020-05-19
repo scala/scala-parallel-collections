@@ -19,9 +19,6 @@ import scala.collection.{ Seq, Iterator }
  *  disjoint subsets of elements.
  *
  *  @tparam T    type of the elements this splitter traverses
- *
- *  @since 2.9
- *  @author Aleksandar Prokopec
  */
 trait Splitter[+T] extends Iterator[T] {
 

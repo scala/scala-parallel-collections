@@ -33,7 +33,6 @@ import scala.collection.parallel.Task
  *  @define Coll `ParHashSet`
  *  @define coll parallel hash set
  *
- *  @author Aleksandar Prokopec
  *  @see  [[http://docs.scala-lang.org/overviews/parallel-collections/concrete-parallel-collections.html#parallel_hash_tables Scala's Parallel Collections Library overview]]
  *  section on Parallel Hash Tables for more information.
  */

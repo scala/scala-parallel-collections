@@ -22,7 +22,6 @@ import scala.collection.parallel._
  *                builder to be created.
  *  @tparam Elem  the element type of the collection to be created.
  *  @tparam To    the type of the collection to be created.
- *  @since 2.8
  */
 trait CanCombineFrom[-From, -Elem, +To] extends Parallel {
   def apply(from: From): Combiner[Elem, To]
