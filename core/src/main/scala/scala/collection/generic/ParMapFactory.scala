@@ -17,7 +17,6 @@ package generic
 import scala.collection.parallel.ParMap
 import scala.collection.parallel.ParMapLike
 import scala.collection.parallel.Combiner
-import scala.language.higherKinds
 
 /** A template class for companion objects of `ParMap` and subclasses thereof.
  *  This class extends `TraversableFactory` and provides a set of operations
@@ -27,8 +26,6 @@ import scala.language.higherKinds
  *  @define Coll `ParMap`
  *  @define factoryInfo
  *    This object provides a set of operations needed to create `$Coll` values.
- *  @author Aleksandar Prokopec
- *  @since 2.8
  */
 abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] with ParMapLike[X, Y, CC, CC[X, Y], _]]
 extends GenericParMapCompanion[CC] {

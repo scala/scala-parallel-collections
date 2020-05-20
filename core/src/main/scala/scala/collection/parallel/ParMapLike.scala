@@ -18,7 +18,6 @@ import scala.collection.{IterableOnce, MapOps}
 import scala.collection.Map
 
 import scala.annotation.unchecked.uncheckedVariance
-import scala.language.higherKinds
 
 /** A template trait for mutable parallel maps. This trait is to be mixed in
  *  with concrete parallel maps to override the representation type.
@@ -29,9 +28,6 @@ import scala.language.higherKinds
  *  @tparam V    the value type of the map
  *  @define Coll `ParMap`
  *  @define coll parallel map
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParMapLike[K,
                  +V,

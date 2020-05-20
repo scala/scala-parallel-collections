@@ -15,7 +15,6 @@ package testutil
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 import scala.reflect.macros.TypecheckException
-import scala.util.control.NonFatal
 import java.util.regex.Pattern
 
 /**

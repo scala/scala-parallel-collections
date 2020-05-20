@@ -21,9 +21,6 @@ import scala.collection.Seq
  *  Implementors might want to override the parameterless `split` method for efficiency.
  *
  *  @tparam T     type of the elements this splitter traverses
- *
- *  @since 2.9
- *  @author Aleksandar Prokopec
  */
 trait PreciseSplitter[+T] extends Splitter[T] {
 

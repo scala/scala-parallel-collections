@@ -42,8 +42,6 @@ import scala.reflect.ClassTag
  *
  *  @tparam T        type of the elements in the array
  *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  *  @see  [[http://docs.scala-lang.org/overviews/parallel-collections/concrete-parallel-collections.html#parallel_array Scala's Parallel Collections Library overview]]
  *  section on `ParArray` for more information.
  *
@@ -95,7 +93,7 @@ self =>
   extends SeqSplitter[T] {
     def hasNext = i < until
 
-    def next = {
+    def next() = {
       val elem = arr(i)
       i += 1
       elem.asInstanceOf[T]
@@ -590,7 +588,7 @@ self =>
     val targarrseq = ArraySeq.make(targetarr).asInstanceOf[ArraySeq[S]]
 
     // fill it in parallel
-    tasksupport.executeAndWaitResult(new Map[S](f, targetarr, 0, length))
+    tasksupport.executeAndWaitResult(new ParArrayMap[S](f, targetarr, 0, length))
 
     // wrap it into a parallel array
     new ParArray[S](targarrseq)
@@ -652,7 +650,7 @@ self =>
     }
   }
 
-  class Map[S](f: T => S, targetarr: Array[Any], offset: Int, howmany: Int) extends Task[Unit, Map[S]] {
+  class ParArrayMap[S](f: T => S, targetarr: Array[Any], offset: Int, howmany: Int) extends Task[Unit, ParArrayMap[S]] {
     var result = ()
 
     def leaf(prev: Option[Unit]) = {
@@ -667,7 +665,7 @@ self =>
     }
     def split = {
       val fp = howmany / 2
-      List(new Map(f, targetarr, offset, fp), new Map(f, targetarr, offset + fp, howmany - fp))
+      List(new ParArrayMap(f, targetarr, offset, fp), new ParArrayMap(f, targetarr, offset + fp, howmany - fp))
     }
     def shouldSplitFurther = howmany > scala.collection.parallel.thresholdFromSize(length, tasksupport.parallelismLevel)
   }

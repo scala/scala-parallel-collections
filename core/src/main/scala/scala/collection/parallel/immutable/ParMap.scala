@@ -20,8 +20,6 @@ import scala.collection.generic.GenericParMapCompanion
 import scala.collection.generic.CanCombineFrom
 import scala.collection.parallel.Combiner
 
-import scala.language.higherKinds
-
 /** A template trait for immutable parallel maps.
  *
  *  $sideeffects
@@ -29,8 +27,6 @@ import scala.language.higherKinds
  *  @tparam K    the key type of the map
  *  @tparam V    the value type of the map
  *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParMap[K, +V]
 extends GenericParMapTemplate[K, V, ParMap]

@@ -31,7 +31,7 @@ extends Combiner[T, ParArray[T]] {
     this
   }
 
-  def result = {
+  def result() = {
     val array = new Array[Any](size)
     val arrayseq = ArraySeq.make(array).asInstanceOf[ArraySeq[T]]
 

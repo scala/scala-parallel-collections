@@ -33,8 +33,6 @@ import scala.collection.Hashing
  *  @tparam K    the key type of the map
  *  @tparam V    the value type of the map
  *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  *  @see  [[http://docs.scala-lang.org/overviews/parallel-collections/concrete-parallel-collections.html#parallel_hash_tries Scala's Parallel Collections Library overview]]
  *  section on Parallel Hash Tries for more information.
   *
@@ -175,7 +173,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
     this
   }
 
-  def result = {
+  def result() = {
     val bucks = buckets.filter(_ != null).map(_.headPtr)
     val root = new Array[OldHashMap[K, V]](bucks.length)
 

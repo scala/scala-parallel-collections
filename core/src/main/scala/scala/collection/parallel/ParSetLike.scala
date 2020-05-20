@@ -14,7 +14,6 @@ package scala
 package collection.parallel
 
 import scala.collection.{Set, SetOps}
-import scala.language.higherKinds
 
 /** A template trait for parallel sets. This trait is mixed in with concrete
  *  parallel sets to override the representation type.
@@ -24,9 +23,6 @@ import scala.language.higherKinds
  *  @tparam T    the element type of the set
  *  @define Coll `ParSet`
  *  @define coll parallel set
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParSetLike[T,
                  +CC[X] <: ParIterable[X],

@@ -15,7 +15,6 @@ package collection
 package parallel.mutable
 
 import scala.collection.mutable.Cloneable
-import scala.language.higherKinds
 import scala.collection.mutable.Growable
 import scala.collection.mutable.Shrinkable
 
@@ -27,9 +26,6 @@ import scala.collection.mutable.Shrinkable
  *  @tparam T    the element type of the set
  *  @define Coll `mutable.ParSet`
  *  @define coll mutable parallel set
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParSetLike[T,
                  +CC[X] <: ParIterable[X],

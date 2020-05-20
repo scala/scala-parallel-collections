@@ -17,7 +17,7 @@ package generic
 import scala.collection.parallel.Combiner
 import scala.collection.parallel.ParIterable
 import scala.collection.parallel.ParMap
-import scala.language.{higherKinds, implicitConversions}
+import scala.language.implicitConversions
 
 /** A template class for companion objects of parallel collection classes.
  *  They should be mixed in together with `GenericCompanion` type.

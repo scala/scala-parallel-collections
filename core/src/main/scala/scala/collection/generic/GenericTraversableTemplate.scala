@@ -12,7 +12,6 @@
 
 package scala.collection.generic
 
-import scala.language.higherKinds
 import scala.annotation.migration
 import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.mutable.Builder
@@ -23,8 +22,6 @@ import scala.collection.parallel.ParIterable
  *
  *  @tparam  A    The type of the collection elements.
  *  @tparam  CC   The type constructor representing the collection class.
- *  @author Martin Odersky
- *  @since 2.8
  *  @define coll  collection
  */
 // TODO inline in GenericParTemplate or ParIterable

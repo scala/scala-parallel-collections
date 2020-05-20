@@ -19,14 +19,11 @@ import scala.collection.parallel.ParIterable
 import scala.collection.parallel.ParMap
 
 import scala.annotation.unchecked.uncheckedVariance
-import scala.language.higherKinds
 
 /** A template trait for collections having a companion.
  *
  *  @tparam A    the element type of the collection
  *  @tparam CC   the type constructor representing the collection class
- *  @author Aleksandar Prokopec
- *  @since 2.8
  */
 trait GenericParTemplate[+A, +CC[X] <: ParIterable[X]]
   extends GenericTraversableTemplate[A, CC]

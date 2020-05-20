@@ -14,8 +14,5 @@ package scala
 package collection
 
 /** A marker trait for collections which have their operations parallelised.
- *
- *  @since 2.9
- *  @author Aleksandar Prokopec
  */
 trait Parallel

@@ -139,11 +139,11 @@ trait Tasks {
  */
 trait AdaptiveWorkStealingTasks extends Tasks {
 
-  trait WrappedTask[R, Tp] extends super.WrappedTask[R, Tp] {
-    @volatile var next: WrappedTask[R, Tp] = null
+  trait AWSTWrappedTask[R, Tp] extends WrappedTask[R, Tp] {
+    @volatile var next: AWSTWrappedTask[R, Tp] = null
     @volatile var shouldWaitFor = true
 
-    def split: Seq[WrappedTask[R, Tp]]
+    def split: Seq[AWSTWrappedTask[R, Tp]]
 
     def compute() = if (body.shouldSplitFurther) {
       internal()
@@ -178,8 +178,8 @@ trait AdaptiveWorkStealingTasks extends Tasks {
     }
 
     def spawnSubtasks() = {
-      var last: WrappedTask[R, Tp] = null
-      var head: WrappedTask[R, Tp] = this
+      var last: AWSTWrappedTask[R, Tp] = null
+      var head: AWSTWrappedTask[R, Tp] = this
       do {
         val subtasks = head.split
         head = subtasks.head
@@ -237,14 +237,14 @@ trait HavingForkJoinPool {
  */
 trait ForkJoinTasks extends Tasks with HavingForkJoinPool {
 
-  trait WrappedTask[R, +Tp] extends RecursiveAction with super.WrappedTask[R, Tp] {
+  trait FJTWrappedTask[R, +Tp] extends RecursiveAction with WrappedTask[R, Tp] {
     def start() = fork
     def sync() = join
-    def tryCancel = tryUnfork
+    def tryCancel() = tryUnfork
   }
 
   // specialize ctor
-  protected def newWrappedTask[R, Tp](b: Task[R, Tp]): WrappedTask[R, Tp]
+  protected def newWrappedTask[R, Tp](b: Task[R, Tp]): FJTWrappedTask[R, Tp]
 
   /** The fork/join pool of this collection.
    */
@@ -300,12 +300,12 @@ object ForkJoinTasks {
  */
 trait AdaptiveWorkStealingForkJoinTasks extends ForkJoinTasks with AdaptiveWorkStealingTasks {
 
-  class WrappedTask[R, Tp](val body: Task[R, Tp])
-  extends super[ForkJoinTasks].WrappedTask[R, Tp] with super[AdaptiveWorkStealingTasks].WrappedTask[R, Tp] {
+  class AWSFJTWrappedTask[R, Tp](val body: Task[R, Tp])
+  extends FJTWrappedTask[R, Tp] with AWSTWrappedTask[R, Tp] {
     def split = body.split.map(b => newWrappedTask(b))
   }
 
-  def newWrappedTask[R, Tp](b: Task[R, Tp]) = new WrappedTask[R, Tp](b)
+  def newWrappedTask[R, Tp](b: Task[R, Tp]) = new AWSFJTWrappedTask[R, Tp](b)
 }
 
 /** An implementation of the `Tasks` that uses Scala `Future`s to compute

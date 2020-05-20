@@ -15,7 +15,6 @@ package collection.parallel
 package mutable
 
 import scala.collection.mutable.Cloneable
-import scala.language.higherKinds
 
 /** A template trait for mutable parallel maps. This trait is to be mixed in
  *  with concrete parallel maps to override the representation type.
@@ -26,9 +25,6 @@ import scala.language.higherKinds
  *  @tparam V    the value type of the map
  *  @define Coll `ParMap`
  *  @define coll parallel map
- *
- *  @author Aleksandar Prokopec
- *  @since 2.9
  */
 trait ParMapLike[K,
                  V,

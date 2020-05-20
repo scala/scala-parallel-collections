@@ -25,8 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger
  * signalling interface to inform worker threads that an element has
  * been found and no further search is necessary.
  *
- * @author prokopec
- *
  * @define abortflag
  * Abort flag being true means that a worker can abort and produce whatever result,
  * since its result will not affect the final result of computation. An example
