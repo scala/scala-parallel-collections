@@ -53,7 +53,7 @@ self =>
   def length: Int
   def apply(index: Int): T
 
-  override def hashCode() = scala.util.hashing.MurmurHash3.orderedHash(this, "ParSeq".hashCode)
+  override def hashCode() = scala.util.hashing.MurmurHash3.orderedHash(seq, "ParSeq".hashCode)
 
   /** The equals method for arbitrary parallel sequences. Compares this
     * parallel sequence to some other object.
@@ -62,7 +62,7 @@ self =>
     *            this sequence in the same order, `false` otherwise
     */
   override def equals(that: Any): Boolean = that match {
-    case that: ParSeq[_] => (that eq this.asInstanceOf[AnyRef]) || (that canEqual this) && (this sameElements that)
+    case that: ParSeq[_] => (that eq this.asInstanceOf[AnyRef]) || (that canEqual this) && (this sameElements that.seq)
     case _               => false
   }
 
@@ -269,27 +269,39 @@ self =>
    *  @param offset  the starting offset for the search
    *  @return        `true` if there is a sequence `that` starting at `offset` in this sequence, `false` otherwise
    */
-  def startsWith[S >: T](that: IterableOnce[S], offset: Int = 0): Boolean = that match {
-    case pt: ParSeq[S] =>
-      if (offset < 0 || offset >= length) offset == length && pt.isEmpty
-      else if (pt.isEmpty) true
-      else if (pt.length > length - offset) false
-      else {
-        val ctx = new DefaultSignalling with VolatileAbort
-        tasksupport.executeAndWaitResult(
-          new SameElements[S](splitter.psplitWithSignalling(offset, pt.length)(1) assign ctx, pt.splitter)
-        )
-      }
-    case _ => seq.startsWith(that, offset)
+  def startsWith[S >: T](that: ParSeq[S], offset: Int = 0): Boolean = {
+    if (offset < 0 || offset >= length) offset == length && that.isEmpty
+    else if (that.isEmpty) true
+    else if (that.length > length - offset) false
+    else {
+      val ctx = new DefaultSignalling with VolatileAbort
+      tasksupport.executeAndWaitResult(
+        new SameElements[S](splitter.psplitWithSignalling(offset, that.length)(1) assign ctx, that.splitter)
+      )
+    }
   }
 
-  override def sameElements[U >: T](that: IterableOnce[U]): Boolean = {
-    that match {
-      case pthat: ParSeq[U] =>
-        val ctx = new DefaultSignalling with VolatileAbort
-        length == pthat.length && tasksupport.executeAndWaitResult(new SameElements(splitter assign ctx, pthat.splitter))
-      case _ => super.sameElements(that)
-    }
+  /** Tests whether this $coll contains the given sequence at a given index.
+   *
+   *  $abortsignalling
+   *
+   *  @tparam S      the element type of `that` parallel sequence
+   *  @param that    the parallel sequence this sequence is being searched for
+   *  @param offset  the starting offset for the search
+   *  @return        `true` if there is a sequence `that` starting at `offset` in this sequence, `false` otherwise
+   */
+  def startsWith[S >: T](that: IterableOnce[S], offset: Int): Boolean =
+    seq.startsWith(that, offset)
+
+  // can't use a default arg because we already have another overload with a default arg
+  /** Tests whether this $coll contains the given sequence at a given index.
+   */
+  def startsWith[S >: T](that: IterableOnce[S]): Boolean =
+    seq.startsWith(that, offset = 0)
+
+  def sameElements[U >: T](that: ParSeq[U]): Boolean = {
+    val ctx = new DefaultSignalling with VolatileAbort
+    length == that.length && tasksupport.executeAndWaitResult(new SameElements(splitter assign ctx, that.splitter))
   }
 
   /** Tests whether this $coll ends with the given parallel sequence.
@@ -326,7 +338,7 @@ self =>
   def patch[U >: T](from: Int, patch: ParSeq[U], replaced: Int): CC[U] = {
     val realreplaced = replaced min (length - from)
     if ((size - realreplaced + patch.size) > MIN_FOR_COPY) {
-      val that = patch.asParSeq
+      val that = patch.seq.asParSeq
       val pits = splitter.psplitWithSignalling(from, replaced, length - from - realreplaced)
       val cfactory = combinerFactory(() => companion.newCombiner[U])
       val copystart = new Copy[U, CC[U]](cfactory, pits(0))

@@ -145,14 +145,14 @@ import scala.reflect.ClassTag
  *  @define coll parallel iterable
  */
 trait ParIterableLike[+T, +CC[X] <: ParIterable[X], +Repr <: ParIterable[T], +Sequential <: Iterable[T] with IterableOps[T, Iterable, Sequential]]
-extends IterableOnce[T]
-   with CustomParallelizable[T, Repr]
+extends CustomParallelizable[T, Repr]
    with Parallel
    with HasNewCombiner[T, Repr]
 {
 self =>
 
   def size: Int
+  def knownSize: Int
   def stringPrefix: String
   def companion: GenericParCompanion[CC]
 
@@ -579,28 +579,27 @@ self =>
     tasksupport.executeAndWaitResult(new FilterNot(pred, combinerFactory, splitter) mapResult { _.resultWithTaskSupport })
   }
 
-  def ++[U >: T](that: IterableOnce[U]): CC[U] = that match {
-    case other: ParIterable[U] =>
-      // println("case both are parallel")
-      val cfactory = combinerFactory(() => companion.newCombiner[U])
-      val copythis = new Copy(cfactory, splitter)
-      val copythat = wrap {
-        val othtask = new other.Copy(cfactory, other.splitter)
-        tasksupport.executeAndWaitResult(othtask)
-      }
-      val task = (copythis parallel copythat) { _ combine _ } mapResult {
-        _.resultWithTaskSupport
-      }
-      tasksupport.executeAndWaitResult(task)
-    case _ =>
-      // println("case parallel builder, `that` not parallel")
-      val copythis = new Copy(combinerFactory(() => companion.newCombiner[U]), splitter)
-      val copythat = wrap {
-        val cb = companion.newCombiner[U]
-        cb ++= that
-        cb
-      }
-      tasksupport.executeAndWaitResult((copythis parallel copythat) { _ combine _ } mapResult { _.resultWithTaskSupport })
+  def ++[U >: T](that: ParIterable[U]): CC[U] = {
+    val cfactory = combinerFactory(() => companion.newCombiner[U])
+    val copythis = new Copy(cfactory, splitter)
+    val copythat = wrap {
+      val othtask = new that.Copy(cfactory, that.splitter)
+      tasksupport.executeAndWaitResult(othtask)
+    }
+    val task = (copythis parallel copythat) { _ combine _ } mapResult {
+      _.resultWithTaskSupport
+    }
+    tasksupport.executeAndWaitResult(task)
+  }
+
+  def ++[U >: T](that: IterableOnce[U]): CC[U] = {
+    val copythis = new Copy(combinerFactory(() => companion.newCombiner[U]), splitter)
+    val copythat = wrap {
+      val cb = companion.newCombiner[U]
+      cb ++= that
+      cb
+    }
+    tasksupport.executeAndWaitResult((copythis parallel copythat) { _ combine _ } mapResult { _.resultWithTaskSupport })
   }
 
   def partition(pred: T => Boolean): (Repr, Repr) = {
@@ -850,7 +849,7 @@ self =>
 
   def toVector: Vector[T] = to(Vector)
 
-  def to[C](factory: collection.Factory[T, C]): C = factory.fromSpecific(this)
+  def to[C](factory: collection.Factory[T, C]): C = factory.fromSpecific(this.seq)
 
   /* tasks */
 

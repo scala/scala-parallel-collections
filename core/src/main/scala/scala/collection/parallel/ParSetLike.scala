@@ -112,7 +112,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
   // Calling map on a set drops duplicates: any hashcode collisions would
   // then be dropped before they can be added.
   // Hash should be symmetric in set entries, but without trivial collisions.
-  override def hashCode()= scala.util.hashing.MurmurHash3.unorderedHash(this, "ParSet".hashCode)
+  override def hashCode()= scala.util.hashing.MurmurHash3.unorderedHash(seq, "ParSet".hashCode)
 
   def canEqual(other: Any): Boolean = true
   // ---

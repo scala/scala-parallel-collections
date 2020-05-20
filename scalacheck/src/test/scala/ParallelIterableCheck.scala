@@ -80,7 +80,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
   }
 
   def areEqual(t1: Iterable[T], t2: ParIterable[T]) = if (hasStrictOrder) {
-    t1.iterator.sameElements(t2) && t2.sameElements(t1)
+    t1.iterator.sameElements(t2.seq) && t2.sameElements(t1)
   } else (t1, t2) match { // it is slightly delicate what `equal` means if the order is not strict
     case (m1: Map[_, _], m2: ParMap[_, _]) =>
       val am1: Map[Any, Any] = m1.asInstanceOf[Map[Any, Any]]
@@ -115,7 +115,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     println("size: " + cf.size)
     println(cf)
     println
-    println("tf sameElements cf - " + (tf.iterator sameElements  cf))
+    println("tf sameElements cf - " + (tf.iterator sameElements cf.seq))
     println("cf sameElements tf - " + (cf.iterator sameElements tf))
   }
 
@@ -268,11 +268,11 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
   }
 
   if (hasStrictOrder) property("takes must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (t, coll, n) =>
-    ("take " + n + " elements") |: t.take(n).iterator.sameElements(coll.take(n))
+    ("take " + n + " elements") |: t.take(n).iterator.sameElements(coll.take(n).seq)
   }
 
   if (hasStrictOrder) property("drops must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (t, coll, n) =>
-    ("drop " + n + " elements") |: t.drop(n).iterator.sameElements(coll.drop(n))
+    ("drop " + n + " elements") |: t.drop(n).iterator.sameElements(coll.drop(n).seq)
   }
 
   if (hasStrictOrder) property("slices must be equal") = forAllNoShrink(collectionPairsWith2Indices)
@@ -281,7 +281,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     val until = if (from + slicelength > t.size) t.size else from + slicelength
     val tsl = t.slice(from, until)
     val collsl = coll.slice(from, until)
-    if (!tsl.iterator.sameElements(collsl)) {
+    if (!tsl.iterator.sameElements(collsl.seq)) {
       println("---------------------- " + from + ", " + until)
       println("from: " + t)
       println("and: " + coll)
@@ -296,34 +296,34 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
       println(collsl.iterator.next)
       println(collsl.iterator.hasNext)
     }
-    ("slice from " + from + " until " + until) |: tsl.iterator.sameElements(collsl)
+    ("slice from " + from + " until " + until) |: tsl.iterator.sameElements(collsl.seq)
   }
 
   if (hasStrictOrder) property("splits must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (t, coll, n) =>
     val tspl @ (tspl1, tspl2) = t.splitAt(n)
     val cspl @ (cspl1, cspl2) = coll.splitAt(n)
-    if (!tspl1.iterator.sameElements(cspl1) || !tspl2.iterator.sameElements(cspl2)) {
+    if (!tspl1.iterator.sameElements(cspl1.seq) || !tspl2.iterator.sameElements(cspl2.seq)) {
       println("at: " + n)
       println("from: " + t)
       println("and: " + coll)
       println(tspl)
       println(cspl)
     }
-    ("splitAt " + n) |: (tspl1.iterator.sameElements(cspl1) && tspl2.iterator.sameElements(cspl2))
+    ("splitAt " + n) |: (tspl1.iterator.sameElements(cspl1.seq) && tspl2.iterator.sameElements(cspl2.seq))
   }
 
   if (hasStrictOrder) property("takeWhiles must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
     (for ((pred, ind) <- takeWhilePredicates.zipWithIndex) yield {
       val tt = t.takeWhile(pred)
       val ct = coll.takeWhile(pred)
-      if (!tt.iterator.sameElements(ct)) {
+      if (!tt.iterator.sameElements(ct.seq)) {
         println("from: " + t)
         println("and: " + coll)
         println("taking while...")
         println(tt)
         println(ct)
       }
-      ("operator " + ind) |: tt.iterator.sameElements(ct)
+      ("operator " + ind) |: tt.iterator.sameElements(ct.seq)
     }).reduceLeft(_ && _)
   }
 
@@ -331,7 +331,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     (for ((pred, ind) <- spanPredicates.zipWithIndex) yield {
       val tsp @ (tsp1, tsp2) = t.span(pred)
       val csp @ (csp1, csp2) = coll.span(pred)
-      if (!tsp1.iterator.sameElements(csp1) || !tsp2.iterator.sameElements(csp2)) {
+      if (!tsp1.iterator.sameElements(csp1.seq) || !tsp2.iterator.sameElements(csp2.seq)) {
         println("from: " + t)
         println("and: " + coll)
         println("span with predicate " + ind)
@@ -341,13 +341,13 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
         println(coll.span(pred))
         println("---------------------------------")
       }
-      ("operator " + ind) |: (tsp1.iterator.sameElements(csp1) && tsp2.iterator.sameElements(csp2))
+      ("operator " + ind) |: (tsp1.iterator.sameElements(csp1.seq) && tsp2.iterator.sameElements(csp2.seq))
     }).reduceLeft(_ && _)
   }
 
   if (hasStrictOrder) property("dropWhiles must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
     (for ((pred, ind) <- dropWhilePredicates.zipWithIndex) yield {
-      ("operator " + ind) |: t.dropWhile(pred).iterator.sameElements(coll.dropWhile(pred))
+      ("operator " + ind) |: t.dropWhile(pred).iterator.sameElements(coll.dropWhile(pred).seq)
     }).reduceLeft(_ && _)
   }
 
@@ -417,14 +417,14 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
       (for (((first, op), ind) <- foldArguments.zipWithIndex) yield {
         val tscan = t.scanLeft(first)(op)
         val cscan = coll.scan(first)(op)
-        if (!tscan.iterator.sameElements(cscan) || !cscan.sameElements(tscan)) {
+        if (!tscan.iterator.sameElements(cscan.seq) || !cscan.sameElements(tscan.seq)) {
           println("from: " + t)
           println("and: " + coll)
           println("scans are: ")
           println(tscan)
           println(cscan)
         }
-        ("operator " + ind) |: tscan.iterator.sameElements(cscan) && cscan.sameElements(tscan)
+        ("operator " + ind) |: tscan.iterator.sameElements(cscan.seq) && cscan.sameElements(tscan.seq)
       }).reduceLeft(_ && _)
   }
 

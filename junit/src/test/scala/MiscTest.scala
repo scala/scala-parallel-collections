@@ -33,19 +33,6 @@ class MiscTest {
   }
 
   @Test
-  def si4761: Unit = {
-    val gs = for (x <- (1 to 5)) yield { if (x % 2 == 0) List(1) else List(1).par }
-    assertEquals("Vector(1, 1, 1, 1, 1)", gs.flatten.toString)
-    // Commented because `transpose` require its argument to be convertible to an `Iterable` whereas
-    // we only have an `IterableOnce`
-    // assertEquals("Vector(Vector(1, 1, 1, 1, 1))", gs.transpose.toString)
-
-    val s = LazyList(Vector(1).par, Vector(2).par)
-    assertEquals("List(1, 2)", s.flatten.toList.toString)
-//    assertEquals("List(List(1, 2))", s.transpose.map(_.toList).toList.toString)
-  }
-
-  @Test
   def si4894: Unit = {
     val phs = parallel.mutable.ParHashSet[Int]()
     phs ++= 1 to 10
@@ -101,8 +88,8 @@ class MiscTest {
       val gseq = seqarr(i).toSeq.groupBy(f)
       val gpar = pararr(i).groupBy(f)
       // Note: sequential and parallel collections can not be compared with ''==''
-      assertTrue(gseq.forall { case (k, vs) => gpar.get(k).exists(_.sameElements(vs)) })
-      assertTrue(gpar.forall { case (k, vs) => gseq.get(k).exists(_.sameElements(vs)) })
+      assertTrue(gseq.forall { case (k, vs) => gpar.get(k).exists(_.sameElements(vs.seq)) })
+      assertTrue(gpar.forall { case (k, vs) => gseq.get(k).exists(_.sameElements(vs.seq)) })
     }
 
     for (i <- 0 until 20) check(i, _ > 0)

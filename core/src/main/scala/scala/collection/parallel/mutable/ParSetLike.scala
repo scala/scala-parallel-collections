@@ -50,6 +50,6 @@ self =>
 
   def -(elem: T) = this.clone() -= elem
 
-  override def clone(): Repr = empty ++= this
+  override def clone(): Repr = empty ++= seq
   // note: should not override toSet
 }

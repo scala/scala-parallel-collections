@@ -74,7 +74,7 @@ self =>
 
   // This hash code must be symmetric in the contents but ought not
   // collide trivially.
-  override def hashCode(): Int = scala.util.hashing.MurmurHash3.unorderedHash(this, "ParMap".hashCode)
+  override def hashCode(): Int = scala.util.hashing.MurmurHash3.unorderedHash(seq, "ParMap".hashCode)
 
   def +[V1 >: V](kv: (K, V1)): CC[K, V1]
   def updated [V1 >: V](key: K, value: V1): CC[K, V1] = this + ((key, value))
@@ -171,8 +171,8 @@ self =>
     def seq = self.seq.view.filterKeys(p).to(Map)
     def size = filtered.size
     override def knownSize = filtered.knownSize
-    def + [U >: V](kv: (K, U)): ParMap[K, U] = ParMap[K, U]() ++ this + kv
-    def - (key: K): ParMap[K, V] = ParMap[K, V]() ++ this - key
+    def + [U >: V](kv: (K, U)): ParMap[K, U] = ParMap[K, U]() ++ seq + kv
+    def - (key: K): ParMap[K, V] = ParMap[K, V]() ++ seq - key
   }
 
   def mapValues[S](f: V => S): ParMap[K, S] = new ParMap[K, S] {
@@ -183,8 +183,8 @@ self =>
     override def contains(key: K) = self.contains(key)
     def get(key: K) = self.get(key).map(f)
     def seq = self.seq.view.mapValues(f).to(Map)
-    def + [U >: S](kv: (K, U)): ParMap[K, U] = ParMap[K, U]() ++ this + kv
-    def - (key: K): ParMap[K, S] = ParMap[K, S]() ++ this - key
+    def + [U >: S](kv: (K, U)): ParMap[K, U] = ParMap[K, U]() ++ seq + kv
+    def - (key: K): ParMap[K, S] = ParMap[K, S]() ++ seq - key
   }
 
   // Transformation operations (`map`, `collect`, `flatMap` and `concat`) are overloaded
@@ -242,28 +242,36 @@ self =>
     *  @return       a new $coll which contains all elements
     *                of this $coll followed by all elements of `suffix`.
     */
-  def concat[V2 >: V](that: collection.IterableOnce[(K, V2)]): CC[K, V2] =  that match {
-    case other: ParIterable[(K, V2)] =>
-      // println("case both are parallel")
-      val cfactory = combinerFactory(() => mapCompanion.newCombiner[K, V2])
-      val copythis = new Copy(cfactory, splitter)
-      val copythat = wrap {
-        val othtask = new other.Copy(cfactory, other.splitter)
-        tasksupport.executeAndWaitResult(othtask)
-      }
-      val task = (copythis parallel copythat) { _ combine _ } mapResult {
-        _.resultWithTaskSupport
-      }
-      tasksupport.executeAndWaitResult(task)
-    case _ =>
-      // println("case parallel builder, `that` not parallel")
-      val copythis = new Copy(combinerFactory(() => mapCompanion.newCombiner[K, V2]), splitter)
-      val copythat = wrap {
-        val cb = mapCompanion.newCombiner[K, V2]
-        cb ++= that
-        cb
-      }
-      tasksupport.executeAndWaitResult((copythis parallel copythat) { _ combine _ } mapResult { _.resultWithTaskSupport })
+  def concat[V2 >: V](that: ParIterable[(K, V2)]): CC[K, V2] = {
+    val cfactory = combinerFactory(() => mapCompanion.newCombiner[K, V2])
+    val copythis = new Copy(cfactory, splitter)
+    val copythat = wrap {
+      val othtask = new that.Copy(cfactory, that.splitter)
+      tasksupport.executeAndWaitResult(othtask)
+    }
+    val task = (copythis parallel copythat) { _ combine _ } mapResult {
+      _.resultWithTaskSupport
+    }
+    tasksupport.executeAndWaitResult(task)
+  }
+
+  /** Returns a new $coll containing the elements from the left hand operand followed by the elements from the
+    *  right hand operand. The element type of the $coll is the most specific superclass encompassing
+    *  the element types of the two operands.
+    *
+    *  @param that   the collection or iterator to append.
+    *  @return       a new $coll which contains all elements
+    *                of this $coll followed by all elements of `suffix`.
+    */
+  def concat[V2 >: V](that: collection.IterableOnce[(K, V2)]): CC[K, V2] = {
+    // println("case parallel builder, `that` not parallel")
+    val copythis = new Copy(combinerFactory(() => mapCompanion.newCombiner[K, V2]), splitter)
+    val copythat = wrap {
+      val cb = mapCompanion.newCombiner[K, V2]
+      cb ++= that
+      cb
+    }
+    tasksupport.executeAndWaitResult((copythis parallel copythat) { _ combine _ } mapResult { _.resultWithTaskSupport })
   }
 
   /** Alias for `concat` */

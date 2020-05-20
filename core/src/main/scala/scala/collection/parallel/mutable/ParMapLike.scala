@@ -49,5 +49,5 @@ extends scala.collection.parallel.ParIterableLike[(K, V), ParIterable, Repr, Seq
 
   def clear(): Unit
 
-  override def clone(): Repr = empty ++= this
+  override def clone(): Repr = empty ++= seq
 }

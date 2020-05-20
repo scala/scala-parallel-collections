@@ -57,7 +57,7 @@ self =>
   protected[this] override def newCombiner = ParHashMapCombiner[K, V]
 
   // TODO Redesign ParHashMap so that it can be converted to a mutable.HashMap in constant time
-  def seq = scala.collection.mutable.HashMap.from(this)
+  def seq = scala.collection.mutable.HashMap.from(iterator)
 
   def splitter = new ParHashMapIterator(1, table.length, size, table(0).asInstanceOf[DefaultEntry[K, V]])
 

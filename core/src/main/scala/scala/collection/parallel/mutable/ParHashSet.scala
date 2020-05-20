@@ -60,7 +60,7 @@ extends ParSet[T]
   def clear() = clearTable()
 
   // TODO Redesign ParHashSet so that it can be converted to a mutable.HashSet in constant time
-  def seq = scala.collection.mutable.HashSet.from(this)
+  def seq = scala.collection.mutable.HashSet.from(iterator)
 
   override def knownSize = tableSize
 
