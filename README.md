@@ -17,14 +17,14 @@ requests.
 
 To depend on scala-parallel-collections in sbt, add this to your `build.sbt`:
 
-```
+```scala
 libraryDependencies +=
   "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0"
 ```
 
 In your code, adding this import:
 
-```
+```scala
 import scala.collection.parallel.CollectionConverters._
 ```
 
