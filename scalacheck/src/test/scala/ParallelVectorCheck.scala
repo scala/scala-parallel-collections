@@ -44,13 +44,13 @@ abstract class ParallelVectorCheck[T](tp: String) extends collection.parallel.Pa
     val vb = new immutable.VectorBuilder[T]()
     val gen = vals(rnd.nextInt(vals.size))
     for (i <- 0 until sz) vb += sample(gen)
-    vb.result
+    vb.result()
   }
 
   def fromSeq(a: Seq[T]) = {
     val pc = ParVector.newCombiner[T]
     for (elem <- a.toList) pc += elem
-    val pv = pc.result
+    val pv = pc.result()
     pv.tasksupport = tasksupport
     pv
   }

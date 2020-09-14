@@ -69,7 +69,7 @@ with PairValues[Int, Int]
 
   override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
     case pm: ParHashMap[k, v] =>
-      pm.printDebugInfo
+      pm.printDebugInfo()
     case _ =>
       println("could not match data structure type: " + ds.getClass)
   }
@@ -124,7 +124,7 @@ with IntValues
 
   override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
     case pm: ParHashMap[k, v] =>
-      pm.printDebugInfo
+      pm.printDebugInfo()
     case _ =>
       println("could not match data structure type: " + ds.getClass)
   }

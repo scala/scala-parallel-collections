@@ -126,7 +126,7 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
 
   def copy2builder[U >: T, Coll, Bld <: Builder[U, Coll]](b: Bld): Bld = {
     if (isRemainingCheap) b.sizeHint(remaining)
-    while (hasNext) b += next
+    while (hasNext) b += next()
     b
   }
 
@@ -159,7 +159,7 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
     cb.sizeHint(n)
     var left = n
     while (left > 0) {
-      cb += next
+      cb += next()
       left -= 1
     }
     cb
@@ -168,7 +168,7 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
   def drop2combiner[U >: T, This](n: Int, cb: Combiner[U, This]): Combiner[U, This] = {
     drop(n)
     if (isRemainingCheap) cb.sizeHint(remaining)
-    while (hasNext) cb += next
+    while (hasNext) cb += next()
     cb
   }
 
@@ -177,7 +177,7 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
     var left = scala.math.max(until - from, 0)
     cb.sizeHint(left)
     while (left > 0) {
-      cb += next
+      cb += next()
       left -= 1
     }
     cb
@@ -188,10 +188,10 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
     if (isRemainingCheap) after.sizeHint(remaining - at)
     var left = at
     while (left > 0) {
-      before += next
+      before += next()
       left -= 1
     }
-    while (hasNext) after += next
+    while (hasNext) after += next()
     (before, after)
   }
 
@@ -216,7 +216,7 @@ private[collection] trait AugmentedIterableIterator[+T] extends RemainsIterator[
         isBefore = false
       }
     }
-    while (hasNext) after += next
+    while (hasNext) after += next()
     (before, after)
   }
 
@@ -320,7 +320,7 @@ private[collection] trait AugmentedSeqIterator[+T] extends AugmentedIterableIter
   def reverse2combiner[U >: T, This](cb: Combiner[U, This]): Combiner[U, This] = {
     if (isRemainingCheap) cb.sizeHint(remaining)
     var lst = List[T]()
-    while (hasNext) lst ::= next
+    while (hasNext) lst ::= next()
     while (lst != Nil) {
       cb += lst.head
       lst = lst.tail
@@ -348,7 +348,7 @@ private[collection] trait AugmentedSeqIterator[+T] extends AugmentedIterableIter
       if (j == index) {
         cb += elem
         next()
-      } else cb += next
+      } else cb += next()
       j += 1
     }
     cb
@@ -439,7 +439,7 @@ self =>
   private[collection] def newSliceInternal[U <: Taken](it: U, from1: Int): U = {
     var count = from1
     while (count > 0 && it.hasNext) {
-      it.next
+      it.next()
       count -= 1
     }
     it
@@ -656,7 +656,7 @@ self =>
       (pits(0).appendParSeq[U, SeqSplitter[U]](patch)) appendParSeq pits(2)
     }
     def hasNext = trio.hasNext
-    def next() = trio.next
+    def next() = trio.next()
     def remaining = trio.remaining
     def dup = self.dup.patchParSeq(from, patch, replaced)
     def split = trio.split

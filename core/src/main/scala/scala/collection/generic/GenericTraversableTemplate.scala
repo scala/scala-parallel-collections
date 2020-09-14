@@ -226,7 +226,7 @@ trait GenericTraversableTemplate[+A, +CC[X] <: ParIterable[X]] extends HasNewBui
         fail
     }
     val bb = genericBuilder[CC[B]]
-    for (b <- bs) bb += b.result
+    for (b <- bs) bb += b.result()
     bb.result()
   }
 }

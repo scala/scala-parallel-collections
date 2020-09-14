@@ -44,6 +44,6 @@ trait ParIterable[T] extends scala.collection.parallel.ParIterable[T]
 object ParIterable extends ParFactory[ParIterable] {
   implicit def canBuildFrom[T]: CanCombineFrom[ParIterable[_], T, ParIterable[T]] = new GenericCanCombineFrom[T]
 
-  def newBuilder[T]: Combiner[T, ParIterable[T]] = ParArrayCombiner[T]
-  def newCombiner[T]: Combiner[T, ParIterable[T]] = ParArrayCombiner[T]
+  def newBuilder[T]: Combiner[T, ParIterable[T]] = ParArrayCombiner[T]()
+  def newCombiner[T]: Combiner[T, ParIterable[T]] = ParArrayCombiner[T]()
 }

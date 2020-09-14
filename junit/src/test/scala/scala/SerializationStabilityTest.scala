@@ -35,7 +35,7 @@ object SerializationStability extends App {
   }
 
   def amend(file: File)(f: String => String): Unit = {
-    file.writeAll(f(file.slurp))
+    file.writeAll(f(file.slurp()))
   }
   def quote(s: String) = List("\"", s, "\"").mkString
 
@@ -44,7 +44,7 @@ object SerializationStability extends App {
       content =>
         content.linesIterator.toList.zipWithIndex.map {
           case (content, i) if i == line - 1 =>
-            val newContent = content.replaceAllLiterally(quote(prevResult), quote(result))
+            val newContent = content.replace(quote(prevResult), quote(result))
             if (newContent != content)
               println(s"- $content\n+ $newContent\n")
             newContent

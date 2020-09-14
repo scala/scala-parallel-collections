@@ -94,7 +94,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
 
   def printDebugInfo[A, CC[X] <: ParIterable[X], C <: ParIterable[A], S <: Iterable[A] with IterableOps[A, Iterable, S]](coll: ParIterableLike[A, CC, C, S]): Unit = {
     println("Collection debug info: ")
-    coll.printDebugBuffer
+    coll.printDebugBuffer()
     println("Task debug info: ")
     println(coll.tasksupport.debugMessages.mkString("\n"))
   }
@@ -104,17 +104,17 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     println("Operator: " + ind)
     println("sz: " + t.size)
     println(t)
-    println
+    println()
     println("sz: " + coll.size)
     println(coll)
     println("transformed to:")
-    println
+    println()
     println("size: " + tf.size)
     println(tf)
-    println
+    println()
     println("size: " + cf.size)
     println(cf)
-    println
+    println()
     println("tf sameElements cf - " + (tf.iterator sameElements  cf))
     println("cf sameElements tf - " + (cf.iterator sameElements tf))
   }
@@ -226,16 +226,16 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
         println("Operator: " + ind)
         println("sz: " + t.size)
         println(t)
-        println
+        println()
         println("sz: " + coll.size)
         println(coll)
-        println
+        println()
         println("filtered to:")
-        println
+        println()
         println(cf)
-        println
+        println()
         println(tf)
-        println
+        println()
         println("areEqual(tf, cf) - " + areEqual(tf, cf))
         printDataStructureDebugInfo(cf)
         println("valid: " + invs)
@@ -289,11 +289,11 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
       println(collsl)
       println("as list: " + collsl.toList)
       println(collsl.iterator.hasNext)
-      println(collsl.iterator.next)
+      println(collsl.iterator.next())
       println(collsl.iterator.hasNext)
-      println(collsl.iterator.next)
+      println(collsl.iterator.next())
       println(collsl.iterator.hasNext)
-      println(collsl.iterator.next)
+      println(collsl.iterator.next())
       println(collsl.iterator.hasNext)
     }
     ("slice from " + from + " until " + until) |: tsl.iterator.sameElements(collsl)

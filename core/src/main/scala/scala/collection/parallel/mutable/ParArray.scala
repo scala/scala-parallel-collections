@@ -375,7 +375,7 @@ self =>
       var same = true
       val thatIt = that.iterator
       while (i < until && thatIt.hasNext) {
-        if (arr(i) != thatIt.next) {
+        if (arr(i) != thatIt.next()) {
           i = until
           same = false
         }
@@ -693,7 +693,7 @@ self =>
 object ParArray extends ParFactory[ParArray] {
   implicit def canBuildFrom[T]: CanCombineFrom[ParArray[_], T, ParArray[T]] = new GenericCanCombineFrom[T]
   def newBuilder[T]: Combiner[T, ParArray[T]] = newCombiner
-  def newCombiner[T]: Combiner[T, ParArray[T]] = ParArrayCombiner[T]
+  def newCombiner[T]: Combiner[T, ParArray[T]] = ParArrayCombiner[T]()
 
   /** Creates a new parallel array by wrapping the specified array.
    */
@@ -720,7 +720,7 @@ object ParArray extends ParFactory[ParArray] {
     for (xs <- xss) {
       cb ++= xs
     }
-    cb.result
+    cb.result()
   }
 
 }
