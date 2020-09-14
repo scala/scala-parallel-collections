@@ -26,7 +26,7 @@ class IteratorSpec extends Spec {
       val it = ct.iterator
 
       it.hasNext shouldEqual (false)
-      evaluating { it.next() }.shouldProduce [NoSuchElementException]
+      evaluating { it.next() }.shouldProduce[NoSuchElementException]()
     }
 
     def nonEmptyIteratorCheck(sz: Int): Unit = {
@@ -37,11 +37,11 @@ class IteratorSpec extends Spec {
       val tracker = mutable.Map[Wrap, Int]()
       for (i <- 0 until sz) {
         assert(it.hasNext == true)
-        tracker += it.next
+        tracker += it.next()
       }
 
       it.hasNext shouldEqual (false)
-      evaluating { it.next() }.shouldProduce [NoSuchElementException]
+      evaluating { it.next() }.shouldProduce[NoSuchElementException]()
       tracker.size shouldEqual (sz)
       tracker shouldEqual (ct)
     }
@@ -102,11 +102,11 @@ class IteratorSpec extends Spec {
       val tracker = mutable.Map[DumbHash, Int]()
       for (i <- 0 until sz) {
         assert(it.hasNext == true)
-        tracker += it.next
+        tracker += it.next()
       }
 
       it.hasNext shouldEqual (false)
-      evaluating { it.next() }.shouldProduce [NoSuchElementException]
+      evaluating { it.next() }.shouldProduce[NoSuchElementException]()
       tracker.size shouldEqual (sz)
       tracker shouldEqual (ct)
     }

@@ -44,6 +44,6 @@ trait ParSeq[+T] extends ParIterable[T]
 object ParSeq extends ParFactory[ParSeq] {
   implicit def canBuildFrom[T]: CanCombineFrom[ParSeq[_], T, ParSeq[T]] = new GenericCanCombineFrom[T]
 
-  def newBuilder[T]: Combiner[T, ParSeq[T]] = ParArrayCombiner[T]
-  def newCombiner[T]: Combiner[T, ParSeq[T]] = ParArrayCombiner[T]
+  def newBuilder[T]: Combiner[T, ParSeq[T]] = ParArrayCombiner[T]()
+  def newCombiner[T]: Combiner[T, ParSeq[T]] = ParArrayCombiner[T]()
 }
