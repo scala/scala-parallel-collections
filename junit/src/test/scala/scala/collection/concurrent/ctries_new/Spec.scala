@@ -16,17 +16,14 @@ import scala.reflect.{ClassTag, classTag}
 
 trait Spec {
 
-  implicit def implicitously = scala.language.implicitConversions
-  implicit def reflectively  = scala.language.reflectiveCalls
-
-  implicit def str2ops(s: String) = new {
+  implicit class Str2ops(s: String) {
     def in[U](body: =>U): Unit = {
       // just execute body
       body
     }
   }
 
-  implicit def any2ops(a: Any) = new {
+  implicit class Any2ops(a: Any) {
     def shouldEqual(other: Any) = assert(a == other)
   }
 

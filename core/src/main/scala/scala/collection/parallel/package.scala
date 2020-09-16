@@ -66,7 +66,7 @@ package object parallel {
 package parallel {
   /** Implicit conversions used in the implementation of parallel collections. */
   private[collection] object ParallelCollectionImplicits {
-    implicit def traversable2ops[T](t: scala.collection.IterableOnce[T]) = new TraversableOps[T] {
+    implicit def traversable2ops[T](t: scala.collection.IterableOnce[T]): TraversableOps[T] = new TraversableOps[T] {
       def isParallel = t.isInstanceOf[Parallel]
       def isParIterable = t.isInstanceOf[ParIterable[_]]
       def asParIterable = t.asInstanceOf[ParIterable[T]]
