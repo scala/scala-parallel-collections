@@ -180,7 +180,7 @@ trait AdaptiveWorkStealingTasks extends Tasks {
     def spawnSubtasks() = {
       var last: AWSTWrappedTask[R, Tp] = null
       var head: AWSTWrappedTask[R, Tp] = this
-      do {
+      while ({
         val subtasks = head.split
         head = subtasks.head
         for (t <- subtasks.tail.reverse) {
@@ -188,7 +188,8 @@ trait AdaptiveWorkStealingTasks extends Tasks {
           last = t
           t.start()
         }
-      } while (head.body.shouldSplitFurther)
+        head.body.shouldSplitFurther
+      }) ()
       head.next = last
       head
     }

@@ -79,10 +79,11 @@ class ConcurrentMapSpec extends Spec {
           for (i <- 0 until sz) {
             val j = (offs + i) % sz
             var k = Int.MaxValue
-            do {
+            while ({
               if (k != Int.MaxValue) repeats += 1
               k = ct.getOrElse(new Wrap(j), 0)
-            } while (!ct.replace(new Wrap(j), k, -k))
+              !ct.replace(new Wrap(j), k, -k)
+            }) ()
           }
           //println("Thread %d repeats: %d".format(index, repeats))
         }
@@ -154,13 +155,14 @@ class ConcurrentMapSpec extends Spec {
           for (j <- 0 until sz) {
             val i = (offs + j) % sz
             var success = false
-            do {
+            while ({
               if (ct.contains(new Wrap(i))) {
                 success = ct.remove(new Wrap(i)) != None
               } else {
                 success = ct.putIfAbsent(new Wrap(i), i) == None
               }
-            } while (!success)
+              !success
+            }) ()
           }
         }
       }
