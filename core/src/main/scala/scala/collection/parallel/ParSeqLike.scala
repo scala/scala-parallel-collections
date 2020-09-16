@@ -47,8 +47,7 @@ import scala.collection.parallel.ParallelCollectionImplicits._
  */
 trait ParSeqLike[+T, +CC[X] <: ParSeq[X], +Repr <: ParSeq[T], +Sequential <: scala.collection.Seq[T] with SeqOps[T, AnyConstr, Sequential]]
 extends ParIterableLike[T, CC, Repr, Sequential]
-   with Equals {
-self =>
+   with Equals { self =>
 
   def length: Int
   def apply(index: Int): T

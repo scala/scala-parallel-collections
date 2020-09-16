@@ -149,8 +149,7 @@ extends IterableOnce[T]
    with CustomParallelizable[T, Repr]
    with Parallel
    with HasNewCombiner[T, Repr]
-{
-self =>
+{ self =>
 
   def size: Int
   def stringPrefix: String
