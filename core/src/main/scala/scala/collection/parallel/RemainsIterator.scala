@@ -18,6 +18,7 @@ import scala.collection.generic.DelegatedSignalling
 import scala.collection.generic.IdleSignalling
 import scala.collection.mutable.Builder
 import scala.collection.parallel.immutable.repetition
+import scala.annotation.unchecked.uncheckedVariance
 
 private[collection] trait RemainsIterator[+T] extends Iterator[T] {
   /** The number of elements this iterator has yet to iterate.
@@ -425,7 +426,7 @@ self =>
     def next() = { remaining -= 1; self.next() }
     def dup: IterableSplitter[T] = self.dup.take(taken)
     def split: Seq[IterableSplitter[T]] = takeSeq(self.split) { (p, n) => p.take(n) }
-    protected[this] def takeSeq[PI <: IterableSplitter[T]](sq: Seq[PI])(taker: (PI, Int) => PI) = {
+    protected[this] def takeSeq[PI <: IterableSplitter[T @uncheckedVariance]](sq: Seq[PI])(taker: (PI, Int) => PI) = {
       val sizes = sq.scanLeft(0)(_ + _.remaining)
       val shortened = for ((it, (from, until)) <- sq zip (sizes.init zip sizes.tail)) yield
         if (until < remaining) it else taker(it, remaining - from)

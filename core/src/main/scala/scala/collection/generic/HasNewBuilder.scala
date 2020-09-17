@@ -15,8 +15,9 @@ package collection
 package generic
 
 import mutable.Builder
+import scala.annotation.unchecked.uncheckedVariance
 
 trait HasNewBuilder[+A, +Repr] extends Any {
   /** The builder that builds instances of Repr */
-  protected[this] def newBuilder: Builder[A, Repr]
+  protected[this] def newBuilder: Builder[A @uncheckedVariance, Repr]
 }

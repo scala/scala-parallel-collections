@@ -31,12 +31,9 @@ trait GenericParTemplate[+A, +CC[X] <: ParIterable[X]]
 {
   def companion: GenericParCompanion[CC]
 
-  protected[this] override def newBuilder: scala.collection.mutable.Builder[A, CC[A]] = newCombiner
+  protected[this] override def newBuilder = newCombiner
 
-  protected[this] override def newCombiner: Combiner[A, CC[A]] = {
-    val cb = companion.newCombiner[A]
-    cb
-  }
+  protected[this] override def newCombiner = companion.newCombiner[A]
 
   override def genericBuilder[B]: Combiner[B, CC[B]] = genericCombiner[B]
 
@@ -50,7 +47,7 @@ trait GenericParTemplate[+A, +CC[X] <: ParIterable[X]]
 
 trait GenericParMapTemplate[K, +V, +CC[X, Y] <: ParMap[X, Y]] extends GenericParTemplate[(K, V), ParIterable]
 {
-  protected[this] override def newCombiner: Combiner[(K, V), CC[K, V]] = {
+  protected[this] override def newCombiner: Combiner[(K, V @uncheckedVariance), CC[K, V @uncheckedVariance]] = {
     val cb = mapCompanion.newCombiner[K, V]
     cb
   }

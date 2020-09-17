@@ -13,10 +13,8 @@
 package scala
 package collection
 
-import parallel.Combiner
-
 trait CustomParallelizable[+A, +ParRepr <: Parallel] extends Any with Parallelizable[A, ParRepr] {
   override def par: ParRepr
-  override protected[this] def parCombiner: Combiner[A, ParRepr] = throw new UnsupportedOperationException("")
+  override protected[this] def parCombiner = throw new UnsupportedOperationException("")
 }
 

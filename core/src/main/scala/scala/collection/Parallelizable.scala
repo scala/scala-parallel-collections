@@ -14,6 +14,7 @@ package scala
 package collection
 
 import parallel.Combiner
+import scala.annotation.unchecked.uncheckedVariance
 
 /** This trait describes collections which can be turned into parallel collections
  *  by invoking the method `par`. Parallelizable collections may be parameterized with
@@ -48,6 +49,6 @@ trait Parallelizable[+A, +ParRepr <: Parallel] extends Any {
    *
    *  @return  a combiner for the parallel collection of type `ParRepr`
    */
-  protected[this] def parCombiner: Combiner[A, ParRepr]
+  protected[this] def parCombiner: Combiner[A @uncheckedVariance, ParRepr]
 }
 

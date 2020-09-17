@@ -15,8 +15,9 @@ package collection
 package generic
 
 import scala.collection.parallel.Combiner
+import scala.annotation.unchecked.uncheckedVariance
 
 trait HasNewCombiner[+T, +Repr] {
-  protected[this] def newCombiner: Combiner[T, Repr]
+  protected[this] def newCombiner: Combiner[T @uncheckedVariance, Repr]
 }
 

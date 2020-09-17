@@ -15,7 +15,6 @@ package collection
 
 import scala.collection.parallel.mutable.ParArray
 import scala.collection.mutable.UnrolledBuffer
-import scala.annotation.unchecked.uncheckedVariance
 import scala.language.implicitConversions
 
 /** Package object for parallel collections.
@@ -168,7 +167,7 @@ package parallel {
   (private val bucketnumber: Int)
   extends Combiner[Elem, To] {
   //self: EnvironmentPassingCombiner[Elem, To] =>
-    protected var buckets: Array[UnrolledBuffer[Buck]] @uncheckedVariance = new Array[UnrolledBuffer[Buck]](bucketnumber)
+    protected var buckets: Array[UnrolledBuffer[Buck]] = new Array[UnrolledBuffer[Buck]](bucketnumber)
     protected var sz: Int = 0
 
     def size = sz
