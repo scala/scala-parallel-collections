@@ -689,7 +689,7 @@ self =>
  *  @define coll parallel array
  */
 object ParArray extends ParFactory[ParArray] {
-  implicit def canBuildFrom[T]: CanCombineFrom[ParArray[_], T, ParArray[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[S, T]: CanCombineFrom[ParArray[S], T, ParArray[T]] = new GenericCanCombineFrom[S, T]
   def newBuilder[T]: Combiner[T, ParArray[T]] = newCombiner
   def newCombiner[T]: Combiner[T, ParArray[T]] = ParArrayCombiner[T]()
 

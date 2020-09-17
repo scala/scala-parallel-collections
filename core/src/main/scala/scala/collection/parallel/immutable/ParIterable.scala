@@ -40,8 +40,8 @@ extends scala.collection.parallel.ParIterable[T]
 /** $factoryInfo
  */
 object ParIterable extends ParFactory[ParIterable] {
-  implicit def canBuildFrom[T]: CanCombineFrom[ParIterable[_], T, ParIterable[T]] =
-    new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[S, T]: CanCombineFrom[ParIterable[S], T, ParIterable[T]] =
+    new GenericCanCombineFrom[S, T]
 
   def newBuilder[T]: Combiner[T, ParIterable[T]] = ParVector.newBuilder[T]
   def newCombiner[T]: Combiner[T, ParIterable[T]] = ParVector.newCombiner[T]

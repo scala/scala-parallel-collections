@@ -163,9 +163,9 @@ private[mutable] trait ParTrieMapCombiner[K, V] extends Combiner[(K, V), ParTrie
   override def canBeShared = true
 }
 
-object ParTrieMap extends ParMapFactory[ParTrieMap] {
+object ParTrieMap extends ParMapFactory[ParTrieMap, TrieMap] {
   def empty[K, V]: ParTrieMap[K, V] = new ParTrieMap[K, V]
   def newCombiner[K, V]: Combiner[(K, V), ParTrieMap[K, V]] = new ParTrieMap[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[Coll, (K, V), ParTrieMap[K, V]] = new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[FromK, FromV, K, V]: CanCombineFrom[ParTrieMap[FromK, FromV], (K, V), ParTrieMap[K, V]] = new CanCombineFromMap[FromK, FromV, K, V]
 }

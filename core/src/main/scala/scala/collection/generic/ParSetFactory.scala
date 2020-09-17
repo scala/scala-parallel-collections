@@ -28,9 +28,8 @@ abstract class ParSetFactory[CC[X] <: ParSet[X] with ParSetLike[X, CC, CC[X], _]
 
   def newCombiner[A]: Combiner[A, CC[A]]
 
-  class GenericCanCombineFrom[A] extends CanCombineFrom[CC[_], A, CC[A]] {
-    override def apply(from: CC[_]) = from.genericCombiner[A]
+  class GenericCanCombineFrom[B, A] extends CanCombineFrom[CC[B], A, CC[A]] {
+    override def apply(from: CC[B]) = from.genericCombiner[A]
     override def apply() = newCombiner[A]
   }
 }
-

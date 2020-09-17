@@ -150,14 +150,14 @@ self =>
  *  @define Coll `mutable.ParHashMap`
  *  @define coll parallel hash map
  */
-object ParHashMap extends ParMapFactory[ParHashMap] {
+object ParHashMap extends ParMapFactory[ParHashMap, scala.collection.mutable.HashMap] {
   var iters = 0
 
   def empty[K, V]: ParHashMap[K, V] = new ParHashMap[K, V]
 
   def newCombiner[K, V]: Combiner[(K, V), ParHashMap[K, V]] = ParHashMapCombiner.apply[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[Coll, (K, V), ParHashMap[K, V]] = new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[FromK, FromV, K, V]: CanCombineFrom[ParHashMap[FromK, FromV], (K, V), ParHashMap[K, V]] = new CanCombineFromMap[FromK, FromV, K, V]
 
   final class DefaultEntry[K, V](val key: K, var value: V) extends HashEntry[K, DefaultEntry[K, V]] with Serializable {
     override def toString: String = s"DefaultEntry($key -> $value)"

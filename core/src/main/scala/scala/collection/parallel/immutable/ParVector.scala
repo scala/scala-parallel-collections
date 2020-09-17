@@ -92,8 +92,8 @@ extends ParSeq[T]
  *  @define coll immutable parallel vector
  */
 object ParVector extends ParFactory[ParVector] {
-  implicit def canBuildFrom[T]: CanCombineFrom[ParVector[_], T, ParVector[T]] =
-    new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[S, T]: CanCombineFrom[ParVector[S], T, ParVector[T]] =
+    new GenericCanCombineFrom[S, T]
 
   def newBuilder[T]: Combiner[T, ParVector[T]] = newCombiner[T]
 

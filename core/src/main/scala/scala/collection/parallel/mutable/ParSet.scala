@@ -37,7 +37,7 @@ self =>
  *  @define coll mutable parallel set
  */
 object ParSet extends ParSetFactory[ParSet] {
-  implicit def canBuildFrom[T]: CanCombineFrom[ParSet[_], T, ParSet[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[S, T]: CanCombineFrom[ParSet[S], T, ParSet[T]] = new GenericCanCombineFrom[S, T]
 
   override def newBuilder[T]: Combiner[T, ParSet[T]] = ParHashSet.newBuilder
 

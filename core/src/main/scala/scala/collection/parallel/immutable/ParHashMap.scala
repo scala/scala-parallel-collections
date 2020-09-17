@@ -140,13 +140,13 @@ self =>
  *  @define Coll `immutable.ParHashMap`
  *  @define coll immutable parallel hash map
  */
-object ParHashMap extends ParMapFactory[ParHashMap] {
+object ParHashMap extends ParMapFactory[ParHashMap, OldHashMap] {
   def empty[K, V]: ParHashMap[K, V] = new ParHashMap[K, V]
 
   def newCombiner[K, V]: Combiner[(K, V), ParHashMap[K, V]] = HashMapCombiner[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[Coll, (K, V), ParHashMap[K, V]] = {
-    new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[FromK, FromV, K, V]: CanCombineFrom[ParHashMap[FromK, FromV], (K, V), ParHashMap[K, V]] = {
+    new CanCombineFromMap[FromK, FromV, K, V]
   }
 
   def fromTrie[K, V](t: OldHashMap[K, V]) = new ParHashMap(t)

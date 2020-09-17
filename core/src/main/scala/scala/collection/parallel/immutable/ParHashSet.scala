@@ -125,8 +125,8 @@ self =>
 object ParHashSet extends ParSetFactory[ParHashSet] {
   def newCombiner[T]: Combiner[T, ParHashSet[T]] = HashSetCombiner[T]
 
-  implicit def canBuildFrom[T]: CanCombineFrom[ParHashSet[_], T, ParHashSet[T]] =
-    new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[S, T]: CanCombineFrom[ParHashSet[S], T, ParHashSet[T]] =
+    new GenericCanCombineFrom[S, T]
 
   def fromTrie[T](t: OldHashSet[T]) = new ParHashSet(t)
 }
