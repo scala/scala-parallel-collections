@@ -78,7 +78,7 @@ self =>
   extends IterableSplitter[T] {
     var i = 0
     def dup = triter match {
-      case t: TrieIterator[_] =>
+      case t: TrieIterator[T] =>
         dupFromIterator(t.dupIterator)
       case _ =>
         val buff = triter.toBuffer
@@ -91,7 +91,7 @@ self =>
       phit
     }
     def split: Seq[IterableSplitter[T]] = if (remaining < 2) Seq(this) else triter match {
-      case t: TrieIterator[_] =>
+      case t: TrieIterator[T] =>
         val previousRemaining = remaining
         val ((fst, fstlength), snd) = t.split
         val sndlength = previousRemaining - fstlength

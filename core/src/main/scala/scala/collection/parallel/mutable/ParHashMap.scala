@@ -196,7 +196,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], Defau
   } else {
     // construct a normal table and fill it sequentially
     // TODO parallelize by keeping separate sizemaps and merging them
-    object table extends HashTable[K, DefaultEntry[K, V], DefaultEntry[K, V]] with WithContents[K, DefaultEntry[K, V], DefaultEntry[K, V]] {
+    object newTable extends HashTable[K, DefaultEntry[K, V], DefaultEntry[K, V]] with WithContents[K, DefaultEntry[K, V], DefaultEntry[K, V]] {
       type Entry = DefaultEntry[K, V]
       def insertEntry(e: Entry): Unit = { super.findOrAddEntry(e.key, e) }
       def createNewEntry(key: K, entry: Entry): Entry = entry
@@ -205,11 +205,11 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], Defau
     var i = 0
     while (i < ParHashMapCombiner.numblocks) {
       if (buckets(i) ne null) {
-        for (elem <- buckets(i)) table.insertEntry(elem)
+        for (elem <- buckets(i)) newTable.insertEntry(elem)
       }
       i += 1
     }
-    new ParHashMap(table.hashTableContents)
+    new ParHashMap(newTable.hashTableContents)
   }
 
   /* classes */
