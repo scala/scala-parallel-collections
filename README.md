@@ -9,7 +9,7 @@ omitted from projects that do not use parallel collections.
 
 ## Maintenance status
 
-This module is maintained by the Scala team at Lightbend.  If you are
+This module is community-maintained, under the guidance of the Scala team at Lightbend.  If you are
 interested in participating, please jump right in on issues and pull
 requests.
 
