@@ -13,7 +13,7 @@
 package scala
 
 import javax.xml.bind.DatatypeConverter._
-import scala.reflect.io.File
+import java.nio.file.{ Path, Paths, Files }
 import org.junit.Test
 
 // This test is self-modifying when run as follows:
@@ -24,7 +24,10 @@ import org.junit.Test
 
 // based on run/t8549.scala partest
 object SerializationStability extends App {
-  val overwrite: Option[File] = sys.props.get("overwrite.source").map(s => new File(new java.io.File(s).getAbsoluteFile))
+
+  val overwrite: Option[Path] =
+    sys.props.get("overwrite.source")
+      .map(s => Paths.get(s).toAbsolutePath)
 
   def serialize(o: AnyRef): String = {
     val bos = new java.io.ByteArrayOutputStream()
@@ -34,13 +37,15 @@ object SerializationStability extends App {
     printBase64Binary(bos.toByteArray())
   }
 
-  def amend(file: File)(f: String => String): Unit = {
-    file.writeAll(f(file.slurp()))
+  def amend(path: Path)(f: String => String): Unit = {
+    val old = new String(java.nio.file.Files.readAllBytes(path))
+    Files.write(path, f(old).getBytes)
   }
+
   def quote(s: String) = List("\"", s, "\"").mkString
 
-  def patch(file: File, line: Int, prevResult: String, result: String): Unit = {
-    amend(file) {
+  def patch(path: Path, line: Int, prevResult: String, result: String): Unit = {
+    amend(path) {
       content =>
         content.linesIterator.toList.zipWithIndex.map {
           case (content, i) if i == line - 1 =>
@@ -53,14 +58,14 @@ object SerializationStability extends App {
     }
   }
 
-  def updateComment(file: File): Unit = {
+  def updateComment(path: Path): Unit = {
     val timestamp = {
       import java.text.SimpleDateFormat
       val sdf = new SimpleDateFormat("yyyyMMdd-HH:mm:ss")
       sdf.format(new java.util.Date)
     }
     val newComment = s"  // Generated on $timestamp with Scala ${scala.util.Properties.versionString})"
-    amend(file) {
+    amend(path) {
       content =>
         content.linesIterator.toList.map {
           f => f.replaceAll("""^ +// Generated on.*""", newComment)
