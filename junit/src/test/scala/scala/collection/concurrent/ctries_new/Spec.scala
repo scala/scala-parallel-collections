@@ -27,8 +27,10 @@ trait Spec {
     def shouldEqual(other: Any) = assert(a == other)
   }
 
-  def evaluating[U](body: =>U) = new {
-    def shouldProduce[T <: Throwable: ClassTag]() = {
+  trait HasShouldProduce[U] { def shouldProduce[T <: Throwable: ClassTag](): Unit }
+
+  def evaluating[U](body: =>U): HasShouldProduce[U] = new HasShouldProduce[U] {
+    override def shouldProduce[T <: Throwable: ClassTag]() = {
       var produced = false
       try body
       catch {
