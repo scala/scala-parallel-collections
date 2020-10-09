@@ -89,7 +89,7 @@ class SnapshotSpec extends Spec {
             for (i <- 0 until sz) {
               val tres = trie.get(new Wrap(i))
               val ires = initial.get(new Wrap(i))
-              if (tres != ires) println(i, "initially: " + ires, "traversal %d: %s".format(k, tres))
+              if (tres != ires) println((i, "initially: " + ires, "traversal %d: %s".format(k, tres)))
               assert(tres == ires)
             }
           }

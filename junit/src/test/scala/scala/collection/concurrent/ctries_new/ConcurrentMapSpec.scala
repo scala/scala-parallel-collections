@@ -64,7 +64,7 @@ class ConcurrentMapSpec extends Spec {
     }
 
     def assertEqual(a: Any, b: Any) = {
-      if (a != b) println(a, b)
+      if (a != b) println((a, b))
       assert(a == b)
     }
 
