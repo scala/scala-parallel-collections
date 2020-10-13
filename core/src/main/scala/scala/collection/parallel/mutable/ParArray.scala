@@ -461,17 +461,15 @@ self =>
 
     override def copy2builder[U >: T, Coll, Bld <: Builder[U, Coll]](cb: Bld): Bld = {
       cb.sizeHint(remaining)
-      cb.ifIs[ResizableParArrayCombiner[T]] {
-      pac =>
+      cb.ifIs[ResizableParArrayCombiner[T]] { pac =>
         // with res. combiner:
         val targetarr: Array[Any] = pac.lastbuff.internalArray.asInstanceOf[Array[Any]]
         Array.copy(arr, i, targetarr, pac.lastbuff.size, until - i)
         pac.lastbuff.setInternalSize(remaining)
       } otherwise {
-        cb.ifIs[UnrolledParArrayCombiner[T]] {
-          pac =>
-            // with unr. combiner:
-            val targetarr: Array[Any] = pac.buff.lastPtr.array.asInstanceOf[Array[Any]]
+        cb.ifIs[UnrolledParArrayCombiner[T]] { pac =>
+          // with unr. combiner:
+          val targetarr: Array[Any] = pac.buff.lastPtr.array.asInstanceOf[Array[Any]]
           Array.copy(arr, i, targetarr, 0, until - i)
           pac.buff.size = pac.buff.size + until - i
           pac.buff.lastPtr.size = until - i

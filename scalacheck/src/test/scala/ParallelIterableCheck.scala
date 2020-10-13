@@ -275,8 +275,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     ("drop " + n + " elements") |: t.drop(n).iterator.sameElements(coll.drop(n))
   }
 
-  if (hasStrictOrder) property("slices must be equal") = forAllNoShrink(collectionPairsWith2Indices)
-  { case (t, coll, fr, slicelength) =>
+  if (hasStrictOrder) property("slices must be equal") = forAllNoShrink(collectionPairsWith2Indices) { case (t, coll, fr, slicelength) =>
     val from = if (fr < 0) 0 else fr
     val until = if (from + slicelength > t.size) t.size else from + slicelength
     val tsl = t.slice(from, until)

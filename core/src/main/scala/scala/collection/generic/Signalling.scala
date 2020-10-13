@@ -131,19 +131,19 @@ trait AtomicIndexFlag extends Signalling {
   abstract override def setIndexFlag(f: Int) = intflag.set(f)
   abstract override def setIndexFlagIfGreater(f: Int) = {
     var loop = true
-    do {
+    while (loop) {
       val old = intflag.get
       if (f <= old) loop = false
       else if (intflag.compareAndSet(old, f)) loop = false
-    } while (loop)
+    }
   }
   abstract override def setIndexFlagIfLesser(f: Int) = {
     var loop = true
-    do {
+    while (loop) {
       val old = intflag.get
       if (f >= old) loop = false
       else if (intflag.compareAndSet(old, f)) loop = false
-    } while (loop)
+    }
   }
 }
 
