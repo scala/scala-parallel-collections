@@ -29,8 +29,6 @@ abstract class ParallelHashSetCheck[T](tp: String) extends ParallelSetCheck[T]("
 
   type CollType = ParHashSet[T]
 
-  def isCheckingViews = false
-
   def hasStrictOrder = false
 
   def tasksupport: TaskSupport

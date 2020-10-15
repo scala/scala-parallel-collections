@@ -230,7 +230,7 @@ abstract class ParallelSeqCheck[T](collName: String) extends ParallelIterableChe
   // This was failing because some corner cases weren't added to the patch method in ParSeqLike.
   // Curiously, this wasn't detected before.
   //
-  if (!isCheckingViews) property("patches must be equal") = forAll(collectionTripletsWith2Indices) {
+  property("patches must be equal") = forAll(collectionTripletsWith2Indices) {
     case (s, coll, pat, from, repl) =>
     ("with seq" |: s.patch(from, pat, repl).sameElements(coll.patch(from, pat, repl))) &&
     ("with par" |: s.patch(from, pat, repl).sameElements(coll.patch(from, fromSeq(pat), repl))) &&
@@ -238,7 +238,7 @@ abstract class ParallelSeqCheck[T](collName: String) extends ParallelIterableChe
     ("with one" |: (s.length == 0 || s.patch(from, List(s(0)), 1).sameElements(coll.patch(from, fromSeq(List(coll(0))), 1))))
   }
 
-  if (!isCheckingViews) property("updates must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (s, coll, len) =>
+  property("updates must be equal") = forAllNoShrink(collectionPairsWithLengths) { case (s, coll, len) =>
     val pos = if (len >= s.length) s.length - 1 else len
     if (s.length > 0) {
       val supd = s.updated(pos, s(0))

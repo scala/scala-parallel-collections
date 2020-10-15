@@ -29,8 +29,6 @@ abstract class ParallelHashMapCheck[K, V](tp: String) extends ParallelMapCheck[K
 
   type CollType = ParHashMap[K, V]
 
-  def isCheckingViews = false
-
   def hasStrictOrder = false
 
   def tasksupport: TaskSupport
@@ -80,8 +78,6 @@ abstract class ParallelHashSetCheck[T](tp: String) extends ParallelSetCheck[T]("
   // ForkJoinTasks.defaultForkJoinPool.setParallelism(Runtime.getRuntime.availableProcessors * 2)
 
   type CollType = ParHashSet[T]
-
-  def isCheckingViews = false
 
   def hasStrictOrder = false
 

@@ -29,8 +29,6 @@ abstract class ParallelConcurrentTrieMapCheck[K, V](tp: String) extends Parallel
 
   type CollType = ParTrieMap[K, V]
 
-  def isCheckingViews = false
-
   def hasStrictOrder = false
 
   def tasksupport: TaskSupport

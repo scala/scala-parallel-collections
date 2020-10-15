@@ -29,8 +29,6 @@ abstract class ParallelArrayCheck[T](tp: String) extends ParallelSeqCheck[T]("Pa
 
   type CollType = ParArray[T]
 
-  def isCheckingViews = false
-
   def hasStrictOrder = true
 
   def tasksupport: TaskSupport
