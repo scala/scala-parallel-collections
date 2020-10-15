@@ -28,7 +28,6 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
   def values: Seq[Gen[T]]
   def ofSize(vals: Seq[Gen[T]], sz: Int): Iterable[T]
   def fromIterable(t: Iterable[T]): CollType
-  def isCheckingViews: Boolean
   def hasStrictOrder: Boolean
 
 
@@ -253,7 +252,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     }).reduceLeft(_ && _)
   }
 
-  if (!isCheckingViews) property("partitions must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
+  property("partitions must be equal") = forAllNoShrink(collectionPairs) { case (t, coll) =>
     (for ((p, ind) <- partitionPredicates.zipWithIndex) yield {
       val tpart @ (tpart1, tpart2) = t.partition(p)
       val cpart @ (cpart1, cpart2) = coll.partition(p)

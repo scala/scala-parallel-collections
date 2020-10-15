@@ -34,8 +34,6 @@ abstract class ParallelVectorCheck[T](tp: String) extends collection.parallel.Pa
 
   type CollType = ParVector[T]
 
-  def isCheckingViews = false
-
   def hasStrictOrder = true
 
   def tasksupport: TaskSupport

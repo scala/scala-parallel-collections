@@ -29,8 +29,6 @@ abstract class ParallelHashMapCheck[K, V](tp: String) extends ParallelMapCheck[K
 
   type CollType = ParHashMap[K, V]
 
-  def isCheckingViews = false
-
   def hasStrictOrder = false
 
   def tasksupport: TaskSupport
