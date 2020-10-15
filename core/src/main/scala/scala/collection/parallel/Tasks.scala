@@ -306,7 +306,7 @@ trait AdaptiveWorkStealingForkJoinTasks extends ForkJoinTasks with AdaptiveWorkS
     def split = body.split.map(b => newWrappedTask(b))
   }
 
-  def newWrappedTask[R, Tp](b: Task[R, Tp]) = new AWSFJTWrappedTask[R, Tp](b)
+  def newWrappedTask[R, Tp](b: Task[R, Tp]): AWSFJTWrappedTask[R, Tp] = new AWSFJTWrappedTask[R, Tp](b)
 }
 
 /** An implementation of the `Tasks` that uses Scala `Future`s to compute

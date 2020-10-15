@@ -92,9 +92,9 @@ self =>
       phit
     }
     def split: Seq[IterableSplitter[(K, V)]] = if (remaining < 2) Seq(this) else triter match {
-      case t: TrieIterator[_] =>
+      case t: TrieIterator[(K, V)] =>
         val previousRemaining = remaining
-        val ((fst: Iterator[(K, V) @unchecked], fstlength), snd: Iterator[(K, V) @unchecked]) = t.split
+        val ((fst, fstlength), snd) = t.split
         val sndlength = previousRemaining - fstlength
         Seq(
           new ParHashMapIterator(fst, fstlength),
@@ -140,13 +140,13 @@ self =>
  *  @define Coll `immutable.ParHashMap`
  *  @define coll immutable parallel hash map
  */
-object ParHashMap extends ParMapFactory[ParHashMap] {
+object ParHashMap extends ParMapFactory[ParHashMap, OldHashMap] {
   def empty[K, V]: ParHashMap[K, V] = new ParHashMap[K, V]
 
   def newCombiner[K, V]: Combiner[(K, V), ParHashMap[K, V]] = HashMapCombiner[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[Coll, (K, V), ParHashMap[K, V]] = {
-    new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[FromK, FromV, K, V]: CanCombineFrom[ParHashMap[FromK, FromV], (K, V), ParHashMap[K, V]] = {
+    new CanCombineFromMap[FromK, FromV, K, V]
   }
 
   def fromTrie[K, V](t: OldHashMap[K, V]) = new ParHashMap(t)
@@ -308,7 +308,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
       case hm1: OldHashMap.OldHashMap1[_, _] =>
         val evaledvalue = hm1.value.result()
         new OldHashMap.OldHashMap1[K, Repr](hm1.key, hm1.hash, evaledvalue, null)
-      case hmc: OldHashMap.OldHashMapCollision1[_, _] =>
+      case hmc: OldHashMap.OldHashMapCollision1[_, Combiner[_, Repr]] =>
         val evaledkvs = hmc.kvs map { p => (p._1, p._2.result()) }
         new OldHashMap.OldHashMapCollision1[K, Repr](hmc.hash, evaledkvs)
       case htm: OldHashMap.HashTrieMap[k, v] =>

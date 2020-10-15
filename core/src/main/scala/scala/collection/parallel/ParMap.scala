@@ -45,12 +45,12 @@ self =>
 
 
 
-object ParMap extends ParMapFactory[ParMap] {
+object ParMap extends ParMapFactory[ParMap, collection.Map] {
   def empty[K, V]: ParMap[K, V] = new mutable.ParHashMap[K, V]
 
   def newCombiner[K, V]: Combiner[(K, V), ParMap[K, V]] = mutable.ParHashMapCombiner[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[Coll, (K, V), ParMap[K, V]] = new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[FromK, FromV, K, V]: CanCombineFrom[ParMap[FromK, FromV], (K, V), ParMap[K, V]] = new CanCombineFromMap[FromK, FromV, K, V]
 
   /** An abstract shell used by { mutable, immutable }.Map but not by collection.Map
    *  because of variance issues.

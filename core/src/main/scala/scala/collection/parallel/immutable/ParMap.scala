@@ -88,12 +88,12 @@ trait ParMapLike[
 
 
 
-object ParMap extends ParMapFactory[ParMap] {
+object ParMap extends ParMapFactory[ParMap, scala.collection.immutable.Map] {
   def empty[K, V]: ParMap[K, V] = new ParHashMap[K, V]
 
   def newCombiner[K, V]: Combiner[(K, V), ParMap[K, V]] = HashMapCombiner[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[Coll, (K, V), ParMap[K, V]] = new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[FromK, FromV, K, V]: CanCombineFrom[ParMap[FromK, FromV], (K, V), ParMap[K, V]] = new CanCombineFromMap[FromK, FromV, K, V]
 
   class WithDefault[K, +V](underlying: ParMap[K, V], d: K => V)
   extends scala.collection.parallel.ParMap.WithDefault[K, V](underlying, d) with ParMap[K, V] {

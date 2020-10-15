@@ -127,7 +127,7 @@ extends TrieMapIterator[K, V](lev, ct, mustInit)
   lazy val totalsize = new ParTrieMap(ct).size
   var iterated = 0
 
-  protected override def newIterator(_lev: Int, _ct: TrieMap[K, V], _mustInit: Boolean) = new ParTrieMapSplitter[K, V](_lev, _ct, _mustInit)
+  protected override def newIterator(_lev: Int, _ct: TrieMap[K, V], _mustInit: Boolean): ParTrieMapSplitter[K, V] = new ParTrieMapSplitter[K, V](_lev, _ct, _mustInit)
 
   override def shouldSplitFurther[S](coll: scala.collection.parallel.ParIterable[S], parallelismLevel: Int) = {
     val maxsplits = 3 + Integer.highestOneBit(parallelismLevel)
@@ -163,9 +163,9 @@ private[mutable] trait ParTrieMapCombiner[K, V] extends Combiner[(K, V), ParTrie
   override def canBeShared = true
 }
 
-object ParTrieMap extends ParMapFactory[ParTrieMap] {
+object ParTrieMap extends ParMapFactory[ParTrieMap, TrieMap] {
   def empty[K, V]: ParTrieMap[K, V] = new ParTrieMap[K, V]
   def newCombiner[K, V]: Combiner[(K, V), ParTrieMap[K, V]] = new ParTrieMap[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[Coll, (K, V), ParTrieMap[K, V]] = new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[FromK, FromV, K, V]: CanCombineFrom[ParTrieMap[FromK, FromV], (K, V), ParTrieMap[K, V]] = new CanCombineFromMap[FromK, FromV, K, V]
 }

@@ -46,7 +46,7 @@ self =>
  *  @define coll mutable parallel sequence
  */
 object ParSeq extends ParFactory[ParSeq] {
-  implicit def canBuildFrom[T]: CanCombineFrom[ParSeq[_], T, ParSeq[T]] = new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[S, T]: CanCombineFrom[ParSeq[S], T, ParSeq[T]] = new GenericCanCombineFrom[S, T]
 
   def newBuilder[T]: Combiner[T, ParSeq[T]] = ParArrayCombiner[T]()
 

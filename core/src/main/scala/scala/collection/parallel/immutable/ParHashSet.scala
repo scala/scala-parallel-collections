@@ -78,7 +78,7 @@ self =>
   extends IterableSplitter[T] {
     var i = 0
     def dup = triter match {
-      case t: TrieIterator[_] =>
+      case t: TrieIterator[T] =>
         dupFromIterator(t.dupIterator)
       case _ =>
         val buff = triter.toBuffer
@@ -91,7 +91,7 @@ self =>
       phit
     }
     def split: Seq[IterableSplitter[T]] = if (remaining < 2) Seq(this) else triter match {
-      case t: TrieIterator[_] =>
+      case t: TrieIterator[T] =>
         val previousRemaining = remaining
         val ((fst, fstlength), snd) = t.split
         val sndlength = previousRemaining - fstlength
@@ -125,8 +125,8 @@ self =>
 object ParHashSet extends ParSetFactory[ParHashSet] {
   def newCombiner[T]: Combiner[T, ParHashSet[T]] = HashSetCombiner[T]
 
-  implicit def canBuildFrom[T]: CanCombineFrom[ParHashSet[_], T, ParHashSet[T]] =
-    new GenericCanCombineFrom[T]
+  implicit def canBuildFrom[S, T]: CanCombineFrom[ParHashSet[S], T, ParHashSet[T]] =
+    new GenericCanCombineFrom[S, T]
 
   def fromTrie[T](t: OldHashSet[T]) = new ParHashSet(t)
 }

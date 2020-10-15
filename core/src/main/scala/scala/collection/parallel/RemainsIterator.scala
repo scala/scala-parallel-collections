@@ -465,7 +465,7 @@ self =>
     def split: Seq[IterableSplitter[S]] = self.split.map { _ map f }
   }
 
-  override def map[S](f: T => S) = new Mapped(f)
+  override def map[S](f: T => S): IterableSplitter[S] = new Mapped[S](f)
 
   class Appended[U >: T, PI <: IterableSplitter[U]](protected val that: PI) extends IterableSplitter[U] {
     signalDelegate = self.signalDelegate
@@ -500,7 +500,7 @@ self =>
     }
   }
 
-  def zipParSeq[S](that: SeqSplitter[S]) = new Zipped(that)
+  def zipParSeq[S](that: SeqSplitter[S]): IterableSplitter[(T, S)] = new Zipped(that)
 
   class ZippedAll[U >: T, S](protected val that: SeqSplitter[S], protected val thiselem: U, protected val thatelem: S)
   extends IterableSplitter[(U, S)] {
@@ -578,7 +578,7 @@ self =>
     def psplit(sizes: Int*): Seq[SeqSplitter[S]] = self.psplit(sizes: _*).map { _ map f }
   }
 
-  override def map[S](f: T => S) = new RemainsIteratorMapped(f)
+  override def map[S](f: T => S): SeqSplitter[S] = new RemainsIteratorMapped(f)
 
   class RemainsIteratorAppended[U >: T, PI <: SeqSplitter[U]](it: PI) extends Appended[U, PI](it) with SeqSplitter[U] {
     override def dup = super.dup.asInstanceOf[SeqSplitter[U]]
@@ -614,10 +614,10 @@ self =>
   class RemainsIteratorZipped[S](ti: SeqSplitter[S]) extends Zipped[S](ti) with SeqSplitter[(T, S)] {
     override def dup = super.dup.asInstanceOf[SeqSplitter[(T, S)]]
     override def split: Seq[SeqSplitter[(T, S)]] = super.split.asInstanceOf[Seq[SeqSplitter[(T, S)]]]
-    def psplit(szs: Int*) = (self.psplit(szs: _*) zip that.psplit(szs: _*)) map { p => p._1 zipParSeq p._2 }
+    def psplit(szs: Int*) = (self.psplit(szs: _*) zip that.psplit(szs: _*)) map { p => (p._1 zipParSeq p._2) }
   }
 
-  override def zipParSeq[S](that: SeqSplitter[S]) = new RemainsIteratorZipped(that)
+  override def zipParSeq[S](that: SeqSplitter[S]): SeqSplitter[(T, S)] = new RemainsIteratorZipped(that)
 
   class RemainsIteratorZippedAll[U >: T, S](ti: SeqSplitter[S], thise: U, thate: S) extends ZippedAll[U, S](ti, thise, thate) with SeqSplitter[(U, S)] {
     override def dup = super.dup.asInstanceOf[SeqSplitter[(U, S)]]
@@ -635,7 +635,7 @@ self =>
     }
     def psplit(sizes: Int*): Seq[SeqSplitter[(U, S)]] = {
       val (thisit, thatit) = patchem
-      val zipped = thisit zipParSeq thatit
+      val zipped = (thisit zipParSeq thatit)
       zipped.psplit(sizes: _*)
     }
   }

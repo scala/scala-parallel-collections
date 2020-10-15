@@ -27,10 +27,8 @@ import scala.collection.parallel.Combiner
  *  @define factoryInfo
  *    This object provides a set of operations needed to create `$Coll` values.
  */
-abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] with ParMapLike[X, Y, CC, CC[X, Y], _]]
+abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] with ParMapLike[X, Y, CC, CC[X, Y], Sequential[X, Y]], Sequential[X, Y] <: collection.Map[X, Y] with collection.MapOps[X, Y, Sequential, Sequential[X, Y]]]
 extends GenericParMapCompanion[CC] {
-
-  type Coll = MapColl
 
   // `apply` and `empty` methods were previously inherited from `GenMapFactory`, which
   // has been removed from the Scala library in 2.13
@@ -45,8 +43,6 @@ extends GenericParMapCompanion[CC] {
 
   def empty[K, V]: CC[K, V]
 
-  type MapColl = CC[_, _]
-
   /** The default builder for $Coll objects.
    *  @tparam K      the type of the keys
    *  @tparam V      the type of the associated values
@@ -59,8 +55,8 @@ extends GenericParMapCompanion[CC] {
    */
   def newCombiner[K, V]: Combiner[(K, V), CC[K, V]]
 
-  class CanCombineFromMap[K, V] extends CanCombineFrom[CC[_, _], (K, V), CC[K, V]] {
-    def apply(from: MapColl) = from.genericMapCombiner[K, V].asInstanceOf[Combiner[(K, V), CC[K, V]]]
+  class CanCombineFromMap[FromK, FromV, K, V] extends CanCombineFrom[CC[FromK, FromV], (K, V), CC[K, V]] {
+    def apply(from: CC[FromK, FromV]) = from.genericMapCombiner[K, V].asInstanceOf[Combiner[(K, V), CC[K, V]]]
     def apply() = newCombiner[K, V]
   }
 
