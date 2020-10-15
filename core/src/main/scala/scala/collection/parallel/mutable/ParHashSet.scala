@@ -162,7 +162,7 @@ with scala.collection.mutable.FlatHashTable.HashUtils[T] {
     // TODO parallelize by keeping separate size maps and merging them
     val tbl = new FlatHashTable[T] {
       sizeMapInit(table.length)
-      seedvalue = ParHashSetCombiner.this.seedvalue
+      this.seedvalue = ParHashSetCombiner.this.seedvalue
       for {
         buffer <- buckets
         if buffer ne null
@@ -184,7 +184,7 @@ with scala.collection.mutable.FlatHashTable.HashUtils[T] {
     table = new Array[AnyRef](capacity(FlatHashTable.sizeForThreshold(numelems, _loadFactor)))
     tableSize = 0
     threshold = FlatHashTable.newThreshold(_loadFactor, table.length)
-    seedvalue = inseedvalue
+    this.seedvalue = inseedvalue
     sizeMapInit(table.length)
 
     override def toString = "AFHT(%s)".format(table.length)

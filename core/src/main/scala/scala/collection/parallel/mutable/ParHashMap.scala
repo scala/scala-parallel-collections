@@ -229,7 +229,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], Defau
     _loadFactor = lf
     table = new Array[HashEntry[K, DefaultEntry[K, V]]](capacity(sizeForThreshold(_loadFactor, numelems)))
     tableSize = 0
-    seedvalue = _seedvalue
+    this.seedvalue = _seedvalue
     threshold = newThreshold(_loadFactor, table.length)
     sizeMapInit(table.length)
     def setSize(sz: Int) = tableSize = sz
