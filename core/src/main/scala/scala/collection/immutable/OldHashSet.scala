@@ -61,7 +61,7 @@ sealed abstract class OldHashSet[A]
   }
 
   override def concat(that: collection.IterableOnce[A]): OldHashSet[A] = that match {
-    case that: OldHashSet[A] =>
+    case that: OldHashSet[A @unchecked] =>
       val buffer = new Array[OldHashSet[A]](bufferSize(this.size + that.size))
       nullToEmpty(union0(that, 0, buffer, 0))
     case _ => super.concat(that)
@@ -167,7 +167,7 @@ object OldHashSet extends IterableFactory[OldHashSet] {
 
   def from[A](it: collection.IterableOnce[A]): OldHashSet[A] =
     it match {
-      case hs: OldHashSet[A] => hs
+      case hs: OldHashSet[A @unchecked] => hs
       case _ => (newBuilder[A] ++= it).result()
     }
 

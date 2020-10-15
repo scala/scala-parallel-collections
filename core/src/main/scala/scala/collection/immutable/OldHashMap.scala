@@ -117,7 +117,7 @@ object OldHashMap extends MapFactory[OldHashMap] {
 
   def from[K, V](it: collection.IterableOnce[(K, V)]): OldHashMap[K, V] =
     it match {
-      case hm: OldHashMap[K, V] => hm
+      case hm: OldHashMap[K @unchecked, V @unchecked] => hm
       case _ => (newBuilder[K, V] ++= it).result()
     }
 

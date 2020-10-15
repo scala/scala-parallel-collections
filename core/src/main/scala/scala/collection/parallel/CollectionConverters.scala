@@ -26,10 +26,10 @@ object CollectionConverters {
   implicit class IterableIsParallelizable[A](private val coll: sc.Iterable[A]) extends AnyVal with sc.CustomParallelizable[A, ParIterable[A]] {
     def seq = coll
     override def par = coll match {
-      case coll: sc.Set[A] => new SetIsParallelizable(coll).par
+      case coll: sc.Set[A @unchecked] => new SetIsParallelizable(coll).par
       case coll: sc.Map[_, _] => new MapIsParallelizable(coll).par.asInstanceOf[ParIterable[A]]
       case coll: sci.Iterable[A] => new ImmutableIterableIsParallelizable(coll).par
-      case coll: scm.Iterable[A] => new MutableIterableIsParallelizable(coll).par
+      case coll: scm.Iterable[A @unchecked] => new MutableIterableIsParallelizable(coll).par
       case _ => ParIterable.newCombiner[A].fromSequential(seq) // builds ParArray, same as for scm.Iterable
     }
   }
@@ -48,7 +48,7 @@ object CollectionConverters {
     def seq = coll
     override def par = coll match {
       case coll: sci.Seq[A] => new ImmutableSeqIsParallelizable(coll).par
-      case coll: sci.Set[A] => new ImmutableSetIsParallelizable(coll).par
+      case coll: sci.Set[A @unchecked] => new ImmutableSetIsParallelizable(coll).par
       case coll: sci.Map[_, _] => new ImmutableMapIsParallelizable(coll).par.asInstanceOf[immutable.ParIterable[A]]
       case _ => immutable.ParIterable.newCombiner[A].fromSequential(seq) // builds ParVector
     }
@@ -56,7 +56,7 @@ object CollectionConverters {
 
   // Seq
   implicit def seqIsParallelizable[A](coll: sc.Seq[A]): sc.Parallelizable[A, ParSeq[A]] = coll match {
-    case it: scm.Seq[A] => new MutableSeqIsParallelizable(it)
+    case it: scm.Seq[A @unchecked] => new MutableSeqIsParallelizable(it)
     case it: sci.Seq[A] => new ImmutableSeqIsParallelizable(it)
     case _ => throw new IllegalArgumentException("Unexpected type "+coll.getClass.getName+" - every scala.collection.Seq must be a scala.collection.mutable.Seq or scala.collection.immutable.Seq")
   }
@@ -144,7 +144,7 @@ object CollectionConverters {
     def seq = coll
     override def par = coll match {
       case coll: sci.Map[K, V] => new ImmutableMapIsParallelizable(coll).par
-      case coll: scm.Map[K, V] => new MutableMapIsParallelizable(coll).par
+      case coll: scm.Map[K @unchecked, V @unchecked] => new MutableMapIsParallelizable(coll).par
       case _ => ParMap.newCombiner[K, V].fromSequential(seq)
     }
   }

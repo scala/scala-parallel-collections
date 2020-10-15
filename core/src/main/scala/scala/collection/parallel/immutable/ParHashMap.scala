@@ -94,7 +94,7 @@ self =>
     def split: Seq[IterableSplitter[(K, V)]] = if (remaining < 2) Seq(this) else triter match {
       case t: TrieIterator[_] =>
         val previousRemaining = remaining
-        val ((fst, fstlength), snd) = t.split
+        val ((fst: Iterator[(K, V) @unchecked], fstlength), snd: Iterator[(K, V) @unchecked]) = t.split
         val sndlength = previousRemaining - fstlength
         Seq(
           new ParHashMapIterator(fst, fstlength),
