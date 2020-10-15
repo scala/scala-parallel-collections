@@ -104,7 +104,7 @@ extends ParMap[K, V]
       while (i < until) {
         array(i) match {
           case sn: SNode[_, _] => sz += 1
-          case in: INode[K, V] => sz += in.cachedSize(ctrie)
+          case in: INode[K @unchecked, V @unchecked] => sz += in.cachedSize(ctrie)
         }
         i += 1
       }
