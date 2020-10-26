@@ -18,6 +18,7 @@ import scala.collection.generic.DefaultSignalling
 import scala.collection.generic.AtomicIndexFlag
 import scala.collection.generic.VolatileAbort
 import scala.collection.parallel.ParallelCollectionImplicits._
+import scala.annotation.unchecked.uncheckedVariance
 
 /** A template trait for sequences of type `ParSeq[T]`, representing
  *  parallel sequences with element type `T`.
@@ -67,7 +68,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
 
   def canEqual(other: Any): Boolean = true
 
-  protected[this] type SuperParIterator = IterableSplitter[T]
+  protected[this] type SuperParIterator = IterableSplitter[T @uncheckedVariance]
 
   /** A more refined version of the iterator found in the `ParallelIterable` trait,
    *  this iterator can be split into arbitrary subsets of iterators.
@@ -474,7 +475,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
 
   protected trait ParSeqLikeTransformer[R, Tp] extends ParSeqLikeAccessor[R, Tp] with Transformer[R, Tp]
 
-  protected[this] class SegmentLength(pred: T => Boolean, from: Int, protected[this] val pit: SeqSplitter[T])
+  protected[this] class SegmentLength(pred: T => Boolean, from: Int, protected[this] val pit: SeqSplitter[T @uncheckedVariance])
   extends ParSeqLikeAccessor[(Int, Boolean), SegmentLength] {
     @volatile var result: (Int, Boolean) = null
     def leaf(prev: Option[(Int, Boolean)]) = if (from < pit.indexFlag) {
@@ -492,7 +493,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class IndexWhere(pred: T => Boolean, from: Int, protected[this] val pit: SeqSplitter[T])
+  protected[this] class IndexWhere(pred: T => Boolean, from: Int, protected[this] val pit: SeqSplitter[T @uncheckedVariance])
   extends ParSeqLikeAccessor[Int, IndexWhere] {
     @volatile var result: Int = -1
     def leaf(prev: Option[Int]) = if (from < pit.indexFlag) {
@@ -513,7 +514,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class LastIndexWhere(pred: T => Boolean, pos: Int, protected[this] val pit: SeqSplitter[T])
+  protected[this] class LastIndexWhere(pred: T => Boolean, pos: Int, protected[this] val pit: SeqSplitter[T @uncheckedVariance])
   extends ParSeqLikeAccessor[Int, LastIndexWhere] {
     @volatile var result: Int = -1
     def leaf(prev: Option[Int]) = if (pos > pit.indexFlag) {
@@ -534,7 +535,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class Reverse[U >: T, This >: Repr](cbf: () => Combiner[U, This], protected[this] val pit: SeqSplitter[T])
+  protected[this] class Reverse[U >: T, This >: Repr](cbf: () => Combiner[U, This], protected[this] val pit: SeqSplitter[T @uncheckedVariance])
   extends ParSeqLikeTransformer[Combiner[U, This], Reverse[U, This]] {
     @volatile var result: Combiner[U, This] = null
     def leaf(prev: Option[Combiner[U, This]]) = result = pit.reverse2combiner(reuse(prev, cbf()))
@@ -542,7 +543,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def merge(that: Reverse[U, This]) = result = that.result combine result
   }
 
-  protected[this] class ReverseMap[S, That](f: T => S, pbf: () => Combiner[S, That], protected[this] val pit: SeqSplitter[T])
+  protected[this] class ReverseMap[S, That](f: T => S, pbf: () => Combiner[S, That], protected[this] val pit: SeqSplitter[T @uncheckedVariance])
   extends ParSeqLikeTransformer[Combiner[S, That], ReverseMap[S, That]] {
     @volatile var result: Combiner[S, That] = null
     def leaf(prev: Option[Combiner[S, That]]) = result = pit.reverseMap2combiner(f, pbf())
@@ -550,7 +551,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def merge(that: ReverseMap[S, That]) = result = that.result combine result
   }
 
-  protected[this] class SameElements[U >: T](protected[this] val pit: SeqSplitter[T], val otherpit: SeqSplitter[U])
+  protected[this] class SameElements[U >: T](protected[this] val pit: SeqSplitter[T @uncheckedVariance], val otherpit: SeqSplitter[U @uncheckedVariance])
   extends ParSeqLikeAccessor[Boolean, SameElements[U]] {
     @volatile var result: Boolean = true
     def leaf(prev: Option[Boolean]) = if (!pit.isAborted) {
@@ -567,7 +568,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class Updated[U >: T, That](pos: Int, elem: U, pbf: CombinerFactory[U, That], protected[this] val pit: SeqSplitter[T])
+  protected[this] class Updated[U >: T, That](pos: Int, elem: U, pbf: CombinerFactory[U, That], protected[this] val pit: SeqSplitter[T @uncheckedVariance])
   extends ParSeqLikeTransformer[Combiner[U, That], Updated[U, That]] {
     @volatile var result: Combiner[U, That] = null
     def leaf(prev: Option[Combiner[U, That]]) = result = pit.updated2combiner(pos, elem, pbf())
@@ -580,7 +581,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class ParSeqLikeZip[U >: T, S, That](len: Int, cf: CombinerFactory[(U, S), That], protected[this] val pit: SeqSplitter[T], val otherpit: SeqSplitter[S])
+  protected[this] class ParSeqLikeZip[U >: T, S, That](len: Int, cf: CombinerFactory[(U, S), That], protected[this] val pit: SeqSplitter[T @uncheckedVariance], val otherpit: SeqSplitter[S])
   extends ParSeqLikeTransformer[Combiner[(U, S), That], ParSeqLikeZip[U, S, That]] {
     @volatile var result: Result = null
     def leaf(prev: Option[Result]) = result = pit.zip2combiner[U, S, That](otherpit, cf())
@@ -598,7 +599,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     override def merge(that: ParSeqLikeZip[U, S, That]) = result = result combine that.result
   }
 
-  protected[this] class Corresponds[S](corr: (T, S) => Boolean, protected[this] val pit: SeqSplitter[T], val otherpit: SeqSplitter[S])
+  protected[this] class Corresponds[S](corr: (T, S) => Boolean, protected[this] val pit: SeqSplitter[T @uncheckedVariance], val otherpit: SeqSplitter[S])
   extends ParSeqLikeAccessor[Boolean, Corresponds[S]] {
     @volatile var result: Boolean = true
     def leaf(prev: Option[Boolean]) = if (!pit.isAborted) {

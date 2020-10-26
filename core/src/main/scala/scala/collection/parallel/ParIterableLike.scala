@@ -20,7 +20,7 @@ import scala.collection.{CustomParallelizable, IterableOps, Parallel}
 import scala.collection.generic._
 import immutable.HashMapCombiner
 import scala.reflect.ClassTag
-
+import scala.annotation.unchecked.uncheckedVariance
 
 /** A template trait for parallel collections of type `ParIterable[T]`.
  *
@@ -144,11 +144,11 @@ import scala.reflect.ClassTag
  *  @define Coll `ParIterable`
  *  @define coll parallel iterable
  */
-trait ParIterableLike[+T, +CC[X] <: ParIterable[X], +Repr <: ParIterable[T], +Sequential <: Iterable[T] with IterableOps[T, Iterable, Sequential]]
-extends IterableOnce[T]
-   with CustomParallelizable[T, Repr]
+trait ParIterableLike[+T, +CC[X] <: ParIterable[X], +Repr <: ParIterable[T], +Sequential <: Iterable[T] with IterableOps[T, Iterable, Sequential @uncheckedVariance]]
+extends IterableOnce[T @uncheckedVariance]
+   with CustomParallelizable[T @uncheckedVariance, Repr]
    with Parallel
-   with HasNewCombiner[T, Repr]
+   with HasNewCombiner[T @uncheckedVariance, Repr]
 { self =>
 
   def size: Int
@@ -332,7 +332,7 @@ extends IterableOnce[T]
     def asCombiner = cb.asInstanceOf[Combiner[Elem, To]]
   }
 
-  protected[this] def sequentially[S, That <: Parallel](b: Sequential => Sequential) = newCombiner.fromSequential(b(seq))
+  protected[this] def sequentially[S, That <: Parallel](b: (Sequential => Sequential) @uncheckedVariance) = newCombiner.fromSequential(b(seq))
 
   def mkString(start: String, sep: String, end: String): String = seq.mkString(start, sep, end)
 
@@ -542,7 +542,7 @@ extends IterableOnce[T]
    *  concurrent parallel collections, the combiners of which allow
    *  thread safe access.
    */
-  protected[this] def combinerFactory = {
+  protected[this] def combinerFactory: CombinerFactory[T @uncheckedVariance, Repr @uncheckedVariance] = {
     val combiner = newCombiner
     combiner.combinerTaskSupport = tasksupport
     if (combiner.canBeShared) new CombinerFactory[T, Repr] {
@@ -849,7 +849,7 @@ extends IterableOnce[T]
   protected trait Accessor[R, Tp]
   extends StrictSplitterCheckTask[R, Tp] {
     protected[this] val pit: IterableSplitter[T]
-    protected[this] def newSubtask(p: IterableSplitter[T]): Accessor[R, Tp]
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]): Accessor[R, Tp]
     def shouldSplitFurther = pit.shouldSplitFurther(self.repr, tasksupport.parallelismLevel)
     def split = pit.splitWithSignalling.map(newSubtask(_)) // default split procedure
     private[parallel] override def signalAbort() = pit.abort()
@@ -918,111 +918,111 @@ extends IterableOnce[T]
 
   protected trait Transformer[R, Tp] extends Accessor[R, Tp]
 
-  protected[this] class Foreach[S](op: T => S, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Foreach[S](op: T => S, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Unit, Foreach[S]] {
     @volatile var result: Unit = ()
     def leaf(prevr: Option[Unit]) = pit.foreach(op)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Foreach[S](op, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Foreach[S](op, p)
   }
 
-  protected[this] class Count(pred: T => Boolean, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Count(pred: T => Boolean, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Int, Count] {
     // val pittxt = pit.toString
     @volatile var result: Int = 0
     def leaf(prevr: Option[Int]) = result = pit.count(pred)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Count(pred, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Count(pred, p)
     override def merge(that: Count) = result = result + that.result
     // override def toString = "CountTask(" + pittxt + ")"
   }
 
-  protected[this] class Reduce[U >: T](op: (U, U) => U, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Reduce[U >: T](op: (U, U) => U, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Option[U], Reduce[U]] {
     @volatile var result: Option[U] = None
     def leaf(prevr: Option[Option[U]]) = if (pit.remaining > 0) result = Some(pit.reduce(op))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Reduce(op, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Reduce(op, p)
     override def merge(that: Reduce[U]) =
       if (this.result == None) result = that.result
       else if (that.result != None) result = Some(op(result.get, that.result.get))
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class Fold[U >: T](z: U, op: (U, U) => U, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Fold[U >: T](z: U, op: (U, U) => U, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[U, Fold[U]] {
     @volatile var result: U = null.asInstanceOf[U]
     def leaf(prevr: Option[U]) = result = pit.fold(z)(op)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Fold(z, op, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Fold(z, op, p)
     override def merge(that: Fold[U]) = result = op(result, that.result)
   }
 
-  protected[this] class Aggregate[S](z: () => S, seqop: (S, T) => S, combop: (S, S) => S, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Aggregate[S](z: () => S, seqop: (S, T) => S, combop: (S, S) => S, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[S, Aggregate[S]] {
     @volatile var result: S = null.asInstanceOf[S]
     def leaf(prevr: Option[S]) = result = pit.foldLeft(z())(seqop)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Aggregate(z, seqop, combop, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Aggregate(z, seqop, combop, p)
     override def merge(that: Aggregate[S]) = result = combop(result, that.result)
   }
 
-  protected[this] class Sum[U >: T](num: Numeric[U], protected[this] val pit: IterableSplitter[T])
+  protected[this] class Sum[U >: T](num: Numeric[U], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[U, Sum[U]] {
     @volatile var result: U = null.asInstanceOf[U]
     def leaf(prevr: Option[U]) = result = pit.sum(num)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Sum(num, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Sum(num, p)
     override def merge(that: Sum[U]) = result = num.plus(result, that.result)
   }
 
-  protected[this] class Product[U >: T](num: Numeric[U], protected[this] val pit: IterableSplitter[T])
+  protected[this] class Product[U >: T](num: Numeric[U], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[U, Product[U]] {
     @volatile var result: U = null.asInstanceOf[U]
     def leaf(prevr: Option[U]) = result = pit.product(num)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Product(num, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Product(num, p)
     override def merge(that: Product[U]) = result = num.times(result, that.result)
   }
 
-  protected[this] class Min[U >: T](ord: Ordering[U], protected[this] val pit: IterableSplitter[T])
+  protected[this] class Min[U >: T](ord: Ordering[U], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Option[U], Min[U]] {
     @volatile var result: Option[U] = None
     def leaf(prevr: Option[Option[U]]) = if (pit.remaining > 0) result = Some(pit.min(ord))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Min(ord, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Min(ord, p)
     override def merge(that: Min[U]) =
       if (this.result == None) result = that.result
       else if (that.result != None) result = if (ord.lteq(result.get, that.result.get)) result else that.result
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class Max[U >: T](ord: Ordering[U], protected[this] val pit: IterableSplitter[T])
+  protected[this] class Max[U >: T](ord: Ordering[U], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Option[U], Max[U]] {
     @volatile var result: Option[U] = None
     def leaf(prevr: Option[Option[U]]) = if (pit.remaining > 0) result = Some(pit.max(ord))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Max(ord, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Max(ord, p)
     override def merge(that: Max[U]) =
       if (this.result == None) result = that.result
       else if (that.result != None) result = if (ord.gteq(result.get, that.result.get)) result else that.result
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class Map[S, That](f: T => S, cbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T])
+  protected[this] class Map[S, That](f: T => S, cbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[S, That], Map[S, That]] {
     @volatile var result: Combiner[S, That] = null
     def leaf(prev: Option[Combiner[S, That]]) = result = pit.map2combiner(f, reuse(prev, cbf()))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Map(f, cbf, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Map(f, cbf, p)
     override def merge(that: Map[S, That]) = result = result combine that.result
   }
 
   protected[this] class Collect[S, That]
-  (pf: PartialFunction[T, S], pbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T])
+  (pf: PartialFunction[T, S], pbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[S, That], Collect[S, That]] {
     @volatile var result: Combiner[S, That] = null
     def leaf(prev: Option[Combiner[S, That]]) = result = pit.collect2combiner[S, That](pf, pbf())
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Collect(pf, pbf, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Collect(pf, pbf, p)
     override def merge(that: Collect[S, That]) = result = result combine that.result
   }
 
   protected[this] class FlatMap[S, That]
-  (f: T => IterableOnce[S], pbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T])
+  (f: T => IterableOnce[S], pbf: CombinerFactory[S, That], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[S, That], FlatMap[S, That]] {
     @volatile var result: Combiner[S, That] = null
     def leaf(prev: Option[Combiner[S, That]]) = result = pit.flatmap2combiner(f, pbf())
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new FlatMap(f, pbf, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new FlatMap(f, pbf, p)
     override def merge(that: FlatMap[S, That]) = {
       //debuglog("merging " + result + " and " + that.result)
       result = result combine that.result
@@ -1030,71 +1030,71 @@ extends IterableOnce[T]
     }
   }
 
-  protected[this] class Forall(pred: T => Boolean, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Forall(pred: T => Boolean, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Boolean, Forall] {
     @volatile var result: Boolean = true
     def leaf(prev: Option[Boolean]) = { if (!pit.isAborted) result = pit.forall(pred); if (result == false) pit.abort() }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Forall(pred, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Forall(pred, p)
     override def merge(that: Forall) = result = result && that.result
   }
 
-  protected[this] class Exists(pred: T => Boolean, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Exists(pred: T => Boolean, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Boolean, Exists] {
     @volatile var result: Boolean = false
     def leaf(prev: Option[Boolean]) = { if (!pit.isAborted) result = pit.exists(pred); if (result == true) pit.abort() }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Exists(pred, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Exists(pred, p)
     override def merge(that: Exists) = result = result || that.result
   }
 
-  protected[this] class Find[U >: T](pred: T => Boolean, protected[this] val pit: IterableSplitter[T])
+  protected[this] class Find[U >: T](pred: T => Boolean, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Option[U], Find[U]] {
     @volatile var result: Option[U] = None
     def leaf(prev: Option[Option[U]]) = { if (!pit.isAborted) result = pit.find(pred); if (result != None) pit.abort() }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Find(pred, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Find(pred, p)
     override def merge(that: Find[U]) = if (this.result == None) result = that.result
   }
 
-  protected[this] class Filter[U >: T, This >: Repr](pred: T => Boolean, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  protected[this] class Filter[U >: T, This >: Repr](pred: T => Boolean, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[U, This], Filter[U, This]] {
     @volatile var result: Combiner[U, This] = null
     def leaf(prev: Option[Combiner[U, This]]) = {
       result = pit.filter2combiner(pred, reuse(prev, cbf()))
     }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Filter(pred, cbf, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Filter(pred, cbf, p)
     override def merge(that: Filter[U, This]) = result = result combine that.result
   }
 
-  protected[this] class FilterNot[U >: T, This >: Repr](pred: T => Boolean, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  protected[this] class FilterNot[U >: T, This >: Repr](pred: T => Boolean, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[U, This], FilterNot[U, This]] {
     @volatile var result: Combiner[U, This] = null
     def leaf(prev: Option[Combiner[U, This]]) = {
       result = pit.filterNot2combiner(pred, reuse(prev, cbf()))
     }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new FilterNot(pred, cbf, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new FilterNot(pred, cbf, p)
     override def merge(that: FilterNot[U, This]) = result = result combine that.result
   }
 
-  protected class Copy[U >: T, That](cfactory: CombinerFactory[U, That], protected[this] val pit: IterableSplitter[T])
+  protected class Copy[U >: T, That](cfactory: CombinerFactory[U, That], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[U, That], Copy[U, That]] {
     @volatile var result: Combiner[U, That] = null
     def leaf(prev: Option[Combiner[U, That]]) = result = pit.copy2builder[U, That, Combiner[U, That]](reuse(prev, cfactory()))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Copy[U, That](cfactory, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Copy[U, That](cfactory, p)
     override def merge(that: Copy[U, That]) = result = result combine that.result
   }
 
   protected[this] class Partition[U >: T, This >: Repr]
-  (pred: T => Boolean, cbfTrue: CombinerFactory[U, This], cbfFalse: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  (pred: T => Boolean, cbfTrue: CombinerFactory[U, This], cbfFalse: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[(Combiner[U, This], Combiner[U, This]), Partition[U, This]] {
     @volatile var result: (Combiner[U, This], Combiner[U, This]) = null
     def leaf(prev: Option[(Combiner[U, This], Combiner[U, This])]) = result = pit.partition2combiners(pred, reuse(prev.map(_._1), cbfTrue()), reuse(prev.map(_._2), cbfFalse()))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new Partition(pred, cbfTrue, cbfFalse, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new Partition(pred, cbfTrue, cbfFalse, p)
     override def merge(that: Partition[U, This]) = result = (result._1 combine that.result._1, result._2 combine that.result._2)
   }
 
   protected[this] class GroupBy[K, U >: T](
     f: U => K,
     mcf: () => HashMapCombiner[K, U],
-    protected[this] val pit: IterableSplitter[T]
+    protected[this] val pit: IterableSplitter[T @uncheckedVariance]
   ) extends Transformer[HashMapCombiner[K, U], GroupBy[K, U]] {
     @volatile var result: Result = null
     final def leaf(prev: Option[Result]) = {
@@ -1106,7 +1106,7 @@ extends IterableOnce[T]
       }
       result = cb
     }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new GroupBy(f, mcf, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new GroupBy(f, mcf, p)
     override def merge(that: GroupBy[K, U]) = {
       // note: this works because we know that a HashMapCombiner doesn't merge same keys until evaluation
       // --> we know we're not dropping any mappings
@@ -1115,13 +1115,13 @@ extends IterableOnce[T]
   }
 
   protected[this] class Take[U >: T, This >: Repr]
-  (n: Int, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  (n: Int, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[U, This], Take[U, This]] {
     @volatile var result: Combiner[U, This] = null
     def leaf(prev: Option[Combiner[U, This]]) = {
       result = pit.take2combiner(n, reuse(prev, cbf()))
     }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       val sizes = pits.scanLeft(0)(_ + _.remaining)
@@ -1135,11 +1135,11 @@ extends IterableOnce[T]
   }
 
   protected[this] class Drop[U >: T, This >: Repr]
-  (n: Int, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  (n: Int, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[U, This], Drop[U, This]] {
     @volatile var result: Combiner[U, This] = null
     def leaf(prev: Option[Combiner[U, This]]) = result = pit.drop2combiner(n, reuse(prev, cbf()))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       val sizes = pits.scanLeft(0)(_ + _.remaining)
@@ -1153,11 +1153,11 @@ extends IterableOnce[T]
   }
 
   protected[this] class Slice[U >: T, This >: Repr]
-  (from: Int, until: Int, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  (from: Int, until: Int, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[U, This], Slice[U, This]] {
     @volatile var result: Combiner[U, This] = null
     def leaf(prev: Option[Combiner[U, This]]) = result = pit.slice2combiner(from, until, reuse(prev, cbf()))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       val sizes = pits.scanLeft(0)(_ + _.remaining)
@@ -1172,11 +1172,11 @@ extends IterableOnce[T]
   }
 
   protected[this] class SplitAt[U >: T, This >: Repr]
-  (at: Int, cbfBefore: CombinerFactory[U, This], cbfAfter: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  (at: Int, cbfBefore: CombinerFactory[U, This], cbfAfter: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T  @uncheckedVariance])
   extends Transformer[(Combiner[U, This], Combiner[U, This]), SplitAt[U, This]] {
     @volatile var result: (Combiner[U, This], Combiner[U, This]) = null
     def leaf(prev: Option[(Combiner[U, This], Combiner[U, This])]) = result = pit.splitAt2combiners(at, reuse(prev.map(_._1), cbfBefore()), reuse(prev.map(_._2), cbfAfter()))
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       val sizes = pits.scanLeft(0)(_ + _.remaining)
@@ -1187,14 +1187,14 @@ extends IterableOnce[T]
   }
 
   protected[this] class TakeWhile[U >: T, This >: Repr]
-  (pos: Int, pred: T => Boolean, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  (pos: Int, pred: T => Boolean, cbf: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[(Combiner[U, This], Boolean), TakeWhile[U, This]] {
     @volatile var result: (Combiner[U, This], Boolean) = null
     def leaf(prev: Option[(Combiner[U, This], Boolean)]) = if (pos < pit.indexFlag) {
       result = pit.takeWhile2combiner(pred, reuse(prev.map(_._1), cbf()))
       if (!result._2) pit.setIndexFlagIfLesser(pos)
     } else result = (reuse(prev.map(_._1), cbf()), false)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       for ((p, untilp) <- pits zip pits.scanLeft(0)(_ + _.remaining)) yield new TakeWhile(pos + untilp, pred, cbf, p)
@@ -1206,7 +1206,7 @@ extends IterableOnce[T]
   }
 
   protected[this] class Span[U >: T, This >: Repr]
-  (pos: Int, pred: T => Boolean, cbfBefore: CombinerFactory[U, This], cbfAfter: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T])
+  (pos: Int, pred: T => Boolean, cbfBefore: CombinerFactory[U, This], cbfAfter: CombinerFactory[U, This], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[(Combiner[U, This], Combiner[U, This]), Span[U, This]] {
     @volatile var result: (Combiner[U, This], Combiner[U, This]) = null
     def leaf(prev: Option[(Combiner[U, This], Combiner[U, This])]) = if (pos < pit.indexFlag) {
@@ -1219,7 +1219,7 @@ extends IterableOnce[T]
     } else {
       result = (reuse(prev.map(_._2), cbfBefore()), pit.copy2builder[U, This, Combiner[U, This]](reuse(prev.map(_._2), cbfAfter())))
     }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       for ((p, untilp) <- pits zip pits.scanLeft(0)(_ + _.remaining)) yield new Span(pos + untilp, pred, cbfBefore, cbfAfter, p)
@@ -1232,11 +1232,11 @@ extends IterableOnce[T]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class Zip[U >: T, S, That](pbf: CombinerFactory[(U, S), That], protected[this] val pit: IterableSplitter[T], val othpit: SeqSplitter[S])
+  protected[this] class Zip[U >: T, S, That](pbf: CombinerFactory[(U, S), That], protected[this] val pit: IterableSplitter[T @uncheckedVariance], val othpit: SeqSplitter[S])
   extends Transformer[Combiner[(U, S), That], Zip[U, S, That]] {
     @volatile var result: Result = null
     def leaf(prev: Option[Result]) = result = pit.zip2combiner[U, S, That](othpit, pbf())
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       val sizes = pits.map(_.remaining)
@@ -1248,11 +1248,11 @@ extends IterableOnce[T]
   }
 
   protected[this] class ZipAll[U >: T, S, That]
-  (len: Int, thiselem: U, thatelem: S, pbf: CombinerFactory[(U, S), That], protected[this] val pit: IterableSplitter[T], val othpit: SeqSplitter[S])
+  (len: Int, thiselem: U, thatelem: S, pbf: CombinerFactory[(U, S), That], protected[this] val pit: IterableSplitter[T @uncheckedVariance], val othpit: SeqSplitter[S])
   extends Transformer[Combiner[(U, S), That], ZipAll[U, S, That]] {
     @volatile var result: Result = null
     def leaf(prev: Option[Result]) = result = pit.zipAll2combiner[U, S, That](othpit, thiselem, thatelem, pbf())
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = if (pit.remaining <= len) {
       val pits = pit.splitWithSignalling
       val sizes = pits.map(_.remaining)
@@ -1270,11 +1270,11 @@ extends IterableOnce[T]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class CopyToArray[U >: T, This >: Repr](from: Int, len: Int, array: Array[U], protected[this] val pit: IterableSplitter[T])
+  protected[this] class CopyToArray[U >: T, This >: Repr](from: Int, len: Int, array: Array[U], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Accessor[Unit, CopyToArray[U, This]] {
     @volatile var result: Unit = ()
     def leaf(prev: Option[Unit]) = pit.copyToArray(array, from, len)
-    protected[this] def newSubtask(p: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       for ((p, untilp) <- pits zip pits.scanLeft(0)(_ + _.remaining); if untilp < len) yield {
@@ -1285,29 +1285,29 @@ extends IterableOnce[T]
     override def requiresStrictSplitters = true
   }
 
-  protected[this] class ToParCollection[U >: T, That](cbf: CombinerFactory[U, That], protected[this] val pit: IterableSplitter[T])
+  protected[this] class ToParCollection[U >: T, That](cbf: CombinerFactory[U, That], protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[Combiner[U, That], ToParCollection[U, That]] {
     @volatile var result: Result = null
     def leaf(prev: Option[Combiner[U, That]]): Unit = {
       result = cbf()
       while (pit.hasNext) result += pit.next()
     }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new ToParCollection[U, That](cbf, p)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new ToParCollection[U, That](cbf, p)
     override def merge(that: ToParCollection[U, That]) = result = result combine that.result
   }
 
-  protected[this] class ToParMap[K, V, That](cbf: CombinerFactory[(K, V), That], protected[this] val pit: IterableSplitter[T])(implicit ev: T <:< (K, V))
+  protected[this] class ToParMap[K, V, That](cbf: CombinerFactory[(K, V), That], protected[this] val pit: IterableSplitter[T @uncheckedVariance])(implicit ev: T <:< (K, V))
   extends Transformer[Combiner[(K, V), That], ToParMap[K, V, That]] {
     @volatile var result: Result = null
     def leaf(prev: Option[Combiner[(K, V), That]]): Unit = {
       result = cbf()
       while (pit.hasNext) result += pit.next()
     }
-    protected[this] def newSubtask(p: IterableSplitter[T]) = new ToParMap[K, V, That](cbf, p)(ev)
+    protected[this] def newSubtask(p: IterableSplitter[T @uncheckedVariance]) = new ToParMap[K, V, That](cbf, p)(ev)
     override def merge(that: ToParMap[K, V, That]) = result = result combine that.result
   }
 
-  protected[this] class CreateScanTree[U >: T](from: Int, len: Int, z: U, op: (U, U) => U, protected[this] val pit: IterableSplitter[T])
+  protected[this] class CreateScanTree[U >: T](from: Int, len: Int, z: U, op: (U, U) => U, protected[this] val pit: IterableSplitter[T @uncheckedVariance])
   extends Transformer[ScanTree[U], CreateScanTree[U]] {
     @volatile var result: ScanTree[U] = null
     def leaf(prev: Option[ScanTree[U]]) = if (pit.remaining > 0) {
@@ -1331,7 +1331,7 @@ extends IterableOnce[T]
       val half = howmany / 2
       ScanNode(mergeTrees(trees, from, half), mergeTrees(trees, from + half, howmany - half))
     } else trees(from)
-    protected[this] def newSubtask(pit: IterableSplitter[T]) = throw new UnsupportedOperationException
+    protected[this] def newSubtask(pit: IterableSplitter[T @uncheckedVariance]) = throw new UnsupportedOperationException
     override def split = {
       val pits = pit.splitWithSignalling
       for ((p, untilp) <- pits zip pits.scanLeft(from)(_ + _.remaining)) yield {

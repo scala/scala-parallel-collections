@@ -10,11 +10,14 @@
  * additional information regarding copyright ownership.
  */
 
-package scala
-package collection
+package testutil
 
-trait CustomParallelizable[+A, +ParRepr <: Parallel] extends Any with Parallelizable[A, ParRepr] {
-  override def par: ParRepr
-  override protected[this] def parCombiner = throw new UnsupportedOperationException("")
+import scala.compiletime.testing._
+
+/**
+ * Ensures that a code snippet does not typecheck.
+ */
+object ShouldNotTypecheck {
+  inline def apply(code: String): Unit = assert(!typeChecks(code))
+  inline def apply(code: String, expected: String): Unit = apply(code)
 }
-

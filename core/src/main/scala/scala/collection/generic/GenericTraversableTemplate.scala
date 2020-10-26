@@ -63,7 +63,7 @@ trait GenericTraversableTemplate[+A, +CC[X] <: ParIterable[X]] extends HasNewBui
 
   /** The builder that builds instances of type $Coll[A]
    */
-  protected[this] def newBuilder: Builder[A, CC[A]] = companion.newBuilder[A]
+  protected[this] def newBuilder: Builder[A @uncheckedVariance, CC[A @uncheckedVariance]] = companion.newBuilder[A]
 
   /** The generic builder that builds instances of $Coll
    *  at arbitrary element types.
