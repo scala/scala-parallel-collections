@@ -45,12 +45,12 @@ private[collection] abstract class TrieIterator[+T](elems: Array[Iterable[T]]) e
   private[this] var posD                                      = initPosD
   private[this] var subIter                                   = initSubIter
 
-  private[this] def getElems(x: Iterable[T]): Array[Iterable[T]] = (x match {
+  private[this] def getElems(x: Iterable[T]): Array[Iterable[T]] = ((x: @unchecked) match {
     case x: HashTrieMap[_, _] => x.elems
     case x: HashTrieSet[_]    => x.elems
   }).asInstanceOf[Array[Iterable[T]]]
 
-  private[this] def collisionToArray(x: Iterable[T]): Array[Iterable[T]] = (x match {
+  private[this] def collisionToArray(x: Iterable[T]): Array[Iterable[T]] = ((x: @unchecked) match {
     case x: OldHashMapCollision1[_, _] => x.kvs.map((x: (Any, Any)) => OldHashMap(x)).toArray
     case x: OldHashSetCollision1[_]    => x.ks.map(x => OldHashSet(x)).toArray
   }).asInstanceOf[Array[Iterable[T]]]

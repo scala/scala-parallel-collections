@@ -1381,7 +1381,7 @@ extends IterableOnce[T @uncheckedVariance]
 
   protected[this] def scanBlockSize = (thresholdFromSize(size, tasksupport.parallelismLevel) / 2) max 1
 
-  protected[this] trait ScanTree[U >: T] {
+  protected[this] sealed trait ScanTree[U >: T] {
     def beginsAt: Int
     def pushdown(v: U): Unit
     def leftmost: ScanLeaf[U]
