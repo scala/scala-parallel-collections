@@ -79,7 +79,7 @@ extends ParMap[K, V]
   override def size = {
     val in = ctrie.readRoot()
     val r = in.gcasRead(ctrie)
-    r match {
+    (r: @unchecked) match {
       case tn: TNode[_, _] => tn.cachedSize(ctrie)
       case ln: LNode[_, _] => ln.cachedSize(ctrie)
       case cn: CNode[_, _] =>
@@ -102,7 +102,7 @@ extends ParMap[K, V]
       var i = offset
       val until = offset + howmany
       while (i < until) {
-        array(i) match {
+        (array(i): @unchecked) match {
           case sn: SNode[_, _] => sz += 1
           case in: INode[K @unchecked, V @unchecked] => sz += in.cachedSize(ctrie)
         }

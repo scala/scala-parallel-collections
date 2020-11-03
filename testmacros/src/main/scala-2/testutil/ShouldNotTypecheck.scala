@@ -29,8 +29,8 @@ object ShouldNotTypecheck {
   def applyImpl(ctx: Context)(code: ctx.Expr[String], expected: ctx.Expr[String]): ctx.Expr[Unit] = {
     import ctx.universe._
 
-    val Expr(Literal(Constant(codeStr: String))) = code
-    val (expPat, expMsg) = expected match {
+    val Expr(Literal(Constant(codeStr: String))) = code: @unchecked
+    val (expPat, expMsg) = (expected: @unchecked) match {
       case null => (null, "Expected some error.")
       case Expr(Literal(Constant(s: String))) =>
         (Pattern.compile(s, Pattern.CASE_INSENSITIVE | Pattern.DOTALL), "Expected error matching: "+s)
