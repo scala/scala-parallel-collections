@@ -22,6 +22,7 @@ lazy val junit = project.in(file("junit"))
   .settings(commonSettings)
   .settings(
     libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test,
+    libraryDependencies += "junit" % "junit" % "4.13.1" % Test,
     // for javax.xml.bind.DatatypeConverter, used in SerializationStabilityTest
     libraryDependencies += "javax.xml.bind" % "jaxb-api" % "2.3.1" % Test,
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v"),
