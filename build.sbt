@@ -13,9 +13,9 @@ lazy val core = project.in(file("core"))
   .settings(commonSettings)
   .settings(
     name := "scala-parallel-collections",
-    // don't run Dottydoc, it errors and isn't needed anyway
+    // don't run Dottydoc, it errors and isn't needed anyway.
+    // but we leave `publishArtifact` set to true, otherwise Sonatype won't let us publish
     Compile / doc / sources := (if (isDotty.value) Seq() else (Compile / doc/ sources).value),
-    Compile / packageDoc / publishArtifact := !isDotty.value,
   )
 
 lazy val junit = project.in(file("junit"))
