@@ -19,7 +19,7 @@ To depend on scala-parallel-collections in sbt, add this to your `build.sbt`:
 
 ```scala
 libraryDependencies +=
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0-RC1"
 ```
 
 In your code, adding this import:
@@ -32,7 +32,7 @@ will enable use of the `.par` method as in earlier Scala versions.
 
 ### Scaladoc
 
-Here is the [full Scaladoc](https://static.javadoc.io/org.scala-lang.modules/scala-parallel-collections_2.13/0.2.0/scala/collection/index.html).
+Here is the [full Scaladoc](https://static.javadoc.io/org.scala-lang.modules/scala-parallel-collections_2.13/1.0.0-RC1/scala/collection/index.html).
 
 ### Cross-building: dependency
 
@@ -45,7 +45,7 @@ libraryDependencies ++= {
     case Some((2, major)) if major <= 12 =>
       Seq()
     case _ =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0-RC1")
   }
 }
 ```
