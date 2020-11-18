@@ -7,6 +7,11 @@ used to be part of the Scala standard library (in Scala 2.10 through 2.12).
 For Scala 2.13 and Scala 3, this module is a separate JAR that can be
 omitted from projects that do not use parallel collections.
 
+## Documentation
+
+* https://docs.scala-lang.org/overviews/parallel-collections/overview.html
+* https://javadoc.io/doc/org.scala-lang.modules/scala-parallel-collections_2.13
+
 ## Maintenance status
 
 This module is community-maintained, under the guidance of the Scala team at Lightbend.  If you are
@@ -29,10 +34,6 @@ import scala.collection.parallel.CollectionConverters._
 ```
 
 will enable use of the `.par` method as in earlier Scala versions.
-
-### Scaladoc
-
-Here is the [full Scaladoc](https://static.javadoc.io/org.scala-lang.modules/scala-parallel-collections_2.13/1.0.0-RC1/scala/collection/index.html).
 
 ### Cross-building: dependency
 
