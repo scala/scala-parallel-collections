@@ -2,9 +2,9 @@
 
 This Scala standard module contains the package
 `scala.collection.parallel`, with all of the parallel collections that
-used to be part of the Scala standard library.
+used to be part of the Scala standard library (in Scala 2.10 through 2.12).
 
-For Scala 2.13, this module is a separate JAR that can be
+For Scala 2.13 and Scala 3, this module is a separate JAR that can be
 omitted from projects that do not use parallel collections.
 
 ## Maintenance status
@@ -19,7 +19,7 @@ To depend on scala-parallel-collections in sbt, add this to your `build.sbt`:
 
 ```scala
 libraryDependencies +=
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0-RC1"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0"
 ```
 
 In your code, adding this import:
@@ -36,7 +36,7 @@ Here is the [full Scaladoc](https://static.javadoc.io/org.scala-lang.modules/sca
 
 ### Cross-building: dependency
 
-This module is published only for the Scala 2.13.x series, so in a
+This module is published only for the Scala 2.13 and 3.0 series, so in a
 cross-built project, the dependency should take this form:
 
 ```scala
@@ -45,7 +45,7 @@ libraryDependencies ++= {
     case Some((2, major)) if major <= 12 =>
       Seq()
     case _ =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0-RC1")
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0")
   }
 }
 ```
@@ -57,7 +57,7 @@ community build, etc).
 ### Cross-building: source compatibility
 
 Using `.par` is problematic in a cross-built project, since in Scala
-2.13 the `CollectionConverters._` import shown above is necessary, but
+2.13+ the `CollectionConverters._` import shown above is necessary, but
 in earlier Scala versions, that import will not compile.
 
 You may able to avoid the problem by directly constructing your
