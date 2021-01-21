@@ -71,5 +71,5 @@ which is still under discussion.
 
 As with other Scala standard modules, build and release infrastructure
 is provided by the
-[sbt-scala-modules](https://github.com/scala/sbt-scala-modules/) sbt
+[sbt-scala-module](https://github.com/scala/sbt-scala-module/) sbt
 plugin.
