@@ -6,8 +6,8 @@ language: scala
 
 scala:
   - 2.13.4
-  - 3.0.0-M2
   - 3.0.0-M3
+  - 3.0.0-RC1
 
 env:
   - ADOPTOPENJDK=8
