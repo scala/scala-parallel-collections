@@ -550,7 +550,11 @@ extends IterableOnce[T @uncheckedVariance]
       def apply() = shared
       def doesShareCombiners = true
     } else new CombinerFactory[T, Repr] {
-      def apply() = newCombiner
+      def apply() = {
+        val r = newCombiner
+        r.combinerTaskSupport = tasksupport
+        r
+      }
       def doesShareCombiners = false
     }
   }
@@ -563,7 +567,11 @@ extends IterableOnce[T @uncheckedVariance]
       def apply() = shared
       def doesShareCombiners = true
     } else new CombinerFactory[S, That] {
-      def apply() = cbf()
+      def apply() = {
+        val r = cbf()
+        r.combinerTaskSupport = tasksupport
+        r
+      }
       def doesShareCombiners = false
     }
   }
