@@ -47,4 +47,4 @@ export CI_SNAPSHOT_RELEASE="${projectPrefix}publish"
 # for now, until we're confident in the new release scripts, just close the staging repo.
 export CI_SONATYPE_RELEASE="; sonatypePrepare; sonatypeBundleUpload; sonatypeClose"
 
-sbt clean ${projectPrefix}test core/headerCheck ${projectPrefix}publishLocal $releaseTask
+sbt clean ${projectPrefix}test core/versionPolicyCheck core/headerCheck ${projectPrefix}publishLocal $releaseTask

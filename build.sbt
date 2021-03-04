@@ -1,6 +1,9 @@
 Global / cancelable := true
 publish / skip := true // in root
 
+ThisBuild / versionScheme := Some("early-semver")
+ThisBuild / versionPolicyIntention := Compatibility.BinaryAndSourceCompatible
+
 lazy val commonSettings: Seq[Setting[_]] =
   ScalaModulePlugin.scalaModuleSettings ++ Seq(
     Compile / compile / scalacOptions --= (if (isDotty.value) Seq("-Xlint")
