@@ -39,4 +39,13 @@ class TaskTest {
 
     for (x <- one ; y <- two) assertEquals("two", Thread.currentThread.getName)
   }
+
+  @Test
+  def `t152 pass on task support`(): Unit = {
+    val myTs = new ExecutionContextTaskSupport()
+    val c = List(1).par
+    c.tasksupport = myTs
+    val r = c.filter(_ != 0).map(_ + 1)
+    assertSame(myTs, r.tasksupport)
+  }
 }
