@@ -24,7 +24,7 @@ To depend on scala-parallel-collections in sbt, add this to your `build.sbt`:
 
 ```scala
 libraryDependencies +=
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.1"
 ```
 
 In your code, adding this import:
@@ -46,7 +46,7 @@ libraryDependencies ++= {
     case Some((2, major)) if major <= 12 =>
       Seq()
     case _ =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0")
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.1")
   }
 }
 ```
