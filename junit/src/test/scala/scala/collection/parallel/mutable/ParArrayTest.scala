@@ -138,4 +138,9 @@ class ParArrayTest extends scala.collection.concurrent.ctries_old.Spec {
     evaluating { ParArray.empty[Int].min }.shouldProduce[UnsupportedOperationException]()
   }
 
+  @Test
+  def `empty max`: Unit = {
+    evaluating { ParArray.empty[Int].max }.shouldProduce[UnsupportedOperationException]()
+  }
+
 }

@@ -471,6 +471,8 @@ extends IterableOnce[T @uncheckedVariance]
   }
 
   def max[U >: T](implicit ord: Ordering[U]): T = {
+    if (isEmpty) throw new UnsupportedOperationException("empty.max")
+
     tasksupport.executeAndWaitResult(new Max(ord, splitter)).get.asInstanceOf[T]
   }
 
