@@ -465,6 +465,8 @@ extends IterableOnce[T @uncheckedVariance]
   }
 
   def min[U >: T](implicit ord: Ordering[U]): T = {
+    if (isEmpty) throw new UnsupportedOperationException("empty.min")
+
     tasksupport.executeAndWaitResult(new Min(ord, splitter)).get.asInstanceOf[T]
   }
 

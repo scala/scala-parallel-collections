@@ -132,4 +132,10 @@ class ParArrayTest extends scala.collection.concurrent.ctries_old.Spec {
   def `simple map test`: Unit = {
     assert(ParArray(1,2,3,4,5).map( (_:Int) * 10 ) == ParArray(10,20,30,40,50))
   }
+
+  @Test
+  def `empty min`: Unit = {
+    evaluating { ParArray.empty[Int].min }.shouldProduce[UnsupportedOperationException]()
+  }
+
 }
