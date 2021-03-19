@@ -86,6 +86,11 @@ class ParArrayTest extends scala.collection.concurrent.ctries_old.Spec {
   }
 
   @Test
+  def `empty reduce`: Unit = {
+    evaluating { ParArray.empty[Int].reduce(_+_) }.shouldProduce[UnsupportedOperationException]()
+  }
+
+  @Test
   def `simple count`: Unit = {
     assert( ParArray[Int]().count(_ > 7) == 0 )
     assert( ParArray(1,2,3).count(_ > 7) == 0 )

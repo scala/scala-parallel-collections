@@ -358,6 +358,8 @@ extends IterableOnce[T @uncheckedVariance]
    *  if this $coll is empty.
    */
   def reduce[U >: T](op: (U, U) => U): U = {
+    if (isEmpty) throw new UnsupportedOperationException("empty.reduce")
+
     tasksupport.executeAndWaitResult(new Reduce(op, splitter)).get
   }
 
