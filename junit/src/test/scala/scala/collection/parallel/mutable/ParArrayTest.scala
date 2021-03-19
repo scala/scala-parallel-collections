@@ -148,4 +148,9 @@ class ParArrayTest extends scala.collection.concurrent.ctries_old.Spec {
     evaluating { ParArray.empty[String].minBy(_.length) }.shouldProduce[UnsupportedOperationException]()
   }
 
+  @Test
+  def `emtpy maxBy`: Unit = {
+    evaluating { ParArray.empty[String].maxBy(_.length) }.shouldProduce[UnsupportedOperationException]()
+  }
+
 }
