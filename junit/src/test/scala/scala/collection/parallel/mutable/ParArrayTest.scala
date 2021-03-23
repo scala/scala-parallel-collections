@@ -86,6 +86,11 @@ class ParArrayTest extends scala.collection.concurrent.ctries_old.Spec {
   }
 
   @Test
+  def `empty reduce`: Unit = {
+    evaluating { ParArray.empty[Int].reduce(_+_) }.shouldProduce[UnsupportedOperationException]()
+  }
+
+  @Test
   def `simple count`: Unit = {
     assert( ParArray[Int]().count(_ > 7) == 0 )
     assert( ParArray(1,2,3).count(_ > 7) == 0 )
@@ -127,4 +132,25 @@ class ParArrayTest extends scala.collection.concurrent.ctries_old.Spec {
   def `simple map test`: Unit = {
     assert(ParArray(1,2,3,4,5).map( (_:Int) * 10 ) == ParArray(10,20,30,40,50))
   }
+
+  @Test
+  def `empty min`: Unit = {
+    evaluating { ParArray.empty[Int].min }.shouldProduce[UnsupportedOperationException]()
+  }
+
+  @Test
+  def `empty max`: Unit = {
+    evaluating { ParArray.empty[Int].max }.shouldProduce[UnsupportedOperationException]()
+  }
+
+  @Test
+  def `empty minBy`: Unit = {
+    evaluating { ParArray.empty[String].minBy(_.length) }.shouldProduce[UnsupportedOperationException]()
+  }
+
+  @Test
+  def `emtpy maxBy`: Unit = {
+    evaluating { ParArray.empty[String].maxBy(_.length) }.shouldProduce[UnsupportedOperationException]()
+  }
+
 }

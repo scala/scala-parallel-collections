@@ -358,6 +358,8 @@ extends IterableOnce[T @uncheckedVariance]
    *  if this $coll is empty.
    */
   def reduce[U >: T](op: (U, U) => U): U = {
+    if (isEmpty) throw new UnsupportedOperationException("empty.reduce")
+
     tasksupport.executeAndWaitResult(new Reduce(op, splitter)).get
   }
 
@@ -463,10 +465,14 @@ extends IterableOnce[T @uncheckedVariance]
   }
 
   def min[U >: T](implicit ord: Ordering[U]): T = {
+    if (isEmpty) throw new UnsupportedOperationException("empty.min")
+
     tasksupport.executeAndWaitResult(new Min(ord, splitter)).get.asInstanceOf[T]
   }
 
   def max[U >: T](implicit ord: Ordering[U]): T = {
+    if (isEmpty) throw new UnsupportedOperationException("empty.max")
+
     tasksupport.executeAndWaitResult(new Max(ord, splitter)).get.asInstanceOf[T]
   }
 
