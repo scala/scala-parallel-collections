@@ -19,6 +19,7 @@ lazy val core = project.in(file("core"))
     // don't run Dottydoc, it errors and isn't needed anyway.
     // but we leave `publishArtifact` set to true, otherwise Sonatype won't let us publish
     Compile / doc / sources := (if (isDotty.value) Seq() else (Compile / doc/ sources).value),
+    Compile / doc / autoAPIMappings := true,
     scalaModuleMimaPreviousVersion := Some("1.0.0").filterNot(_ => isDotty.value),
   )
 
