@@ -5,13 +5,14 @@ import: scala/scala-dev:travis/default.yml
 language: scala
 
 scala:
-  - 3.0.0-M3
+  - 3.0.0-RC2
   - 3.0.0-RC1
   - 2.13.5
 
 env:
   - ADOPTOPENJDK=8
   - ADOPTOPENJDK=11
+  - ADOPTOPENJDK=16
 
 install:
   - git fetch --tags # get all tags for sbt-dynver
