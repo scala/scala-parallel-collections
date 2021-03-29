@@ -20,6 +20,7 @@ lazy val core = project.in(file("core"))
   .settings(commonSettings)
   .settings(
     name := "scala-parallel-collections",
+    Compile / doc / autoAPIMappings := true,
     scalaModuleMimaPreviousVersion := (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((3, _)) => None
       case _            => Some("1.0.0")
