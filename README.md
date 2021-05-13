@@ -4,7 +4,7 @@ This Scala standard module contains the package
 `scala.collection.parallel`, with all of the parallel collections that
 used to be part of the Scala standard library (in Scala 2.10 through 2.12).
 
-For Scala 2.13 and Scala 3, this module is a separate JAR that can be
+For Scala 3 and Scala 2.13, this module is a separate JAR that can be
 omitted from projects that do not use parallel collections.
 
 ## Documentation
@@ -24,7 +24,7 @@ To depend on scala-parallel-collections in sbt, add this to your `build.sbt`:
 
 ```scala
 libraryDependencies +=
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.2"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3"
 ```
 
 In your code, adding this import:
@@ -37,7 +37,7 @@ will enable use of the `.par` method as in earlier Scala versions.
 
 ### Cross-building: dependency
 
-This module is published only for the Scala 2.13 and 3.0 series, so in a
+This module is published only for the Scala 3 and 2.13, so in a
 cross-built project, the dependency should take this form:
 
 ```scala
@@ -46,7 +46,7 @@ libraryDependencies ++= {
     case Some((2, major)) if major <= 12 =>
       Seq()
     case _ =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.2")
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3")
   }
 }
 ```
