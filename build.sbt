@@ -1,12 +1,10 @@
 Global / cancelable := true
 publish / skip := true // in root
 
-ThisBuild / versionScheme := Some("early-semver")
-ThisBuild / versionPolicyIntention := Compatibility.BinaryAndSourceCompatible
-
 lazy val commonSettings: Seq[Setting[_]] =
   Seq(scalaModuleAutomaticModuleName := Some("scala.collection.parallel")) ++
   ScalaModulePlugin.scalaModuleSettings ++ Seq(
+    versionPolicyIntention := Compatibility.BinaryAndSourceCompatible,
     Compile / compile / scalacOptions --= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((3, _)) => Seq("-Xlint")
       case _            => Seq()
@@ -22,7 +20,6 @@ lazy val core = project.in(file("core"))
   .settings(
     name := "scala-parallel-collections",
     Compile / doc / autoAPIMappings := true,
-    scalaModuleMimaPreviousVersion := Some("1.0.3"),
   )
 
 lazy val junit = project.in(file("junit"))
