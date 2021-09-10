@@ -1,6 +1,10 @@
 ThisBuild / crossScalaVersions := Seq("2.13.6", "3.0.2")
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
 
+// shouldn't be necessary anymore after https://github.com/lampepfl/dotty/pull/13498
+// makes it into a release
+ThisBuild / libraryDependencySchemes += "org.scala-lang" %% "scala3-library" % "semver-spec"
+
 Global / cancelable := true
 publish / skip := true // in root
 
