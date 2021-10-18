@@ -1,4 +1,4 @@
-ThisBuild / crossScalaVersions := Seq("2.13.6", "3.0.2")
+ThisBuild / crossScalaVersions := Seq("2.13.6", "3.1.0")
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
 
 // shouldn't be necessary anymore after https://github.com/lampepfl/dotty/pull/13498
