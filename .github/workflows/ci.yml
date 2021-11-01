@@ -7,7 +7,7 @@ on:
       - main
   pull_request:
 jobs:
-  test: &test
+  test:
     strategy:
       fail-fast: false
       matrix:
@@ -28,10 +28,21 @@ jobs:
       run: sbt "setScalaVersion ${{matrix.scala}}" test core/headerCheck package
 
   test-rc:
-    <<: *test
     strategy:
       fail-fast: false
       matrix:
         java: [8]
         scala: [3.next]
+    runs-on: ubuntu-latest
     if: ${{ github.event_name == schedule }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: coursier/cache-action@v6
+    - uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: ${{matrix.java}}
+    - name: Test
+      run: sbt "setScalaVersion ${{matrix.scala}}" test core/headerCheck package
