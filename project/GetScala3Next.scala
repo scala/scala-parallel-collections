@@ -1,6 +1,6 @@
 import java.nio.ByteBuffer
 
-import scala.concurrent._, duration._
+import scala.concurrent._, duration._, ExecutionContext.Implicits._
 
 import gigahorse._, support.okhttp.Gigahorse
 
@@ -23,7 +23,7 @@ object GetScala3Next {
         case JArray(Array(JObject(fields))) => fields.collectFirst {
           case JField("tag_name", JString(version)) => version
         }
-      }.map(_.getOrElse(sys.error(s"Expected an array of 1 string, got $j")))
+      }.map(_.getOrElse(sys.error(s"Expected an array of 1 string, got $f")))
 
       Await.result(f2, 120.seconds)
     } finally http.close()
