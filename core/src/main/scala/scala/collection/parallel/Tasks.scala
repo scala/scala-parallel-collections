@@ -68,12 +68,12 @@ trait Task[R, +Tp] {
     mergeThrowables(that)
   }
 
-  private[parallel] def mergeThrowables(that: Task[_, _]): Unit = {
-     if (this.throwable != null && that.throwable != null)
-       this.throwable.addSuppressed(that.throwable)
-     else if (this.throwable == null && that.throwable != null)
+  private[parallel] def mergeThrowables(that: Task[_, _]): Unit =
+     if (this.throwable != null) {
+       if (that.throwable != null && (this.throwable ne that.throwable))
+         this.throwable.addSuppressed(that.throwable)
+     } else if (that.throwable != null)
        this.throwable = that.throwable
-  }
 
   // override in concrete task implementations to signal abort to other tasks
   private[parallel] def signalAbort(): Unit = {}
