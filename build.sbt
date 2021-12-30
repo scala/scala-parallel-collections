@@ -39,7 +39,7 @@ lazy val core = project.in(file("core"))
 lazy val junit = project.in(file("junit"))
   .settings(commonSettings)
   .settings(
-    libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.2" % Test,
+    libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3" % Test,
     libraryDependencies += "junit" % "junit" % "4.13.2" % Test,
     // for javax.xml.bind.DatatypeConverter, used in SerializationStabilityTest
     libraryDependencies += "javax.xml.bind" % "jaxb-api" % "2.3.1" % Test,
