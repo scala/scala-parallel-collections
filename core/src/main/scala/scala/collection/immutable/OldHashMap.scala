@@ -35,6 +35,7 @@ import scala.collection.mutable.{Builder, ImmutableBuilder}
   *  @define mayNotTerminateInf
   *  @define willNotTerminateInf
   */
+@SerialVersionUID(-2425602972438308285L)
 sealed abstract class OldHashMap[K, +V]
   extends AbstractMap[K, V]
     with MapOps[K, V, OldHashMap, OldHashMap[K, V]]
