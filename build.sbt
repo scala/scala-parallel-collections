@@ -1,16 +1,5 @@
-ThisBuild / crossScalaVersions := Seq("2.13.8", "3.0.2")
+ThisBuild / crossScalaVersions := Seq("2.13.8", "3.1.3-RC3")
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
-
-// shouldn't be necessary anymore after https://github.com/lampepfl/dotty/pull/13498
-// makes it into a release
-ThisBuild / libraryDependencySchemes += "org.scala-lang" %% "scala3-library" % "semver-spec"
-
-// this was necessary to get us from 3.0.0 to 3.0.2, but we should be able to remove
-// it after the next release
-import com.typesafe.tools.mima.core._
-ThisBuild / mimaBinaryIssueFilters ++= Seq(
-  ProblemFilters.exclude[IncompatibleSignatureProblem]("*"),
-)
 
 Global / cancelable := true
 publish / skip := true // in root
