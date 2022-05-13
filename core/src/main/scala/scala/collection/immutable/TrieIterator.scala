@@ -39,7 +39,7 @@ private[collection] abstract class TrieIterator[+T](elems: Array[Iterable[T]]) e
   def initSubIter: Iterator[T]                      = null // to traverse collision nodes
 
   private[this] var depth                                     = initDepth
-  private[this] var arrayStack: Array[Array[Iterable[T @uV]]] = initArrayStack
+  private[this] val arrayStack: Array[Array[Iterable[T @uV]]] = initArrayStack
   private[this] var posStack                                  = initPosStack
   private[this] var arrayD: Array[Iterable[T @uV]]            = initArrayD
   private[this] var posD                                      = initPosD
