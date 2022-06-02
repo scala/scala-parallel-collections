@@ -62,8 +62,8 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     *            this sequence in the same order, `false` otherwise
     */
   override def equals(that: Any): Boolean = that match {
-    case that: ParSeq[_] => (that eq this.asInstanceOf[AnyRef]) || (that canEqual this) && (this sameElements that)
-    case _               => false
+    case that: ParSeq[Any] => (that eq this.asInstanceOf[AnyRef]) || (that canEqual this) && (this sameElements that)
+    case _                 => false
   }
 
   def canEqual(other: Any): Boolean = true
