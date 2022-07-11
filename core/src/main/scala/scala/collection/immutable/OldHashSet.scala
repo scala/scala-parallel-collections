@@ -506,6 +506,7 @@ object OldHashSet extends IterableFactory[OldHashSet] {
     * elems: [a,b]
     * children:        ---b----------------a-----------
     */
+  @SerialVersionUID(-2139837478000879198L)
   private[collection] final class HashTrieSet[A](private val bitmap: Int, private[collection] val elems: Array[OldHashSet[A]], private val size0: Int)
     extends OldHashSet[A] {
     assert(Integer.bitCount(bitmap) == elems.length)
