@@ -56,10 +56,10 @@ lazy val testmacros = project.in(file("testmacros"))
     publish / skip := true,
   )
 
-commands += Command.single("setScalaVersion") { (state, arg0) =>
-  val arg = arg0 match {
-    case "3.next" => GetScala3Next.get()
-    case _        => arg0
+commands += Command.single("setScalaVersion") { (state, arg) =>
+  val command = arg match {
+    case "3.next" => s"++${GetScala3Next.get()}!"
+    case _        => s"++$arg"
   }
-  s"++$arg" :: state
+  command :: state
 }
