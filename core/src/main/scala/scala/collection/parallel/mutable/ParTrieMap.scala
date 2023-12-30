@@ -80,9 +80,9 @@ extends ParMap[K, V]
     val in = ctrie.readRoot()
     val r = in.gcasRead(ctrie)
     (r: @unchecked) match {
-      case tn: TNode[_, _] => tn.cachedSize(ctrie)
-      case ln: LNode[_, _] => ln.cachedSize(ctrie)
-      case cn: CNode[_, _] =>
+      case tn: TNode[?, ?] => tn.cachedSize(ctrie)
+      case ln: LNode[?, ?] => ln.cachedSize(ctrie)
+      case cn: CNode[?, ?] =>
         tasksupport.executeAndWaitResult(new Size(0, cn.array.length, cn.array))
         cn.cachedSize(ctrie)
     }
@@ -103,7 +103,7 @@ extends ParMap[K, V]
       val until = offset + howmany
       while (i < until) {
         (array(i): @unchecked) match {
-          case sn: SNode[_, _] => sz += 1
+          case sn: SNode[?, ?] => sz += 1
           case in: INode[K @unchecked, V @unchecked] => sz += in.cachedSize(ctrie)
         }
         i += 1

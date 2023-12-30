@@ -467,7 +467,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
 
   /* tasks */
 
-  protected[this] def down(p: IterableSplitter[_]) = p.asInstanceOf[SeqSplitter[T]]
+  protected[this] def down(p: IterableSplitter[?]) = p.asInstanceOf[SeqSplitter[T]]
 
   protected trait ParSeqLikeAccessor[R, Tp] extends Accessor[R, Tp] {
     protected[this] val pit: SeqSplitter[T]

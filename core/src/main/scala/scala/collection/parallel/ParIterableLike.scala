@@ -328,7 +328,7 @@ extends IterableOnce[T @uncheckedVariance]
         if (cb.getClass == t.runtimeClass) isbody(cb.asInstanceOf[Cmb]) else notbody
       }
     }
-    def isCombiner = cb.isInstanceOf[Combiner[_, _]]
+    def isCombiner = cb.isInstanceOf[Combiner[?, ?]]
     def asCombiner = cb.asInstanceOf[Combiner[Elem, To]]
   }
 
@@ -877,7 +877,7 @@ extends IterableOnce[T @uncheckedVariance]
 
   protected[this] trait NonDivisible[R] extends NonDivisibleTask[R, NonDivisible[R]]
 
-  protected[this] abstract class Composite[FR, SR, R, First <: StrictSplitterCheckTask[FR, _], Second <: StrictSplitterCheckTask[SR, _]]
+  protected[this] abstract class Composite[FR, SR, R, First <: StrictSplitterCheckTask[FR, ?], Second <: StrictSplitterCheckTask[SR, ?]]
     (val ft: First, val st: Second)
   extends NonDivisibleTask[R, Composite[FR, SR, R, First, Second]] {
     def combineResults(fr: FR, sr: SR): R
@@ -894,7 +894,7 @@ extends IterableOnce[T @uncheckedVariance]
   }
 
   /** Sequentially performs one task after another. */
-  protected[this] abstract class SeqComposite[FR, SR, R, First <: StrictSplitterCheckTask[FR, _], Second <: StrictSplitterCheckTask[SR, _]]
+  protected[this] abstract class SeqComposite[FR, SR, R, First <: StrictSplitterCheckTask[FR, ?], Second <: StrictSplitterCheckTask[SR, ?]]
   (f: First, s: Second)
   extends Composite[FR, SR, R, First, Second](f, s) {
     def leaf(prevr: Option[R]) = {
@@ -905,7 +905,7 @@ extends IterableOnce[T @uncheckedVariance]
   }
 
   /** Performs two tasks in parallel, and waits for both to finish. */
-  protected[this] abstract class ParComposite[FR, SR, R, First <: StrictSplitterCheckTask[FR, _], Second <: StrictSplitterCheckTask[SR, _]]
+  protected[this] abstract class ParComposite[FR, SR, R, First <: StrictSplitterCheckTask[FR, ?], Second <: StrictSplitterCheckTask[SR, ?]]
   (f: First, s: Second)
   extends Composite[FR, SR, R, First, Second](f, s) {
     def leaf(prevr: Option[R]) = {

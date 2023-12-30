@@ -68,7 +68,7 @@ trait Task[R, +Tp] {
     mergeThrowables(that)
   }
 
-  private[parallel] def mergeThrowables(that: Task[_, _]): Unit =
+  private[parallel] def mergeThrowables(that: Task[?, ?]): Unit =
      if (this.throwable != null) {
        if (that.throwable != null && (this.throwable ne that.throwable))
          this.throwable.addSuppressed(that.throwable)

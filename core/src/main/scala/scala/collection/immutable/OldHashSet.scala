@@ -579,13 +579,13 @@ object OldHashSet extends IterableFactory[OldHashSet] {
             val sizeNew = size - sub.size
             // if we have only one child, which is not a HashTrieSet but a self-contained set like
             // OldHashSet1 or OldHashSetCollision1, return the child instead
-            if (elemsNew.length == 1 && !elemsNew(0).isInstanceOf[HashTrieSet[_]])
+            if (elemsNew.length == 1 && !elemsNew(0).isInstanceOf[HashTrieSet[?]])
               elemsNew(0)
             else
               new HashTrieSet(bitmapNew, elemsNew, sizeNew)
           } else
             null
-        } else if(elems.length == 1 && !subNew.isInstanceOf[HashTrieSet[_]]) {
+        } else if(elems.length == 1 && !subNew.isInstanceOf[HashTrieSet[?]]) {
           subNew
         } else {
           val elemsNew = java.util.Arrays.copyOf(elems, elems.length)

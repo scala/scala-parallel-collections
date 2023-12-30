@@ -81,7 +81,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
   def areEqual(t1: Iterable[T], t2: ParIterable[T]) = if (hasStrictOrder) {
     t1.iterator.sameElements(t2) && t2.sameElements(t1)
   } else (t1, t2) match { // it is slightly delicate what `equal` means if the order is not strict
-    case (m1: Map[_, _], m2: ParMap[_, _]) =>
+    case (m1: Map[?, ?], m2: ParMap[?, ?]) =>
       val am1: Map[Any, Any] = m1.asInstanceOf[Map[Any, Any]]
       val am2: ParMap[Any, Any] = m2.asInstanceOf[ParMap[Any, Any]]
       am1.forall { case (k, v) => am2.get(k).contains(v) } && am2.forall { case (k, v) => am1.get(k).contains(v) }
@@ -98,7 +98,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
     println(coll.tasksupport.debugMessages.mkString("\n"))
   }
 
-  def printComparison(t: Iterable[_], coll: ParIterable[_], tf: Iterable[_], cf: ParIterable[_], ind: Int): Unit = {
+  def printComparison(t: Iterable[?], coll: ParIterable[?], tf: Iterable[?], cf: ParIterable[?], ind: Int): Unit = {
     printDebugInfo(coll)
     println("Operator: " + ind)
     println("sz: " + t.size)

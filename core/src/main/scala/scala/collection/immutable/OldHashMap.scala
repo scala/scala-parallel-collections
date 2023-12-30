@@ -423,13 +423,13 @@ object OldHashMap extends MapFactory[OldHashMap] {
             val sizeNew = size - sub.size
             // if we have only one child, which is not a HashTrieSet but a self-contained set like
             // HashSet1 or HashSetCollision1, return the child instead
-            if (elemsNew.length == 1 && !elemsNew(0).isInstanceOf[HashTrieMap[_,_]])
+            if (elemsNew.length == 1 && !elemsNew(0).isInstanceOf[HashTrieMap[?,?]])
               elemsNew(0)
             else
               new HashTrieMap(bitmapNew, elemsNew, sizeNew)
           } else
             OldHashMap.empty[K,V]
-        } else if(elems.length == 1 && !subNew.isInstanceOf[HashTrieMap[_,_]]) {
+        } else if(elems.length == 1 && !subNew.isInstanceOf[HashTrieMap[?,?]]) {
           subNew
         } else {
           val elemsNew = java.util.Arrays.copyOf(elems, elems.length)
@@ -529,9 +529,9 @@ object OldHashMap extends MapFactory[OldHashMap] {
     }
 
     protected def merge0[V1 >: V](that: OldHashMap[K, V1], level: Int, merger: Merger[K, V1]): OldHashMap[K, V1] = that match {
-      case hm: OldHashMap1[_, _] =>
+      case hm: OldHashMap1[?, ?] =>
         this.updated0(hm.key, hm.hash, level, hm.value.asInstanceOf[V1], hm.kv, merger)
-      case hm: HashTrieMap[_, _] =>
+      case hm: HashTrieMap[?, ?] =>
         val that = hm.asInstanceOf[HashTrieMap[K, V1]]
         val thiselems = this.elems
         val thatelems = that.elems
@@ -582,8 +582,8 @@ object OldHashMap extends MapFactory[OldHashMap] {
         }
 
         new HashTrieMap[K, V1](this.bitmap | that.bitmap, merged, totalelems)
-      case hm: OldHashMapCollision1[_, _] => that.merge0(this, level, merger.invert)
-      case hm: OldHashMap[_, _] => this
+      case hm: OldHashMapCollision1[?, ?] => that.merge0(this, level, merger.invert)
+      case hm: OldHashMap[?, ?] => this
     }
   }
 

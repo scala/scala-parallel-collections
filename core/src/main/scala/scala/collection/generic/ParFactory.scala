@@ -39,7 +39,7 @@ extends GenericParCompanion[CC] {
   def concat[A](xss: Iterable[A]*): CC[A] = {
     val b = newBuilder[A]
     // At present we're using IndexedSeq as a proxy for "has a cheap size method".
-    if (xss forall (_.isInstanceOf[IndexedSeq[_]]))
+    if (xss forall (_.isInstanceOf[IndexedSeq[?]]))
       b.sizeHint(xss.map(_.size).sum)
 
     for (xs <- xss) b ++= xs

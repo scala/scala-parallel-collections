@@ -97,7 +97,7 @@ extends ParIterableLike[T, CC, Repr, Sequential]
     *              as this set.
     */
   override def equals(that: Any): Boolean = that match {
-    case that: ParSet[_] =>
+    case that: ParSet[?] =>
       (this eq that) ||
         (that canEqual this) &&
           (this.size == that.size) &&

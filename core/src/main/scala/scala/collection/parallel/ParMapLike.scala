@@ -53,7 +53,7 @@ self =>
     *              same mappings, `false` otherwise.
     */
   override def equals(that: Any): Boolean = that match {
-    case that: ParMap[b, _] =>
+    case that: ParMap[b, ?] =>
       (this eq that) ||
         (that canEqual this) &&
           (this.size == that.size) && {
