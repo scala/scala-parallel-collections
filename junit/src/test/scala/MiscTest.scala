@@ -25,7 +25,7 @@ class MiscTest {
     }
   }
 
-  def foo(arg: ParSeq[_]): String = arg.map(x => x).mkString(",")
+  def foo(arg: ParSeq[?]): String = arg.map(x => x).mkString(",")
 
   @Test
   def si4608: Unit = {
@@ -113,9 +113,9 @@ class MiscTest {
   @Test
   def si6510: Unit = {
     val x = collection.parallel.mutable.ParArray.range(1,10) groupBy { _ % 2 } mapValues { _.size }
-    assertTrue(x.isInstanceOf[parallel.ParMap[_, _]])
+    assertTrue(x.isInstanceOf[parallel.ParMap[?, ?]])
     val y = collection.parallel.immutable.ParVector.range(1,10) groupBy { _ % 2 } mapValues { _.size }
-    assertTrue(y.isInstanceOf[parallel.ParMap[_, _]])
+    assertTrue(y.isInstanceOf[parallel.ParMap[?, ?]])
   }
 
   @Test

@@ -46,23 +46,23 @@ private[collection] abstract class TrieIterator[+T](elems: Array[Iterable[T]]) e
   private[this] var subIter                                   = initSubIter
 
   private[this] def getElems(x: Iterable[T]): Array[Iterable[T]] = ((x: @unchecked) match {
-    case x: HashTrieMap[_, _] => x.elems
-    case x: HashTrieSet[_]    => x.elems
+    case x: HashTrieMap[?, ?] => x.elems
+    case x: HashTrieSet[?]    => x.elems
   }).asInstanceOf[Array[Iterable[T]]]
 
   private[this] def collisionToArray(x: Iterable[T]): Array[Iterable[T]] = ((x: @unchecked) match {
-    case x: OldHashMapCollision1[_, _] => x.kvs.map((x: (Any, Any)) => OldHashMap(x)).toArray
-    case x: OldHashSetCollision1[_]    => x.ks.map(x => OldHashSet(x)).toArray
+    case x: OldHashMapCollision1[?, ?] => x.kvs.map((x: (Any, Any)) => OldHashMap(x)).toArray
+    case x: OldHashSetCollision1[?]    => x.ks.map(x => OldHashSet(x)).toArray
   }).asInstanceOf[Array[Iterable[T]]]
 
   private[this] type SplitIterators = ((Iterator[T], Int), Iterator[T])
 
   private def isTrie(x: AnyRef) = x match {
-    case _: HashTrieMap[_,_] | _: HashTrieSet[_] => true
+    case _: HashTrieMap[?,?] | _: HashTrieSet[?] => true
     case _                                       => false
   }
   private def isContainer(x: AnyRef) = x match {
-    case _: OldHashMap1[_, _] | _: OldHashSet1[_] => true
+    case _: OldHashMap1[?, ?] | _: OldHashSet1[?] => true
     case _                                  => false
   }
 
@@ -84,7 +84,7 @@ private[collection] abstract class TrieIterator[+T](elems: Array[Iterable[T]]) e
   }
 
   private[this] def iteratorWithSize(arr: Array[Iterable[T]]): (Iterator[T], Int) =
-    (newIterator(arr), ((arr.map(_.size): Array[Int]): scala.collection.IterableOps[Int, scala.collection.Iterable, _]).sum)
+    (newIterator(arr), ((arr.map(_.size): Array[Int]): scala.collection.IterableOps[Int, scala.collection.Iterable, ?]).sum)
 
   private[this] def arrayToIterators(arr: Array[Iterable[T]]): SplitIterators = {
     val (fst, snd) = arr.splitAt(arr.length / 2)
@@ -94,7 +94,7 @@ private[collection] abstract class TrieIterator[+T](elems: Array[Iterable[T]]) e
   private[this] def splitArray(ad: Array[Iterable[T]]): SplitIterators =
     if (ad.length > 1) arrayToIterators(ad)
     else ad(0) match {
-      case _: OldHashMapCollision1[_, _] | _: OldHashSetCollision1[_] =>
+      case _: OldHashMapCollision1[?, ?] | _: OldHashSetCollision1[?] =>
         arrayToIterators(collisionToArray(ad(0)))
       case _ =>
         splitArray(getElems(ad(0)))

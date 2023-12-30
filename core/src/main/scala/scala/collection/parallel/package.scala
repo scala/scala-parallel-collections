@@ -40,7 +40,7 @@ package object parallel {
 
   def setTaskSupport[Coll](c: Coll, t: TaskSupport): Coll = {
     c match {
-      case pc: ParIterableLike[_, _, _, _] => pc.tasksupport = t
+      case pc: ParIterableLike[?, ?, ?, ?] => pc.tasksupport = t
       case _ => // do nothing
     }
     c
@@ -50,7 +50,7 @@ package object parallel {
   implicit class CollectionsHaveToParArray[C, T](c: C)(implicit asGto: C => scala.collection.IterableOnce[T]) {
     def toParArray = {
       val t = asGto(c)
-      if (t.isInstanceOf[ParArray[_]]) t.asInstanceOf[ParArray[T]]
+      if (t.isInstanceOf[ParArray[?]]) t.asInstanceOf[ParArray[T]]
       else {
         val it = t.iterator
         val cb = mutable.ParArrayCombiner[T]()
@@ -67,9 +67,9 @@ package parallel {
   private[collection] object ParallelCollectionImplicits {
     implicit def traversable2ops[T](t: scala.collection.IterableOnce[T]): TraversableOps[T] = new TraversableOps[T] {
       def isParallel = t.isInstanceOf[Parallel]
-      def isParIterable = t.isInstanceOf[ParIterable[_]]
+      def isParIterable = t.isInstanceOf[ParIterable[?]]
       def asParIterable = t.asInstanceOf[ParIterable[T]]
-      def isParSeq = t.isInstanceOf[ParSeq[_]]
+      def isParSeq = t.isInstanceOf[ParSeq[?]]
       def asParSeq = t.asInstanceOf[ParSeq[T]]
       def ifParSeq[R](isbody: ParSeq[T] => R) = new Otherwise[R] {
         def otherwise(notbody: => R) = if (isParallel) isbody(asParSeq) else notbody
@@ -184,7 +184,7 @@ package parallel {
     def combine[N <: Elem, NewTo >: To](other: Combiner[N, NewTo]): Combiner[N, NewTo] = {
       if (this eq other) this
       else other match {
-        case _: BucketCombiner[_, _, _, _] =>
+        case _: BucketCombiner[?, ?, ?, ?] =>
           beforeCombine(other)
           val that = other.asInstanceOf[BucketCombiner[Elem, To, Buck, CombinerType]]
 

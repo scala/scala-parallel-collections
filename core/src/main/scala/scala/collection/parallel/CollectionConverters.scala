@@ -27,7 +27,7 @@ object CollectionConverters {
     def seq = coll
     override def par = coll match {
       case coll: sc.Set[A @unchecked] => new SetIsParallelizable(coll).par
-      case coll: sc.Map[_, _] => new MapIsParallelizable(coll).par.asInstanceOf[ParIterable[A]]
+      case coll: sc.Map[?, ?] => new MapIsParallelizable(coll).par.asInstanceOf[ParIterable[A]]
       case coll: sci.Iterable[A] => new ImmutableIterableIsParallelizable(coll).par
       case coll: scm.Iterable[A @unchecked] => new MutableIterableIsParallelizable(coll).par
       case _ => ParIterable.newCombiner[A].fromSequential(seq) // builds ParArray, same as for scm.Iterable
@@ -39,7 +39,7 @@ object CollectionConverters {
     override def par = coll match {
       case coll: scm.Seq[A] => new MutableSeqIsParallelizable(coll).par
       case coll: scm.Set[A] => new MutableSetIsParallelizable(coll).par
-      case coll: scm.Map[_, _] => new MutableMapIsParallelizable(coll).par.asInstanceOf[mutable.ParIterable[A]]
+      case coll: scm.Map[?, ?] => new MutableMapIsParallelizable(coll).par.asInstanceOf[mutable.ParIterable[A]]
       case _ => mutable.ParIterable.newCombiner[A].fromSequential(seq) // builds ParArray
     }
   }
@@ -49,7 +49,7 @@ object CollectionConverters {
     override def par = coll match {
       case coll: sci.Seq[A] => new ImmutableSeqIsParallelizable(coll).par
       case coll: sci.Set[A @unchecked] => new ImmutableSetIsParallelizable(coll).par
-      case coll: sci.Map[_, _] => new ImmutableMapIsParallelizable(coll).par.asInstanceOf[immutable.ParIterable[A]]
+      case coll: sci.Map[?, ?] => new ImmutableMapIsParallelizable(coll).par.asInstanceOf[immutable.ParIterable[A]]
       case _ => immutable.ParIterable.newCombiner[A].fromSequential(seq) // builds ParVector
     }
   }
@@ -85,7 +85,7 @@ object CollectionConverters {
   implicit class ImmutableSeqIsParallelizable[A](private val coll: sci.Seq[A]) extends AnyVal with sc.CustomParallelizable[A, immutable.ParSeq[A]] {
     def seq = coll
     override def par = coll match {
-      case coll: sci.Vector[_] => new VectorIsParallelizable(coll.asInstanceOf[sci.Vector[A]]).par
+      case coll: sci.Vector[?] => new VectorIsParallelizable(coll.asInstanceOf[sci.Vector[A]]).par
       case coll: sci.Range => new RangeIsParallelizable(coll).par.asInstanceOf[immutable.ParSeq[A]]
       case _ => immutable.ParSeq.newCombiner[A].fromSequential(seq)
     }

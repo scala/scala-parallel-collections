@@ -22,7 +22,7 @@ import scala.collection.parallel.ParSetLike
  *  @define factoryInfo
  *    This object provides a set of operations needed to create `$Coll` values.
  */
-abstract class ParSetFactory[CC[X] <: ParSet[X] with ParSetLike[X, CC, CC[X], _] with GenericParTemplate[X, CC]]
+abstract class ParSetFactory[CC[X] <: ParSet[X] with ParSetLike[X, CC, CC[X], ?] with GenericParTemplate[X, CC]]
   extends GenericParCompanion[CC] {
   def newBuilder[A]: Combiner[A, CC[A]] = newCombiner[A]
 
