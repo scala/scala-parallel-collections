@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [8, 11, 17]
+        java: [8, 11, 17, 21]
         scala: [2.13.x, 3.x]
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'schedule' }}
