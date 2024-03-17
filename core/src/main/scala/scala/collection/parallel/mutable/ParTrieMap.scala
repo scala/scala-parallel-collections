@@ -52,7 +52,7 @@ extends ParMap[K, V]
 
   override def seq = ctrie
 
-  def splitter = new ParTrieMapSplitter(0, ctrie.readOnlySnapshot().asInstanceOf[TrieMap[K, V]], true)
+  def splitter = new ParTrieMapSplitter(0, ctrie.readOnlySnapshot().asInstanceOf[TrieMap[K, V]], mustInit = true)
 
   override def clear() = ctrie.clear()
 
