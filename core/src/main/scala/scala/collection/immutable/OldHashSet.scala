@@ -83,12 +83,12 @@ sealed abstract class OldHashSet[A]
 
   override def filter(p: A => Boolean) = {
     val buffer = new Array[OldHashSet[A]](bufferSize(size))
-    nullToEmpty(filter0(p, false, 0, buffer, 0))
+    nullToEmpty(filter0(p, negate = false, 0, buffer, 0))
   }
 
   override def filterNot(p: A => Boolean) = {
     val buffer = new Array[OldHashSet[A]](bufferSize(size))
-    nullToEmpty(filter0(p, true, 0, buffer, 0))
+    nullToEmpty(filter0(p, negate = true, 0, buffer, 0))
   }
 
   override def tail: OldHashSet[A] = this - head
