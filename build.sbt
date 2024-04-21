@@ -1,4 +1,4 @@
-ThisBuild / crossScalaVersions := Seq("2.13.13", "3.3.3")
+ThisBuild / crossScalaVersions := Seq("2.13.13", "3.4.1")
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
 
 Global / cancelable := true
