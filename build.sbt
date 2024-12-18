@@ -13,7 +13,7 @@ publish / skip := true // in root
 lazy val commonSettings: Seq[Setting[_]] =
   Seq(scalaModuleAutomaticModuleName := Some("scala.collection.parallel")) ++
   ScalaModulePlugin.scalaModuleSettings ++ Seq(
-    versionPolicyIntention := Compatibility.BinaryCompatible,
+    versionPolicyIntention := Compatibility.BinaryAndSourceCompatible,
     Compile / compile / scalacOptions --= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((3, _)) => Seq("-Xlint")
       case _            => Seq()
