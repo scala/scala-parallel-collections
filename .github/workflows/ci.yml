@@ -24,6 +24,7 @@ jobs:
       with:
         distribution: temurin
         java-version: ${{matrix.java}}
+    - uses: sbt/setup-sbt@v1
     - name: Test
       run: sbt "setScalaVersion ${{matrix.scala}}" test core/headerCheck package
 
@@ -49,5 +50,6 @@ jobs:
       with:
         distribution: temurin
         java-version: ${{matrix.java}}
+    - uses: sbt/setup-sbt@v1
     - name: Test
       run: sbt "setScalaVersion ${{matrix.scala}}" test core/headerCheck package
