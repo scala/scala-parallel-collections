@@ -1,6 +1,12 @@
 ThisBuild / crossScalaVersions := Seq("2.13.15", "3.3.4")
 ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
 
+// we can remove this after we ship 1.0.5; see #273 for gory details
+import com.typesafe.tools.mima.core._
+ThisBuild / mimaBinaryIssueFilters ++= Seq(
+  ProblemFilters.exclude[IncompatibleSignatureProblem]("*"),
+)
+
 Global / cancelable := true
 publish / skip := true // in root
 
