@@ -107,3 +107,14 @@ commands += Command.single("setScalaVersion") { (state, arg) =>
   }
   command :: state
 }
+
+def testPlatformCommand(name: String, selector: ProjectMatrix => sbt.internal.ProjectFinder): Command = 
+  Command.command(name) { state =>
+    List(junit, scalacheck, testmacros)
+    .flatMap(selector(_).get)
+    .map{ project => s"${project.id}/test"}
+    .toList ::: state
+  }
+
+commands += testPlatformCommand("testNative", _.native)
+commands += testPlatformCommand("testJVM", _.jvm)
