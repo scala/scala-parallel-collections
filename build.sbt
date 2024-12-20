@@ -1,6 +1,11 @@
 val scalaVersions =  Seq("2.13.15", "3.3.4")
+val defaultScalaVersion = scalaVersions.head
+
+// When defining JVM / Scala Native matrix we don't want duplicated projects for Scala 2/3
+val matrixScalaVersions = Seq(defaultScalaVersion)
+
 ThisBuild / crossScalaVersions := scalaVersions
-ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.head
+ThisBuild / scalaVersion := defaultScalaVersion
 
 Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
 Global / cancelable := true
@@ -10,6 +15,7 @@ lazy val commonSettings: Seq[Setting[_]] =
   Seq(scalaModuleAutomaticModuleName := Some("scala.collection.parallel")) ++
   ScalaModulePlugin.scalaModuleSettings ++ Seq(
     versionPolicyIntention := Compatibility.BinaryAndSourceCompatible,
+    crossScalaVersions := scalaVersions,
     Compile / compile / scalacOptions --= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((3, _)) => Seq("-Xlint")
       case _            => Seq()
@@ -31,9 +37,9 @@ lazy val core = projectMatrix.in(file("core"))
     name := "scala-parallel-collections",
     Compile / doc / autoAPIMappings := true,
   )
-  .jvmPlatform(scalaVersions)
-  .nativePlatform(scalaVersions, settings = testNativeSettings ++ Seq(
-    versionPolicyPreviousArtifacts := Nil, // TODO: not yet published ,
+  .jvmPlatform(matrixScalaVersions)
+  .nativePlatform(matrixScalaVersions, settings = testNativeSettings ++ Seq(
+    versionPolicyPreviousArtifacts := Nil, // TODO: not yet published
     mimaPreviousArtifacts := Set.empty
   ))
 
@@ -43,7 +49,7 @@ lazy val junit = projectMatrix.in(file("junit"))
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v"),
     publish / skip := true,
   ).dependsOn(testmacros, core)
-  .jvmPlatform(scalaVersions, 
+  .jvmPlatform(matrixScalaVersions, 
     settings = Seq(
       libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3" % Test,
       libraryDependencies += "junit" % "junit" % "4.13.2" % Test,
@@ -52,18 +58,18 @@ lazy val junit = projectMatrix.in(file("junit"))
       Test / fork := true,
     )
   )
-  .nativePlatform(scalaVersions = scalaVersions, 
+  .nativePlatform(matrixScalaVersions, 
     axisValues = Nil,
     configure = _
       .enablePlugins(ScalaNativeJUnitPlugin)
       .settings(
-      Test/unmanagedSources/excludeFilter ~= { _ || 
-        "SerializationTest.scala" || // requires ObjectOutputStream
-        "SerializationStability.scala" || // requires jaxb-api
-        "SerializationStabilityBase.scala" ||
-        "SerializationStabilityTest.scala"
-      },
-      Test / fork := false
+        Test/unmanagedSources/excludeFilter ~= { _ || 
+          "SerializationTest.scala" || // requires ObjectOutputStream
+          "SerializationStability.scala" || // requires jaxb-api
+          "SerializationStabilityBase.scala" ||
+          "SerializationStabilityTest.scala"
+        },
+        Test / fork := false
       )
   )  
 
@@ -73,13 +79,14 @@ lazy val scalacheck = projectMatrix.in(file("scalacheck"))
     libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.18.1",
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5"),
     publish / skip := true
-  ).dependsOn(core)
-    .jvmPlatform(scalaVersions,
-      settings = Seq(
-        Test / fork := true
-      )
+  )
+  .dependsOn(core)
+  .jvmPlatform(matrixScalaVersions,
+    settings = Seq(
+      Test / fork := true
     )
-    .nativePlatform(scalaVersions, settings = testNativeSettings)
+  )
+  .nativePlatform(matrixScalaVersions, settings = testNativeSettings)
 
 lazy val testmacros = projectMatrix.in(file("testmacros"))
   .settings(commonSettings)
@@ -90,8 +97,8 @@ lazy val testmacros = projectMatrix.in(file("testmacros"))
     }),
     publish / skip := true,
   )
-  .jvmPlatform(scalaVersions)
-  .nativePlatform(scalaVersions, settings = testNativeSettings)
+  .jvmPlatform(matrixScalaVersions)
+  .nativePlatform(matrixScalaVersions, settings = testNativeSettings)
 
 commands += Command.single("setScalaVersion") { (state, arg) =>
   val command = arg match {
