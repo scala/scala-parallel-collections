@@ -30,7 +30,7 @@ lazy val testNativeSettings: Seq[Setting[_]] = Seq(
     // Required by Scala Native testing infrastructure
     Test / fork := false,
 )
-  
+
 lazy val core = projectMatrix.in(file("core"))
   .settings(commonSettings)
   .settings(
@@ -49,7 +49,7 @@ lazy val junit = projectMatrix.in(file("junit"))
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v"),
     publish / skip := true,
   ).dependsOn(testmacros, core)
-  .jvmPlatform(matrixScalaVersions, 
+  .jvmPlatform(matrixScalaVersions,
     settings = Seq(
       libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3" % Test,
       libraryDependencies += "junit" % "junit" % "4.13.2" % Test,
@@ -58,12 +58,12 @@ lazy val junit = projectMatrix.in(file("junit"))
       Test / fork := true,
     )
   )
-  .nativePlatform(matrixScalaVersions, 
+  .nativePlatform(matrixScalaVersions,
     axisValues = Nil,
     configure = _
       .enablePlugins(ScalaNativeJUnitPlugin)
       .settings(
-        Test/unmanagedSources/excludeFilter ~= { _ || 
+        Test/unmanagedSources/excludeFilter ~= { _ ||
           "SerializationTest.scala" || // requires ObjectOutputStream
           "SerializationStability.scala" || // requires jaxb-api
           "SerializationStabilityBase.scala" ||
@@ -71,7 +71,7 @@ lazy val junit = projectMatrix.in(file("junit"))
         },
         Test / fork := false
       )
-  )  
+  )
 
 lazy val scalacheck = projectMatrix.in(file("scalacheck"))
   .settings(commonSettings)
@@ -109,7 +109,7 @@ commands += Command.single("setScalaVersion") { (state, arg) =>
 }
 
 import sbt.internal.{ProjectMatrix, ProjectFinder}
-def testPlatformCommand(name: String, selector: ProjectMatrix => ProjectFinder): Command = 
+def testPlatformCommand(name: String, selector: ProjectMatrix => ProjectFinder): Command =
   Command.command(name) { state =>
     List(junit, scalacheck, testmacros)
     .flatMap(selector(_).get)
