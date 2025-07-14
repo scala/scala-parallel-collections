@@ -32,6 +32,7 @@ import scala.annotation.tailrec
   *  @define Coll `immutable.OldHashSet`
   *  @define coll immutable hash set
   */
+@SerialVersionUID(1765121508301437795L)
 sealed abstract class OldHashSet[A]
   extends AbstractSet[A]
     with SetOps[A, OldHashSet, OldHashSet[A]]
