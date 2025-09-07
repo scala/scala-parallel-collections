@@ -76,7 +76,7 @@ lazy val junit = projectMatrix.in(file("junit"))
 lazy val scalacheck = projectMatrix.in(file("scalacheck"))
   .settings(commonSettings)
   .settings(
-    libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.18.1",
+    libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.19.0",
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1", "-minSize", "0", "-maxSize", "4000", "-minSuccessfulTests", "5"),
     publish / skip := true
   )
