@@ -38,7 +38,7 @@ object SerializationStability extends App with SerializationStabilityBase {
     }
   }
 
-  // Generated on 20250709-16:14:25 with Scala version 2.13.16)
+  // Generated on 20250709-16:14:25 with Scala version 2.13.17)
   overwrite.foreach(updateComment)
 
   // check(new collection.concurrent.TrieMap[Any, Any]())( "rO0ABXNyACNzY2FsYS5jb2xsZWN0aW9uLmNvbmN1cnJlbnQuVHJpZU1hcKckxpgOIYHPAwAETAALZXF1YWxpdHlvYmp0ABJMc2NhbGEvbWF0aC9FcXVpdjtMAApoYXNoaW5nb2JqdAAcTHNjYWxhL3V0aWwvaGFzaGluZy9IYXNoaW5nO0wABHJvb3R0ABJMamF2YS9sYW5nL09iamVjdDtMAAtyb290dXBkYXRlcnQAOUxqYXZhL3V0aWwvY29uY3VycmVudC9hdG9taWMvQXRvbWljUmVmZXJlbmNlRmllbGRVcGRhdGVyO3hwc3IAMnNjYWxhLmNvbGxlY3Rpb24uY29uY3VycmVudC5UcmllTWFwJE1hbmdsZWRIYXNoaW5nhTBoJQ/mgb0CAAB4cHNyABhzY2FsYS5tYXRoLkVxdWl2JCRhbm9uJDLBbyx4dy/qGwIAAHhwc3IANHNjYWxhLmNvbGxlY3Rpb24uY29uY3VycmVudC5UcmllTWFwU2VyaWFsaXphdGlvbkVuZCSbjdgbbGCt2gIAAHhweA==")
