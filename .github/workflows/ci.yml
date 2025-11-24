@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [8]
+        java: [17]
         scala: [3.next]
     runs-on: ubuntu-latest
     if: "github.event_name == 'schedule' && github.repository == 'scala/scala-parallel-collections'
