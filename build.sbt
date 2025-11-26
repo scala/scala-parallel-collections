@@ -1,4 +1,4 @@
-val scalaVersions =  Seq("2.13.17", "3.3.7")
+val scalaVersions =  Seq("2.13.18", "3.3.7")
 val defaultScalaVersion = scalaVersions.head
 
 // When defining JVM / Scala Native matrix we don't want duplicated projects for Scala 2/3
