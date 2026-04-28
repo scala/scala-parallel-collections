@@ -7,6 +7,9 @@ val matrixScalaVersions = Seq(defaultScalaVersion)
 ThisBuild / crossScalaVersions := scalaVersions
 ThisBuild / scalaVersion := defaultScalaVersion
 
+// test-interface_native0.5 uses versionScheme=strict; relax it so scalacheck's 0.5.8 doesn't conflict with 0.5.11
+ThisBuild / libraryDependencySchemes += "org.scala-native" %% "test-interface_native0.5" % VersionScheme.EarlySemVer
+
 Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
 Global / cancelable := true
 publish / skip := true // in root
