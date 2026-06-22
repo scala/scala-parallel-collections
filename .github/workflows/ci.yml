@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'schedule' }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - uses: coursier/cache-action@v8
@@ -44,7 +44,7 @@ jobs:
            && contains(github.event.pull_request.body, '[test-rc]')
          )"
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - uses: coursier/cache-action@v8
