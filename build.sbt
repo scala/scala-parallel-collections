@@ -19,6 +19,17 @@ lazy val commonSettings: Seq[Setting[_]] =
   ScalaModulePlugin.scalaModuleSettings ++ Seq(
     versionPolicyIntention := Compatibility.BinaryCompatible,
     crossScalaVersions := scalaVersions,
+    scalacOptions ++= {
+      scalaBinaryVersion.value match {
+        case "2.13" =>
+          Seq(
+            "-Xsource:3",
+            "-Wconf:cat=scala3-migration:silent",
+          )
+        case _ =>
+          Nil
+      }
+    },
     Compile / compile / scalacOptions --= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((3, _)) => Seq("-Xlint")
       case _            => Seq()
