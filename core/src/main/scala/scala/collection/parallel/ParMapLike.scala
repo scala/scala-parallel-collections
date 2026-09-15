@@ -32,8 +32,8 @@ import scala.annotation.unchecked.uncheckedVariance
 trait ParMapLike[K,
                  +V,
                  +CC[X, Y] <: ParMap[X, Y],
-                 +Repr <: ParMapLike[K, V, ParMap, Repr, Sequential] with ParMap[K, V],
-                 +Sequential <: Map[K, V] with MapOps[K, V, Map, Sequential]]
+                 +Repr <: ParMapLike[K, V, ParMap, Repr, Sequential] & ParMap[K, V],
+                 +Sequential <: Map[K, V] & MapOps[K, V, Map, Sequential]]
 extends ParIterableLike[(K, V), ParIterable, Repr, Sequential]
   with Equals
 {

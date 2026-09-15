@@ -91,7 +91,7 @@ abstract class ParallelIterableCheck[T](collName: String) extends Properties(col
       s1.forall(s2) && s2.forall(s1)
   }
 
-  def printDebugInfo[A, CC[X] <: ParIterable[X], C <: ParIterable[A], S <: Iterable[A] with IterableOps[A, Iterable, S]](coll: ParIterableLike[A, CC, C, S]): Unit = {
+  def printDebugInfo[A, CC[X] <: ParIterable[X], C <: ParIterable[A], S <: Iterable[A] & IterableOps[A, Iterable, S]](coll: ParIterableLike[A, CC, C, S]): Unit = {
     println("Collection debug info: ")
     coll.printDebugBuffer()
     println("Task debug info: ")

@@ -27,7 +27,7 @@ import scala.collection.parallel.Combiner
  *  @define factoryInfo
  *    This object provides a set of operations needed to create `$Coll` values.
  */
-abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] with ParMapLike[X, Y, CC, CC[X, Y], Sequential[X, Y]], Sequential[X, Y] <: collection.Map[X, Y] with collection.MapOps[X, Y, Sequential, Sequential[X, Y]]]
+abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] & ParMapLike[X, Y, CC, CC[X, Y], Sequential[X, Y]], Sequential[X, Y] <: collection.Map[X, Y] & collection.MapOps[X, Y, Sequential, Sequential[X, Y]]]
 extends GenericParMapCompanion[CC] {
 
   // `apply` and `empty` methods were previously inherited from `GenMapFactory`, which

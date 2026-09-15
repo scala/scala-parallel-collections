@@ -67,8 +67,8 @@ trait ParMapLike[
     K,
     +V,
     +CC[X, Y] <: ParMap[X, Y],
-    +Repr <: ParMapLike[K, V, ParMap, Repr, Sequential] with ParMap[K, V],
-    +Sequential <: Map[K, V] with MapOps[K, V, Map, Sequential]]
+    +Repr <: ParMapLike[K, V, ParMap, Repr, Sequential] & ParMap[K, V],
+    +Sequential <: Map[K, V] & MapOps[K, V, Map, Sequential]]
   extends parallel.ParMapLike[K, V, CC, Repr, Sequential]
     with parallel.ParIterableLike[(K, V), ParIterable, Repr, Sequential] {
 

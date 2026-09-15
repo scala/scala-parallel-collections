@@ -27,7 +27,7 @@ import scala.collection.{Set, SetOps}
 trait ParSetLike[T,
                  +CC[X] <: ParIterable[X],
                  +Repr <: ParSet[T],
-                 +Sequential <: Set[T] with SetOps[T, Set, Sequential]]
+                 +Sequential <: Set[T] & SetOps[T, Set, Sequential]]
 extends ParIterableLike[T, CC, Repr, Sequential]
   with (T => Boolean)
   with Equals

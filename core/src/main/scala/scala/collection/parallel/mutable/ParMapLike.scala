@@ -29,8 +29,8 @@ import scala.collection.mutable.Cloneable
 trait ParMapLike[K,
                  V,
                  +CC[X, Y] <: ParMap[X, Y],
-                 +Repr <: ParMapLike[K, V, ParMap, Repr, Sequential] with ParMap[K, V],
-                 +Sequential <: scala.collection.mutable.Map[K, V] with scala.collection.mutable.MapOps[K, V, scala.collection.mutable.Map, Sequential]]
+                 +Repr <: ParMapLike[K, V, ParMap, Repr, Sequential] & ParMap[K, V],
+                 +Sequential <: scala.collection.mutable.Map[K, V] & scala.collection.mutable.MapOps[K, V, scala.collection.mutable.Map, Sequential]]
 extends scala.collection.parallel.ParIterableLike[(K, V), ParIterable, Repr, Sequential]
    with scala.collection.parallel.ParMapLike[K, V, CC, Repr, Sequential]
    with scala.collection.mutable.Growable[(K, V)]
