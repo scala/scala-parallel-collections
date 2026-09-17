@@ -46,7 +46,7 @@ import scala.annotation.unchecked.uncheckedVariance
  *  This trait defines a new, more general `split` operation and reimplements the `split`
  *  operation of `ParallelIterable` trait using the new `split` operation.
  */
-trait ParSeqLike[+T, +CC[X] <: ParSeq[X], +Repr <: ParSeq[T], +Sequential <: scala.collection.Seq[T] with SeqOps[T, collection.Seq, Sequential]]
+trait ParSeqLike[+T, +CC[X] <: ParSeq[X], +Repr <: ParSeq[T], +Sequential <: scala.collection.Seq[T] & SeqOps[T, collection.Seq, Sequential]]
 extends ParIterableLike[T, CC, Repr, Sequential]
    with Equals { self =>
 

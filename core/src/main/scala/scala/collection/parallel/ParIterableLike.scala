@@ -144,7 +144,7 @@ import scala.annotation.unchecked.uncheckedVariance
  *  @define Coll `ParIterable`
  *  @define coll parallel iterable
  */
-trait ParIterableLike[+T, +CC[X] <: ParIterable[X], +Repr <: ParIterable[T], +Sequential <: Iterable[T] with IterableOps[T, Iterable, Sequential @uncheckedVariance]]
+trait ParIterableLike[+T, +CC[X] <: ParIterable[X], +Repr <: ParIterable[T], +Sequential <: Iterable[T] & IterableOps[T, Iterable, Sequential @uncheckedVariance]]
 extends IterableOnce[T @uncheckedVariance]
    with CustomParallelizable[T @uncheckedVariance, Repr]
    with Parallel

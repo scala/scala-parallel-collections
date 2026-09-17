@@ -25,7 +25,7 @@ import scala.collection.parallel.ParIterable
  *  @define coll parallel collection
  *  @define Coll `ParIterable`
  */
-abstract class ParFactory[CC[X] <: ParIterable[X] with GenericParTemplate[X, CC]]
+abstract class ParFactory[CC[X] <: ParIterable[X] & GenericParTemplate[X, CC]]
 extends GenericParCompanion[CC] {
 
   // The methods below were previously inherited from `GenTraversableFactory`, but this

@@ -29,8 +29,8 @@ import scala.collection.mutable.Shrinkable
  */
 trait ParSetLike[T,
                  +CC[X] <: ParIterable[X],
-                 +Repr <: ParSetLike[T, CC, Repr, Sequential] with ParSet[T],
-                 +Sequential <: mutable.Set[T] with mutable.SetOps[T, mutable.Set, Sequential]]
+                 +Repr <: ParSetLike[T, CC, Repr, Sequential] & ParSet[T],
+                 +Sequential <: mutable.Set[T] & mutable.SetOps[T, mutable.Set, Sequential]]
 extends scala.collection.parallel.ParIterableLike[T, CC, Repr, Sequential]
    with scala.collection.parallel.ParSetLike[T, CC, Repr, Sequential]
    with Growable[T]
