@@ -91,6 +91,7 @@ private[collection] abstract class TrieIterator[+T](elems: Array[Iterable[T]]) e
 
     (iteratorWithSize(snd), newIterator(fst))
   }
+  @tailrec
   private[this] def splitArray(ad: Array[Iterable[T]]): SplitIterators =
     if (ad.length > 1) arrayToIterators(ad)
     else ad(0) match {
