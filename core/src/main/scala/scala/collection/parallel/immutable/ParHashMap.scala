@@ -302,7 +302,7 @@ extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V
         unrolled = unrolled.next
       }
 
-      evaluateCombiners(trie).asInstanceOf[OldHashMap[K, Repr]]
+      evaluateCombiners(trie)
     }
     private def evaluateCombiners(trie: OldHashMap[K, Combiner[V, Repr]]): OldHashMap[K, Repr] = trie match {
       case hm1: OldHashMap.OldHashMap1[?, ?] =>

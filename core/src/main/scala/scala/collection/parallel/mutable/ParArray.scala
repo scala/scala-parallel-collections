@@ -469,7 +469,7 @@ self =>
       } otherwise {
         cb.ifIs[UnrolledParArrayCombiner[T]] { pac =>
           // with unr. combiner:
-          val targetarr: Array[Any] = pac.buff.lastPtr.array.asInstanceOf[Array[Any]]
+          val targetarr: Array[Any] = pac.buff.lastPtr.array
           Array.copy(arr, i, targetarr, 0, until - i)
           pac.buff.size = pac.buff.size + until - i
           pac.buff.lastPtr.size = until - i
@@ -540,7 +540,7 @@ self =>
             // with unr. combiner:
             val sz = remaining
           pac.sizeHint(sz)
-          val targetarr: Array[Any] = pac.buff.lastPtr.array.asInstanceOf[Array[Any]]
+          val targetarr: Array[Any] = pac.buff.lastPtr.array
           reverse2combiner_quick(targetarr, arr, 0, i, until)
           pac.buff.size = pac.buff.size + sz
           pac.buff.lastPtr.size = sz

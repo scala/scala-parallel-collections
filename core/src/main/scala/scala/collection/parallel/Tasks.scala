@@ -249,7 +249,7 @@ trait ForkJoinTasks extends Tasks with HavingForkJoinPool {
 
   /** The fork/join pool of this collection.
    */
-  def forkJoinPool: ForkJoinPool = environment.asInstanceOf[ForkJoinPool]
+  def forkJoinPool: ForkJoinPool = environment
   val environment: ForkJoinPool
 
   /** Executes a task and does not wait for it to finish - instead returns a future.
