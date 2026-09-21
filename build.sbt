@@ -1,3 +1,5 @@
+import com.typesafe.tools.mima.core._
+
 val scalaVersions =  Seq("2.13.18", "3.3.8")
 val defaultScalaVersion = scalaVersions.head
 
@@ -10,6 +12,13 @@ ThisBuild / scalaVersion := defaultScalaVersion
 Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
 Global / cancelable := true
 publish / skip := true // in root
+
+lazy val jvmSettings = Def.settings(
+  scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((3, 3)) => Seq("-Yfuture-lazy-vals", "-java-output-version:17")
+    case _            => Nil
+  }),
+)
 
 lazy val commonSettings: Seq[Setting[_]] =
   Seq(scalaModuleAutomaticModuleName := Some("scala.collection.parallel")) ++
@@ -47,8 +56,16 @@ lazy val core = projectMatrix.in(file("core"))
   .settings(
     name := "scala-parallel-collections",
     Compile / doc / autoAPIMappings := true,
+    mimaBinaryIssueFilters ++= Seq(
+      // -Yfuture-lazy-vals turns the module's <clinit> from public to private, which is not an
+      // incompatibility. Drop once the fix for scala-garden/mima#794 is released.
+      ProblemFilters.exclude[DirectMissingMethodProblem]("scala.collection.parallel.ForkJoinTasks.<clinit>"),
+    ),
   )
-  .jvmPlatform(matrixScalaVersions)
+  .jvmPlatform(
+    matrixScalaVersions,
+    jvmSettings,
+  )
   .nativePlatform(matrixScalaVersions, settings = testNativeSettings ++ Seq(
     versionPolicyPreviousArtifacts := Nil, // TODO: not yet published
     mimaPreviousArtifacts := Set.empty
@@ -61,7 +78,8 @@ lazy val junit = projectMatrix.in(file("junit"))
     publish / skip := true,
   ).dependsOn(testmacros, core)
   .jvmPlatform(matrixScalaVersions,
-    settings = Seq(
+    settings = Def.settings(
+      jvmSettings,
       libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3" % Test,
       libraryDependencies += "junit" % "junit" % "4.13.2" % Test,
         // for javax.xml.bind.DatatypeConverter, used in SerializationStabilityTest
@@ -93,7 +111,8 @@ lazy val scalacheck = projectMatrix.in(file("scalacheck"))
   )
   .dependsOn(core)
   .jvmPlatform(matrixScalaVersions,
-    settings = Seq(
+    settings = Def.settings(
+      jvmSettings,
       Test / fork := true
     )
   )
@@ -108,7 +127,10 @@ lazy val testmacros = projectMatrix.in(file("testmacros"))
     }),
     publish / skip := true,
   )
-  .jvmPlatform(matrixScalaVersions)
+  .jvmPlatform(
+    matrixScalaVersions,
+    jvmSettings,
+  )
   .nativePlatform(matrixScalaVersions, settings = testNativeSettings)
 
 commands += Command.single("setScalaVersion") { (state, arg) =>

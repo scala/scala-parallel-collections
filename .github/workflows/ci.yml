@@ -13,6 +13,11 @@ jobs:
       matrix:
         java: [8, 11, 17, 21]
         scala: [2.13.x, 3.x]
+        exclude:
+          - java: 8
+            scala: 3.x
+          - java: 11
+            scala: 3.x
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'schedule' }}
     steps:
