@@ -136,6 +136,7 @@ private[immutable] abstract class HashSetCombiner[T]
 extends scala.collection.parallel.BucketCombiner[T, ParHashSet[T], Any, HashSetCombiner[T]](HashSetCombiner.rootsize) {
 //self: EnvironmentPassingCombiner[T, ParHashSet[T]] =>
   import HashSetCombiner._
+  @deprecated("Will be removed", "1.3.0")
   val emptyTrie = OldHashSet.empty[T]
 
   def addOne(elem: T) = {

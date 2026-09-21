@@ -151,6 +151,7 @@ object ParHashMap extends ParMapFactory[ParHashMap, OldHashMap] {
 
   def fromTrie[K, V](t: OldHashMap[K, V]) = new ParHashMap(t)
 
+  @deprecated("Will be removed", "1.3.0")
   var totalcombines = new java.util.concurrent.atomic.AtomicInteger(0)
 }
 
@@ -158,6 +159,7 @@ private[parallel] abstract class HashMapCombiner[K, V]
 extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[K, V], (K, V), HashMapCombiner[K, V]](HashMapCombiner.rootsize) {
 //self: EnvironmentPassingCombiner[(K, V), ParHashMap[K, V]] =>
   import HashMapCombiner._
+  @deprecated("Will be removed", "1.3.0")
   val emptyTrie = OldHashMap.empty[K, V]
 
   def addOne(elem: (K, V)) = {
