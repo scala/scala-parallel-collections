@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-val scalaVersions =  Seq("2.13.18", "3.3.8")
+val scalaVersions =  Seq("2.13.18", "3.9.0")
 val defaultScalaVersion = scalaVersions.head
 
 // When defining JVM / Scala Native matrix we don't want duplicated projects for Scala 2/3
